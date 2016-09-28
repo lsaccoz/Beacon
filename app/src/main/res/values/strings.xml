@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">BEACON</string>
+    <string name="title_activity_launcher">LauncherActivity</string>
 </resources>
