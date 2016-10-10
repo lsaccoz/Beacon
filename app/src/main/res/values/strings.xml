@@ -1,4 +1,14 @@
 <resources>
+
+    <!-- Main Activity strings -->
+
+    <string name="create_event">Create Event</string>
+
+
     <string name="app_name">BEACON</string>
     <string name="title_activity_launcher">LauncherActivity</string>
+
+    <!-- Google Maps API Key -->
+    <string name="google_maps_key">AIzaSyBq0s_kXLltw-BmRwL4HRQGFA50I4FamKE </string>
+    \
 </resources>

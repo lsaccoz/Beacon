@@ -1,4 +1,4 @@
-package com.bcn.beacon.beacon;
+package com.bcn.beacon.beacon.Activities;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
@@ -10,6 +10,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.*;
 
+import com.bcn.beacon.beacon.R;
 import com.firebase.client.Firebase;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.auth.api.Auth;

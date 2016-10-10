@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:background="@color/colorPrimary"
+    android:layout_width="match_parent"
+    android:paddingBottom="8dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="center">
+
+    <com.joanzapata.iconify.widget.IconTextView
+        android:id="@+id/navicon"
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:text="{fa-navicon}"
+        android:background="@color/colorPrimary"
+        android:layout_gravity="center_vertical"
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"/>
+
+
+    <TextView
+        android:id="@+id/my_title"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:background="@color/colorPrimary"
+        android:text="Beacon"
+        android:textSize="30sp"
+        android:textColor="#FFFFFF"
+        />
+
+    <com.joanzapata.iconify.widget.IconTextView
+        android:id="@+id/search_icon"
+        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:layout_gravity="center_vertical"
+        android:text="{fa-search}"
+        android:textSize="25sp"
+        android:textColor="#FFFFFF"
+        android:background="@color/colorPrimary"/>
+
+
+
+
+
+</LinearLayout>

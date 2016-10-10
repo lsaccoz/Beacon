@@ -1,14 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
+
+
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingBottom="@dimen/activity_vertical_margin"
-    android:paddingLeft="@dimen/activity_horizontal_margin"
-    android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.bcn.beacon.beacon.MainActivity">
+    tools:context=".Activities.MainActivity">
+
+
+    <LinearLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true">
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/home"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:text="{fa-home}"
+            android:background="@color/currentTabColor"
+            android:textColor="#F3E5F5"
+            android:textSize="30sp" />
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/world"
+            android:layout_width="0dp"
+            android:layout_height="50dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="{fa-globe}"
+            android:background="@color/otherTabColor"
+            android:textColor="#F3E5F5"
+            android:textSize="30sp" />
+
+
+
+    </LinearLayout>
+    
+
+    <LinearLayout
+        android:id="@+id/create_event"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:orientation="horizontal"
+        android:background="#000000">
+
+        <TextView
+            android:id="@+id/create_event_text"
+            android:layout_width="0dp"
+            android:layout_weight="5"
+            android:gravity="end"
+            android:layout_height="wrap_content"
+            android:text="@string/create_event"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            />
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="{fa-plus}"
+            android:textSize="25sp"
+            android:background="#000000"
+            android:textColor="#FFFFFF"
+            />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/events_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_above="@id/create_event"
+        android:layout_below="@id/tabs"/>
 
 
 </RelativeLayout>
