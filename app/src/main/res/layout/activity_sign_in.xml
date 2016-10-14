@@ -7,20 +7,39 @@
     android:paddingBottom="@dimen/activity_vertical_margin"
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
-    android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context=".Activities.SignInActivity">
+    tools:context=".Activities.SignInActivity"
+    android:background="@color/signInColor">
 
     <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_centerHorizontal="true"
-        android:layout_centerVertical="true">
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/BeaconLabel"
+            android:text="@string/app_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:textColor="@color/tabTextColor"
+            android:textStyle="normal|bold"
+            android:textSize="36sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true">
 
         <com.google.android.gms.common.SignInButton
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:id="@+id/GoogleSignInButton"
+            android:layout_width="175dp"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true">
         </com.google.android.gms.common.SignInButton>
 
     </LinearLayout>
+
 
 </RelativeLayout>

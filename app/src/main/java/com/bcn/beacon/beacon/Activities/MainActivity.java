@@ -84,14 +84,6 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
         mMapFragment.getMapAsync(this);
 
-
-
-
-
-//        ActionBar actionBar = getActionBar();
-//        actionBar.setCustomView()
-
-
     }
 
 
