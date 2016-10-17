@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/activity_main"
@@ -12,31 +10,42 @@
     <LinearLayout
         android:id="@+id/tabs"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="45dp"
         android:orientation="horizontal"
         android:layout_alignParentTop="true">
 
         <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/home"
+            android:id="@+id/world"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="match_parent"
             android:gravity="center"
             android:layout_weight="1"
             android:layout_gravity="center"
-            android:text="{fa-home}"
+            android:text="{fa-globe}"
             android:background="@color/currentTabColor"
-            android:textColor="#F3E5F5"
+            android:textColor="@color/custom_white"
             android:textSize="30sp" />
 
         <com.joanzapata.iconify.widget.IconTextView
-            android:id="@+id/world"
+            android:id="@+id/list"
             android:layout_width="0dp"
-            android:layout_height="50dp"
+            android:layout_height="match_parent"
             android:layout_weight="1"
             android:gravity="center"
-            android:text="{fa-globe}"
+            android:text="{fa-list-ul}"
             android:background="@color/otherTabColor"
-            android:textColor="#F3E5F5"
+            android:textColor="@color/custom_white"
+            android:textSize="30sp" />
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/favourites"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="{fa-star}"
+            android:background="@color/otherTabColor"
+            android:textColor="@color/yellow"
             android:textSize="30sp" />
 
 
@@ -44,15 +53,17 @@
     </LinearLayout>
     
 
+    <!-- Place holder for now, will be used to show syncing status -->
     <LinearLayout
         android:id="@+id/create_event"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="30dp"
         android:layout_alignParentBottom="true"
         android:padding="8dp"
         android:orientation="horizontal"
         android:background="#000000">
 
+        <!--
         <TextView
             android:id="@+id/create_event_text"
             android:layout_width="0dp"
@@ -74,7 +85,7 @@
             android:background="#000000"
             android:textColor="#FFFFFF"
             />
-
+    -->
     </LinearLayout>
 
     <FrameLayout
