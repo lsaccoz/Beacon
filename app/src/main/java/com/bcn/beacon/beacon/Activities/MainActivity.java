@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bcn.beacon.beacon.R;
@@ -24,10 +25,15 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.widget.IconTextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity implements OnMapReadyCallback {
 
     MapFragment mMapFragment;
     LinearLayout mCustomActionBar;
+    List<IconTextView> mTabs;
+    TextView mTitle;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,26 +58,41 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
         lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
         mCustomActionBar.setLayoutParams(lp);
 
+        mTitle = (TextView) mCustomActionBar.findViewById(R.id.my_title);
+        mTitle.setTypeface(Typeface.MONOSPACE);
 
-        final IconTextView home = (IconTextView) findViewById(R.id.home);
+        final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
-        final TextView create_event_text = (TextView) findViewById(R.id.create_event_text);
+        final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
 
-        create_event_text.setTypeface(Typeface.MONOSPACE);
+        mTabs = new ArrayList <>();
+        mTabs.add(list);
+        mTabs.add(world);
+        mTabs.add(favourites);
 
-        home.setOnClickListener(new View.OnClickListener() {
+
+        list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                home.setBackgroundResource(R.color.currentTabColor);
-                world.setBackgroundResource(R.color.otherTabColor);
+                resetTabColours();
+                list.setBackgroundResource(R.color.currentTabColor);
+
             }
         });
 
         world.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                home.setBackgroundResource(R.color.otherTabColor);
+                resetTabColours();
                 world.setBackgroundResource(R.color.currentTabColor);
+            }
+        });
+
+        favourites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                resetTabColours();
+                favourites.setBackgroundResource(R.color.currentTabColor);
             }
         });
 
@@ -94,6 +115,11 @@ public class MainActivity extends AppCompatActivity implements OnMapReadyCallbac
 
     }
 
+    private void resetTabColours(){
+        for(IconTextView itv : mTabs){
+            itv.setBackgroundResource(R.color.otherTabColor);
+        }
+    }
 
     @Override
     public void onMapReady(GoogleMap map){
