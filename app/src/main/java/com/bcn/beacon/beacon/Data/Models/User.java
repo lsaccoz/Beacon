@@ -8,8 +8,18 @@ public class User {
     private Long _id;
     private String uuid;
     private String name;
+    private String email;
     private String[] host_EventIds;
     private String[] favourite_EventIds;
+
+    public User(){
+        // Default constructor required for calls to DataSnapshot.getValue(User.class)
+    }
+
+    public User(String name, String email){
+        setName(name);
+        setEmail(email);
+    }
 
     public String getId(){
         return uuid;
@@ -17,6 +27,10 @@ public class User {
 
     public String getName(){
         return name;
+    }
+
+    public String getEmail(){
+        return email;
     }
 
     public String[] getHost_EventIds(){
@@ -33,6 +47,10 @@ public class User {
 
     public void setName(String name){
         this.name = name;
+    }
+
+    public void setEmail(String email){
+        this.email = email;
     }
 
     public void setHost_EventIds(String[] host_eventIds){
