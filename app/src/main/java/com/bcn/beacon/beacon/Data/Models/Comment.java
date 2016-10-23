@@ -10,7 +10,7 @@ public class Comment {
     private String userId;
     private String text;
     private String dateId;
-    private String[] likeIds;
+//    private String[] likeIds;
 
     public String getId(){
         return uuid;
@@ -24,9 +24,9 @@ public class Comment {
         return dateId;
     }
 
-    public String[] getLikeIds(){
-        return likeIds;
-    }
+//    public String[] getLikeIds(){
+//        return likeIds;
+//    }
 
     public void setId(String uuid){
         this.uuid = uuid;
@@ -40,7 +40,7 @@ public class Comment {
         this.text = text;
     }
 
-    public void setLikeIds(String[] likeIds){
-        this.likeIds = likeIds;
-    }
+//    public void setLikeIds(String[] likeIds){
+//        this.likeIds = likeIds;
+//    }
 }
