@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -41,11 +42,16 @@ import com.google.firebase.auth.FirebaseUser;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.widget.IconTextView;
 
+import java.util.ArrayList;
+import java.util.List;
+
+
 public class MainActivity extends AppCompatActivity
-        implements OnMapReadyCallback,
-        GoogleMap.OnMapClickListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+            implements OnMapReadyCallback,
+            GoogleMap.OnMapClickListener,
+            GoogleApiClient.ConnectionCallbacks,
+            GoogleApiClient.OnConnectionFailedListener {
+
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
@@ -54,6 +60,8 @@ public class MainActivity extends AppCompatActivity
 
     MapFragment mMapFragment;
     LinearLayout mCustomActionBar;
+    List<IconTextView> mTabs;
+    TextView mTitle;
 
     private static final String TAG = "MainActivity";
 
@@ -80,30 +88,46 @@ public class MainActivity extends AppCompatActivity
         lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
         mCustomActionBar.setLayoutParams(lp);
 
-        final IconTextView home = (IconTextView) findViewById(R.id.home);
+        mTitle = (TextView) mCustomActionBar.findViewById(R.id.my_title);
+        mTitle.setTypeface(Typeface.MONOSPACE);
+
+        final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
-        final IconTextView navigation = (IconTextView) findViewById(R.id.navicon);
-        final TextView create_event_text = (TextView) findViewById(R.id.create_event_text);
+        final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
 
-        create_event_text.setTypeface(Typeface.MONOSPACE);
+        final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
 
-        home.setOnClickListener(new View.OnClickListener() {
+        mTabs = new ArrayList <>();
+        mTabs.add(list);
+        mTabs.add(world);
+        mTabs.add(favourites);
+
+        list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                home.setBackgroundResource(R.color.currentTabColor);
-                world.setBackgroundResource(R.color.otherTabColor);
+                resetTabColours();
+                list.setBackgroundResource(R.color.currentTabColor);
+
             }
         });
 
         world.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                home.setBackgroundResource(R.color.otherTabColor);
+                resetTabColours();
                 world.setBackgroundResource(R.color.currentTabColor);
             }
         });
 
-        navigation.setOnClickListener(new View.OnClickListener(){
+        favourites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v){
+                resetTabColours();
+                favourites.setBackgroundResource(R.color.currentTabColor);
+            }
+        });
+
+        create_event.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
                 signOut();
@@ -229,6 +253,11 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    private void resetTabColours(){
+        for(IconTextView itv : mTabs){
+            itv.setBackgroundResource(R.color.otherTabColor);
+        }
+    }
 
     @Override
     public void onMapClick(LatLng latLng) {
