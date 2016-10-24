@@ -5,6 +5,7 @@ import java.util.Date;
 
 /**
  * Created by neema on 2016-10-16.
+ * Edited by epekel on 2016-10-23.
  */
 public class Event {
 
@@ -20,6 +21,16 @@ public class Event {
     private String[] postIds;
     private String[] tags;
 
+    public Event() {
+        // Default constructor required for calls to DataSnapshot.getValue(Event.class)
+    }
+
+    public Event(String name, String hostId, String locationId, String timeStart_Id) {
+        this.setName(name);
+        this.setHostId(hostId);
+        this.setLocationId(locationId);
+        this.setTimeStart_Id(timeStart_Id);
+    }
 
     public String getId(){
         return uuid;

@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'BeaconDebugKey'
             keyPassword 'P4ngea'
-            storeFile file('/Users/andytertzakian/.android/android.jks')
+            storeFile file('../../../.android/android.jks')
             storePassword 'Sunshine123'
         }
     }
