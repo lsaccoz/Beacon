@@ -3,11 +3,18 @@ package com.bcn.beacon.beacon.Activities;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.TimePicker;
 
 
@@ -19,16 +26,38 @@ import java.util.Calendar;
 import static android.support.design.R.styleable.View;
 
 public class CreateEventActivity extends AppCompatActivity {
+    LinearLayout mCustomActionBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
 
+        /*
+        ActionBar actionBar = getSupportActionBar();
+
+        actionBar.setDisplayShowHomeEnabled(false);
+        actionBar.setDisplayShowTitleEnabled(false);
+        actionBar.setDisplayShowCustomEnabled(true);
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+
+        mCustomActionBar = (LinearLayout) inflater.inflate(R.layout.create_event_action_bar, null);
+        actionBar.setCustomView(mCustomActionBar);
+        Toolbar parent =(Toolbar) mCustomActionBar.getParent();//first get parent toolbar of current action bar
+        parent.setContentInsetsAbsolute(0,0);// set padding programmatically to 0dp
+
+        ViewGroup.LayoutParams lp = mCustomActionBar.getLayoutParams();
+        lp.width= ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
+        mCustomActionBar.setLayoutParams(lp);
+        */
         final EditText eTime = (EditText) findViewById(R.id.event_time);
         final EditText eDate = (EditText) findViewById(R.id.event_date);
-        final EditText eName = (EditText) findViewById(R.id.event_name);
-        final EditText eDescription = (EditText) findViewById(R.id.event_description);
+        final EditText eName = (EditText) findViewById(R.id.input_name);
+        final EditText eDescription = (EditText) findViewById(R.id.input_description);
+       // final ImageButton eAddImage = (ImageButton) findViewById(R.id.addImageButton);
+
         eDate.setOnClickListener(new android.view.View.OnClickListener() {
 
             @Override
@@ -50,6 +79,7 @@ public class CreateEventActivity extends AppCompatActivity {
                     }
                 }, mYear, mMonth, mDay);
                 mDatePicker.setTitle("Select Date");
+
                 mDatePicker.show();
             }
         });

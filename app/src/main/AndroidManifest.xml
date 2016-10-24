@@ -36,7 +36,10 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".Activities.CreateEventActivity"></activity>
+        <activity
+            android:name=".Activities.CreateEventActivity">
+            <!--android:theme="@style/CreateEventTheme">-->
+        </activity>
     </application>
 
 </manifest>
