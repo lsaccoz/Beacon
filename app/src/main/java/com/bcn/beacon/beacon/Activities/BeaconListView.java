@@ -1,5 +1,6 @@
 package com.bcn.beacon.beacon.Activities;
 
+import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -10,7 +11,11 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 
 import com.bcn.beacon.beacon.Data.Models.Event;
@@ -20,6 +25,9 @@ import com.google.firebase.database.*;
 
 import java.security.Security;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Created by epekel on 2016-10-23.
@@ -27,15 +35,19 @@ import java.util.ArrayList;
 public class BeaconListView extends AppCompatActivity {
 
     private DatabaseReference mDatabase;
+    private ArrayList<Event> events = new ArrayList<Event>();;
+    //private ArrayList<Event> events;
+    private ArrayList<String> eventNames;
     double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    private boolean checkGPSPermission() {
+        String permission = "android.permission.ACCESS_FINE_LOCATION";
+        int res = getApplicationContext().checkCallingPermission(permission);
+        return (res == PackageManager.PERMISSION_GRANTED);
+    }
 
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_list_view);
-
+    private void getNearbyEvents() {
         LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (checkGPSPermission()) {
@@ -47,43 +59,53 @@ public class BeaconListView extends AppCompatActivity {
         }
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("Events").child("Event").child("location").child("xcoord").addListenerForSingleValueEvent(new ValueEventListener() {
+        mDatabase.child("Events").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
-                eventLng = Double.parseDouble(dataSnapshot.getValue().toString());
-                //System.out.println(Double.parseDouble(dataSnapshot.getValue().toString()));
-            }
+                double distance;
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    eventLng = Double.parseDouble(child.child("location").child("xcoord").getValue().toString());
+                    eventLat = Double.parseDouble(child.child("location").child("ycoord").getValue().toString());
+                    distance = distFrom(userLng, userLat, eventLng, eventLat);
+                    if (distance <= maxRadius) {
+                        Event event = new Event(child.child("title").getValue().toString(),
+                                                child.child("host").getValue().toString(),
+                                                distance, child.child("start").getValue().toString());
+                        Log.i("NAME:", event.getName());
+                        Log.i("DISTANCE:", Double.toString(distance));
+                        /*event.setName(child.child("title").getValue().toString());
+                        event.setHostId(child.child("host").getValue().toString());
+                        event.setDistance(distance);*/
+                        events.add(event);
+                        /*int index = 0;
+                        for (Event order : events) {
+                            if (event.getDistance() < order.getDistance()) {
+                                index = events.indexOf(order);
+                            }
+                        }
+                        events.add(index, event);*/
 
+                        //Log.i("DISTANCE:", Double.toString(distance));
+                    }
+                }
+                Collections.sort(events, new DistanceComparator());
+
+                // ListView stuff
+                ListView beaconListView = (ListView) findViewById(R.id.listView);
+
+                eventNames = new ArrayList<String>();
+                for (Event event : events) {
+                    eventNames.add(event.getName());
+                    Log.i("EVENT NAME:", event.getName());
+                }
+
+                ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(BeaconListView.this, android.R.layout.simple_list_item_1, eventNames);
+
+                beaconListView.setAdapter(arrayAdapter);
+            }
             @Override
             public void onCancelled(DatabaseError databaseError) { }
         });
-        mDatabase.child("Events").child("Event").child("location").child("ycoord").addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                eventLat = Double.parseDouble(dataSnapshot.getValue().toString());
-                //System.out.println(Double.parseDouble(dataSnapshot.getValue().toString()));
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) { }
-        });
-
-        double distance = distFrom(userLng, userLat, eventLng, eventLat);
-
-        if (distance <= maxRadius) {
-            // then event should be shown in list view
-        }
-
-        ListView beaconListView = (ListView) findViewById((R.id.listView));
-
-        ArrayList<Event> events = new ArrayList<Event>();
-
-    }
-
-    private boolean checkGPSPermission() {
-        String permission = "android.permission.ACCESS_FINE_LOCATION";
-        int res = getApplicationContext().checkCallingPermission(permission);
-        return (res == PackageManager.PERMISSION_GRANTED);
     }
 
     /**
@@ -107,7 +129,84 @@ public class BeaconListView extends AppCompatActivity {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         double dist = earthRadius * c;
 
+        //Log.i("distFrom:", Double.toString(dist));
+
         return dist; // in kilometers
     }
 
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_list_view);
+
+        getNearbyEvents();
+
+
+    }
 }
+
+class DistanceComparator implements Comparator<Event> {
+    public int compare(Event left, Event right) {
+        if (left.getDistance() < right.getDistance()) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
+    }
+}
+
+
+
+/*public class EventsAdapter extends BaseAdapter {
+
+    private final LayoutInflater inflater;
+    private final List<Event> events;
+
+    private EventsAdapter(Context context, List<Event> events) {
+        this.inflater = LayoutInflater.from(context);
+        this.events = events;
+    }
+
+    @Override
+    public int getCount() {
+        return this.events.size();
+    }
+
+    @Override
+    public Event getItem(int position) {
+        return this.events.get(position);
+    }
+
+    @Override
+    public long getItemId(int position) {
+        return this.events.get(position).hashCode();
+    }
+
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+
+        final Event event = getItem(position);
+
+        if(convertView == null) {
+            // If convertView is null we have to inflate a new layout
+            convertView = this.inflater.inflate(R.layout.activity_list_view, parent, false);
+            final ViewHolder viewHolder = new ViewHolder();
+            viewHolder.tvDisplayText = (TextView) convertView.findViewById(R.id.tvDisplayText);
+            viewHolder.tvMeta = (TextView) convertView.findViewById(R.id.tvMeta);
+
+            // We set the view holder as tag of the convertView so we can access the view holder later on.
+            convertView.setTag(viewHolder);
+        }
+
+        // Retrieve the view holder from the convertView
+        final ViewHolder viewHolder = (ViewHolder) convertView.getTag();
+
+        // Bind the values to the views
+        viewHolder.tvDisplayText.setText(item.getDisplayText());
+        viewHolder.tvMeta.setText(item.getMeta());
+
+        return convertView;
+    }
+}*/

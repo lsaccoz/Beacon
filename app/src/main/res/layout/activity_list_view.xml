@@ -54,6 +54,15 @@
 
 
     <!-- Place holder for now, will be used to show syncing status -->
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:layout_below="@+id/tabs"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:elevation="1dp" />
+
     <LinearLayout
         android:id="@+id/create_event"
         android:layout_width="match_parent"
@@ -87,15 +96,6 @@
             />
     -->
     </LinearLayout>
-
-    <ListView
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/tabs"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:id="@+id/listView"
-        android:layout_above="@+id/create_event" />
 
 
 </RelativeLayout>
