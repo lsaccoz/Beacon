@@ -101,7 +101,4 @@ public class Event {
         this.tags = tags;
     }
 
-
-
-
 }

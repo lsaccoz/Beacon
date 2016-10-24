@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -22,6 +23,9 @@ import android.widget.Toast;
 
 import com.bcn.beacon.beacon.R;
 import com.firebase.client.annotations.Nullable;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -39,6 +43,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.auth.UserInfo;
 import com.joanzapata.iconify.Iconify;
 import com.joanzapata.iconify.widget.IconTextView;
 
@@ -57,6 +62,8 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser mFirebaseUser;
     private GoogleApiClient mGoogleApiClient;
+
+    private String displayName;
 
     MapFragment mMapFragment;
     LinearLayout mCustomActionBar;
@@ -80,11 +87,11 @@ public class MainActivity extends AppCompatActivity
 
         mCustomActionBar = (LinearLayout) inflater.inflate(R.layout.custom_action_bar, null);
         actionBar.setCustomView(mCustomActionBar);
-        Toolbar parent =(Toolbar) mCustomActionBar.getParent();//first get parent toolbar of current action bar
-        parent.setContentInsetsAbsolute(0,0);// set padding programmatically to 0dp
+        Toolbar parent = (Toolbar) mCustomActionBar.getParent();//first get parent toolbar of current action bar
+        parent.setContentInsetsAbsolute(0, 0);// set padding programmatically to 0dp
 
         ViewGroup.LayoutParams lp = mCustomActionBar.getLayoutParams();
-        lp.width= ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
         lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
         mCustomActionBar.setLayoutParams(lp);
 
@@ -97,7 +104,7 @@ public class MainActivity extends AppCompatActivity
 
         final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
 
-        mTabs = new ArrayList <>();
+        mTabs = new ArrayList<>();
         mTabs.add(list);
         mTabs.add(world);
         mTabs.add(favourites);
@@ -107,13 +114,12 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 resetTabColours();
                 list.setBackgroundResource(R.color.currentTabColor);
-
             }
         });
 
         world.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 resetTabColours();
                 world.setBackgroundResource(R.color.currentTabColor);
             }
@@ -121,15 +127,15 @@ public class MainActivity extends AppCompatActivity
 
         favourites.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 resetTabColours();
                 favourites.setBackgroundResource(R.color.currentTabColor);
             }
         });
 
-        create_event.setOnClickListener(new View.OnClickListener(){
+        create_event.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 signOut();
             }
         });
@@ -138,10 +144,12 @@ public class MainActivity extends AppCompatActivity
                 .requestEmail()
                 .build();
 
+        // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
+                .addApi(AppIndex.API).build();
 
         mAuth = FirebaseAuth.getInstance();
 
@@ -151,6 +159,9 @@ public class MainActivity extends AppCompatActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     mFirebaseUser = user;
+
+                    initMap();
+
                     Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -158,6 +169,7 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
+
     }
 
     protected void onStart() {
@@ -165,15 +177,6 @@ public class MainActivity extends AppCompatActivity
 
         mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
-
-        mMapFragment = MapFragment.newInstance();
-        FragmentTransaction fragmentTransaction =
-                getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.events_view, mMapFragment);
-        fragmentTransaction.commit();
-
-
-        mMapFragment.getMapAsync(this);
     }
 
     protected void onStop() {
@@ -186,6 +189,15 @@ public class MainActivity extends AppCompatActivity
         if (mAuthListener != null) {
             mAuth.removeAuthStateListener(mAuthListener);
         }
+    }
+
+    private void initMap(){
+        mMapFragment = MapFragment.newInstance();
+        FragmentTransaction fragmentTransaction =
+                getFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.events_view, mMapFragment);
+        fragmentTransaction.commit();
+        mMapFragment.getMapAsync(this);
     }
 
     private void revokeAccess() {
@@ -236,22 +248,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onMapReady(GoogleMap map) {
-        if(mAuth != null && mAuth.getCurrentUser() != null){
             Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                     .position(new LatLng(49.2606, -123.2460))
-                    .title(mAuth.getCurrentUser().getDisplayName()));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();}
-        else{
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title("BECON!"));
+                    .title(mFirebaseUser.getDisplayName()));
             map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
             marker.showInfoWindow();
-        }
     }
+
 
     private void resetTabColours(){
         for(IconTextView itv : mTabs){
@@ -263,4 +267,5 @@ public class MainActivity extends AppCompatActivity
     public void onMapClick(LatLng latLng) {
 
     }
+
 }
