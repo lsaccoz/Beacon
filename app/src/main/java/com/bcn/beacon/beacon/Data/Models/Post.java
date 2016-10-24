@@ -1,9 +1,11 @@
 package com.bcn.beacon.beacon.Data.Models;
 
+
 /**
  * Created by neema on 2016-10-16.
  */
 public class Post {
+
 
     private Long _id;
     private String uuid;
@@ -11,8 +13,7 @@ public class Post {
     private String text;
     private String photo;
     private String dateId;
-//    private String[] likeIds;
-//    private String[] commentIds;
+
 
     public String getId(){
         return uuid;
@@ -34,14 +35,6 @@ public class Post {
         return dateId;
     }
 
-//    public String[] getLikeIds(){
-//        return likeIds;
-//    }
-
-//    public String[] getCommentIds(){
-//        return commentIds;
-//    }
-
     public void setId(String uuid){
         this.uuid = uuid;
     }
@@ -62,11 +55,4 @@ public class Post {
         this.dateId = dateId;
     }
 
-//    public void setLikeIds(String[] likeIds){
-//        this.likeIds = likeIds;
-//    }
-
-//    public void setCommentIds(String[] commentIds){
-//        this.commentIds = commentIds;
-//    }
 }

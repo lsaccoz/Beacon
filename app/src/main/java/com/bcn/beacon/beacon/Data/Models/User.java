@@ -19,13 +19,6 @@ public class User {
         return name;
     }
 
-//    public String[] getHost_EventIds(){
-//        return host_EventIds;
-//    }
-
-//    public String[] getFavourite_EventIds(){
-//        return favourite_EventIds;
-//    }
 
     public void setId(String uuid){
         this.uuid = uuid;
@@ -35,11 +28,5 @@ public class User {
         this.name = name;
     }
 
-//    public void setHost_EventIds(String[] host_eventIds){
-//        this.host_EventIds = host_eventIds;
-//    }
 
-//    public void setFavourite_EventIds(String[] favourite_eventIds){
-//        this.favourite_EventIds = favourite_eventIds;
-//    }
 }

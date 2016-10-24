@@ -26,7 +26,8 @@ android {
 
 dependencies {
     compile 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2'
-    compile 'org.greenrobot:greendao:3.2.0'
+
+    //compile 'org.greenrobot:greendao:3.2.0'
 
     compile fileTree(dir: 'libs', include: ['*.jar'])
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
@@ -49,9 +50,9 @@ dependencies {
 }
 
 apply plugin: 'com.android.application'
-apply plugin: 'org.greenrobot.greendao'
+//apply plugin: 'org.greenrobot.greendao'
 apply plugin: 'com.google.gms.google-services'
 
-greendao {
-    schemaVersion 1
-}
+//greendao {
+//    schemaVersion 1
+//}

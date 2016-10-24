@@ -1,11 +1,13 @@
 package com.bcn.beacon.beacon.Data.Models;
 
+
 /**
  * Created by neema on 2016-10-16.
  */
 public class Like {
 
     private Long _id;
+
     private String uuid;
     private String userId;
     private String dateId;
