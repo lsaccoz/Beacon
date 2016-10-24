@@ -127,10 +127,12 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+        final Intent intent = new Intent(this, CreateEventActivity.class);
+
         create_event.setOnClickListener(new View.OnClickListener(){
             @Override
             public void onClick(View v){
-                signOut();
+                startActivity(intent);
             }
         });
 
