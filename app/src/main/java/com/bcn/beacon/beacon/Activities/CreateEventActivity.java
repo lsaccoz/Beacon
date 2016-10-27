@@ -3,6 +3,7 @@ package com.bcn.beacon.beacon.Activities;
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -57,6 +58,7 @@ public class CreateEventActivity extends AppCompatActivity {
         final EditText eName = (EditText) findViewById(R.id.input_name);
         final EditText eDescription = (EditText) findViewById(R.id.input_description);
        // final ImageButton eAddImage = (ImageButton) findViewById(R.id.addImageButton);
+        final FloatingActionButton submitEvent = (FloatingActionButton) findViewById(R.id.floatingActionButton);
 
         eDate.setOnClickListener(new android.view.View.OnClickListener() {
 
@@ -101,6 +103,14 @@ public class CreateEventActivity extends AppCompatActivity {
                 }, hour, minute, true);//Yes 24 hour time
                 mTimePicker.setTitle("Select Time");
                 mTimePicker.show();
+            }
+        });
+
+        submitEvent.setOnClickListener(new android.view.View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
             }
         });
     }

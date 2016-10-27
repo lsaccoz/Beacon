@@ -135,8 +135,9 @@ public class MainActivity extends AppCompatActivity
         favourites.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resetTabColours();
-                favourites.setBackgroundResource(R.color.currentTabColor);
+                //resetTabColours();
+                //favourites.setBackgroundResource(R.color.currentTabColor);
+                signOut();
             }
         });
 

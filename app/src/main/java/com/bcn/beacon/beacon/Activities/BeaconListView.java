@@ -1,6 +1,7 @@
 package com.bcn.beacon.beacon.Activities;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
@@ -16,12 +17,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Manifest;
 import com.bcn.beacon.beacon.R;
 import com.google.firebase.database.*;
+import com.joanzapata.iconify.widget.IconTextView;
 
 import java.security.Security;
 import java.util.ArrayList;
@@ -31,6 +34,7 @@ import java.util.List;
 
 /**
  * Created by epekel on 2016-10-23.
+ * Edited by atertzakian on 2016-10-27
  */
 public class BeaconListView extends AppCompatActivity {
 
@@ -40,6 +44,8 @@ public class BeaconListView extends AppCompatActivity {
     private ArrayList<String> eventNames;
     double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+
+    List<IconTextView> mTabs;
 
     private boolean checkGPSPermission() {
         String permission = "android.permission.ACCESS_FINE_LOCATION";
@@ -140,9 +146,32 @@ public class BeaconListView extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_list_view);
 
+        final IconTextView list = (IconTextView) findViewById(R.id.list);
+        final IconTextView world = (IconTextView) findViewById(R.id.world);
+        final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
+
+        final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
+
+
+        world.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetTabColours();
+                world.setBackgroundResource(R.color.currentTabColor);
+                Intent intent = new Intent(BeaconListView.this, MainActivity.class);
+                startActivity(intent);
+            }
+        });
+
+
         getNearbyEvents();
 
+    }
 
+    private void resetTabColours(){
+        for(IconTextView itv : mTabs){
+            itv.setBackgroundResource(R.color.otherTabColor);
+        }
     }
 }
 
