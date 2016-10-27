@@ -116,7 +116,6 @@ public class Event {
         this.tags = tags;
     }
 
-
     public void setDistance(double distance) { this.distance = distance; }
 
 }

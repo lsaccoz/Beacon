@@ -28,16 +28,13 @@
             android:name=".Activities.MainActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".Activities.SignInActivity" />
-<<<<<<< HEAD
+
         <activity android:name=".Activities.CreateEventActivity"/>
-=======
-        <activity android:name=".ListView" />
         <activity
             android:name=".Activities.BeaconListView"
             android:label="@string/title_activity_list_view"
             android:theme="@style/AppTheme.NoActionBar"></activity>
 
->>>>>>> 6bdb55a5ba8e6ee96a164240cf7ea9f75cdfeced
     </application>
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
