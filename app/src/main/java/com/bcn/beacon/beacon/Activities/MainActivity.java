@@ -77,6 +77,9 @@ public class MainActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getSupportActionBar().hide();
+        /*
+
         ActionBar actionBar = getSupportActionBar();
 
         actionBar.setDisplayShowHomeEnabled(false);
@@ -97,6 +100,7 @@ public class MainActivity extends AppCompatActivity
 
         mTitle = (TextView) mCustomActionBar.findViewById(R.id.my_title);
         mTitle.setTypeface(Typeface.MONOSPACE);
+        */
 
         final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
@@ -133,10 +137,13 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        create_event.setOnClickListener(new View.OnClickListener() {
+
+        final Intent intent = new Intent(this, CreateEventActivity.class);
+
+        create_event.setOnClickListener(new View.OnClickListener(){
             @Override
-            public void onClick(View v) {
-                signOut();
+            public void onClick(View v){
+                startActivity(intent);
             }
         });
 
