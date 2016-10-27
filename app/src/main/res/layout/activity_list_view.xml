@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_list_view"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".Activities.BeaconListView">
+
+
+    <LinearLayout
+        android:id="@+id/tabs"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:orientation="horizontal"
+        android:layout_alignParentTop="true">
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/world"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:layout_weight="1"
+            android:layout_gravity="center"
+            android:text="{fa-globe}"
+            android:background="@color/otherTabColor"
+            android:textColor="@color/custom_white"
+            android:textSize="30sp" />
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/list"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="{fa-list-ul}"
+            android:background="@color/currentTabColor"
+            android:textColor="@color/custom_white"
+            android:textSize="30sp" />
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/favourites"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="{fa-star}"
+            android:background="@color/otherTabColor"
+            android:textColor="@color/yellow"
+            android:textSize="30sp" />
+
+
+
+    </LinearLayout>
+
+
+    <!-- Place holder for now, will be used to show syncing status -->
+    <ListView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/listView"
+        android:layout_below="@+id/tabs"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:elevation="1dp" />
+
+    <LinearLayout
+        android:id="@+id/create_event"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_alignParentBottom="true"
+        android:padding="8dp"
+        android:orientation="horizontal"
+        android:background="#000000">
+
+        <!--
+        <TextView
+            android:id="@+id/create_event_text"
+            android:layout_width="0dp"
+            android:layout_weight="5"
+            android:gravity="end"
+            android:layout_height="wrap_content"
+            android:text="@string/create_event"
+            android:textSize="20sp"
+            android:textColor="#FFFFFF"
+            />
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:layout_height="wrap_content"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="{fa-plus}"
+            android:textSize="25sp"
+            android:background="#000000"
+            android:textColor="#FFFFFF"
+            />
+    -->
+    </LinearLayout>
+
+
+</RelativeLayout>

@@ -5,6 +5,7 @@ import java.util.Date;
 
 /**
  * Created by neema on 2016-10-16.
+ * Edited by epekel on 2016-10-23.
  */
 public class Event {
 
@@ -19,7 +20,19 @@ public class Event {
     private String timeEnd_Id;
     private String[] postIds;
     private String[] tags;
+    // temporary distance variable addition
+    private double distance;
 
+    public Event() {
+        // Default constructor required for calls to DataSnapshot.getValue(Event.class)
+    }
+
+    public Event(String name, String hostId, double distance, String timeStart_Id) {
+        this.setName(name);
+        this.setHostId(hostId);
+        this.setDistance(distance);
+        this.setTimeStart_Id(timeStart_Id);
+    }
 
     public String getId(){
         return uuid;
@@ -61,6 +74,8 @@ public class Event {
         return tags;
     }
 
+    public double getDistance() { return distance; }
+
     public void setId(String id){
         this.uuid = id;
     }
@@ -100,5 +115,8 @@ public class Event {
     public void setTags(String[] tags){
         this.tags = tags;
     }
+
+
+    public void setDistance(double distance) { this.distance = distance; }
 
 }

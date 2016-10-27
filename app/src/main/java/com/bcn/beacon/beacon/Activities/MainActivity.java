@@ -116,8 +116,11 @@ public class MainActivity extends AppCompatActivity
         list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resetTabColours();
-                list.setBackgroundResource(R.color.currentTabColor);
+
+                //resetTabColours();
+                //list.setBackgroundResource(R.color.currentTabColor);
+                Intent intent = new Intent(MainActivity.this, BeaconListView.class);
+                startActivity(intent);
             }
         });
 
