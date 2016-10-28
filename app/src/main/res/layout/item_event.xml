@@ -1,5 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent" android:layout_height="match_parent">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    >
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_alignBaseline="@+id/eventPic"
+        android:layout_toRightOf="@+id/eventPic"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:paddingLeft="20dp"
+        android:paddingRight="6dp"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:textStyle="bold"
+        android:text="Halloween Party"
+        />
+
+
+    <TextView
+        android:id="@+id/host"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/title"
+        android:layout_alignParentRight="true"
+        android:paddingRight="10dp"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:text="The Calendar"
+        />
+
+    <TextView
+        android:id="@+id/start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/eventPic"
+        android:layout_below="@+id/title"
+        android:paddingLeft="20dp"
+        android:paddingRight="6dp"
+        android:paddingTop="3dp"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:text="17:00"
+        />
+
+    <TextView
+        android:id="@+id/distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/start"
+        android:layout_below="@+id/host"
+        android:layout_alignParentRight="true"
+        android:paddingTop="3dp"
+        android:paddingRight="10dp"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:text="0.8km"
+        />
+
+    <ImageView
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:id="@+id/eventPic"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:src="@drawable/no_pic_icon"
+        />
 
 </RelativeLayout>
