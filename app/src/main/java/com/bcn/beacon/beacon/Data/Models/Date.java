@@ -1,11 +1,15 @@
 package com.bcn.beacon.beacon.Data.Models;
 
+
+
 /**
  * Created by neema on 2016-10-16.
  */
+
 public class Date {
 
     private Long _id;
+
     private String uuid;
     private int day;
     private int month;

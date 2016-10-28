@@ -1,11 +1,10 @@
 package com.bcn.beacon.beacon.Data.Models;
 
 
-import java.util.Date;
-
 /**
  * Created by neema on 2016-10-16.
  */
+
 public class Event {
 
     private Long _id;
@@ -14,11 +13,9 @@ public class Event {
     private String hostId;
     private int num_attendees;
     private String locationId;
-    private String[] attendee_Ids;
     private String timeStart_Id;
     private String timeEnd_Id;
-    private String[] postIds;
-    private String[] tags;
+
 
 
     public String getId(){
@@ -41,24 +38,12 @@ public class Event {
         return locationId;
     }
 
-    public String[] getAttendee_Ids(){
-        return attendee_Ids;
-    }
-
     public String getTimeStart_Id(){
         return timeStart_Id;
     }
 
     public String getTimeEnd_Id(){
         return timeEnd_Id;
-    }
-
-    public String[] getPostIds(){
-        return postIds;
-    }
-
-    public String[] getTags(){
-        return tags;
     }
 
     public void setId(String id){
@@ -81,10 +66,6 @@ public class Event {
         this.locationId = locationId;
     }
 
-    public void setAttendee_Ids(String[] attendee_Ids){
-        this.attendee_Ids = attendee_Ids;
-    }
-
     public void setTimeStart_Id(String timeStart_Id){
         this.timeStart_Id = timeStart_Id;
     }
@@ -93,15 +74,29 @@ public class Event {
         this.timeEnd_Id = timeEnd_Id;
     }
 
-    public void setPosts(String[] postIds){
-        this.postIds = postIds;
+    public Long get_id() {
+        return this._id;
     }
 
-    public void setTags(String[] tags){
-        this.tags = tags;
+    public void set_id(Long _id) {
+        this._id = _id;
     }
 
+    public String getUuid() {
+        return this.uuid;
+    }
 
+    public void setUuid(String uuid) {
+        this.uuid = uuid;
+    }
+
+    public int getNum_attendees() {
+        return this.num_attendees;
+    }
+
+    public void setNum_attendees(int num_attendees) {
+        this.num_attendees = num_attendees;
+    }
 
 
 }

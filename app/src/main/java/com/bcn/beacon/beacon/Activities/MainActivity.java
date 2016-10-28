@@ -45,12 +45,11 @@ import com.joanzapata.iconify.widget.IconTextView;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity
-            implements OnMapReadyCallback,
-            GoogleMap.OnMapClickListener,
-            GoogleApiClient.ConnectionCallbacks,
-            GoogleApiClient.OnConnectionFailedListener {
+        implements OnMapReadyCallback,
+        GoogleMap.OnMapClickListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
 
     private FirebaseAuth mAuth;
@@ -80,11 +79,11 @@ public class MainActivity extends AppCompatActivity
 
         mCustomActionBar = (LinearLayout) inflater.inflate(R.layout.custom_action_bar, null);
         actionBar.setCustomView(mCustomActionBar);
-        Toolbar parent =(Toolbar) mCustomActionBar.getParent();//first get parent toolbar of current action bar
-        parent.setContentInsetsAbsolute(0,0);// set padding programmatically to 0dp
+        Toolbar parent = (Toolbar) mCustomActionBar.getParent();//first get parent toolbar of current action bar
+        parent.setContentInsetsAbsolute(0, 0);// set padding programmatically to 0dp
 
         ViewGroup.LayoutParams lp = mCustomActionBar.getLayoutParams();
-        lp.width= ViewGroup.LayoutParams.MATCH_PARENT;
+        lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
         lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
         mCustomActionBar.setLayoutParams(lp);
 
@@ -93,11 +92,15 @@ public class MainActivity extends AppCompatActivity
 
         final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
+
+        final IconTextView navigation = (IconTextView) findViewById(R.id.settings);
         final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
+
 
         final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
 
-        mTabs = new ArrayList <>();
+        mTabs = new ArrayList<>();
+
         mTabs.add(list);
         mTabs.add(world);
         mTabs.add(favourites);
@@ -113,24 +116,34 @@ public class MainActivity extends AppCompatActivity
 
         world.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 resetTabColours();
                 world.setBackgroundResource(R.color.currentTabColor);
             }
         });
 
+
         favourites.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 resetTabColours();
                 favourites.setBackgroundResource(R.color.currentTabColor);
             }
         });
 
-        create_event.setOnClickListener(new View.OnClickListener(){
+        navigation.setOnClickListener(new View.OnClickListener() {
+
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 signOut();
+            }
+        });
+
+        favourites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetTabColours();
+                favourites.setBackgroundResource(R.color.currentTabColor);
             }
         });
 
@@ -165,6 +178,7 @@ public class MainActivity extends AppCompatActivity
 
         mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
+
 
         mMapFragment = MapFragment.newInstance();
         FragmentTransaction fragmentTransaction =
@@ -224,7 +238,7 @@ public class MainActivity extends AppCompatActivity
                         Toast toast = Toast.makeText(MainActivity.this,
                                 "Signed Out Successfully",
                                 Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER,0,0);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
                         toast.show();
 
                         Intent i = new Intent(MainActivity.this, SignInActivity.class);
@@ -236,14 +250,14 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onMapReady(GoogleMap map) {
-        if(mAuth != null && mAuth.getCurrentUser() != null){
+        if (mAuth != null && mAuth.getCurrentUser() != null) {
             Marker marker = map.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                     .position(new LatLng(49.2606, -123.2460))
                     .title(mAuth.getCurrentUser().getDisplayName()));
             map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();}
-        else{
+            marker.showInfoWindow();
+        } else {
             Marker marker = map.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                     .position(new LatLng(49.2606, -123.2460))
@@ -253,8 +267,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void resetTabColours(){
-        for(IconTextView itv : mTabs){
+    private void resetTabColours() {
+        for (IconTextView itv : mTabs) {
             itv.setBackgroundResource(R.color.otherTabColor);
         }
     }
