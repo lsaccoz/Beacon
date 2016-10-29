@@ -104,11 +104,7 @@ public class MainActivity extends AppCompatActivity
 
         final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
-
-        final IconTextView navigation = (IconTextView) findViewById(R.id.settings);
         final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
-
-
         final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
 
         mTabs = new ArrayList<>();
@@ -153,28 +149,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        navigation.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-
-            }
-        });
-
-        favourites.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                favourites.setBackgroundResource(R.color.currentTabColor);
-            }
-        });
-
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
 
-        // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
