@@ -38,16 +38,20 @@ public class SignInActivity extends AppCompatActivity implements
         GoogleApiClient.OnConnectionFailedListener,
         View.OnClickListener{
 
+    //Class variables for authentication
     private SignInButton signInButton;
-    private Button  signOutButton;
-
+    private GoogleApiClient mGoogleApiClient;
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private GoogleApiClient mGoogleApiClient;
+    public static FirebaseUser mFirebaseUser;
+
+    //Class variables for database access
+    private DatabaseReference mDatabase;
+
 
     private static final String TAG = "SignInActivity";
     private static final int RC_SIGN_IN = 9001;
-    public static String USERNAME = "User";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -76,6 +80,7 @@ public class SignInActivity extends AppCompatActivity implements
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     // User is signed in
+                    mFirebaseUser = user;
                     Log.d(TAG, "onAuthStateChanged_SignIn:signed_in:" + user.getUid());
                 } else {
                     // User is signed out
@@ -86,8 +91,6 @@ public class SignInActivity extends AppCompatActivity implements
 
         if(mGoogleApiClient.isConnected()) {
             Intent intent = new Intent(this, MainActivity.class);
-            //USERNAME = acct.getDisplayName();
-            intent.putExtra(USERNAME, USERNAME);
             startActivity(intent);
         }
     }
@@ -151,8 +154,6 @@ public class SignInActivity extends AppCompatActivity implements
             if(acct != null){
 
                 Intent intent = new Intent(this, MainActivity.class);
-                USERNAME = acct.getDisplayName();
-                //intent.putExtra(USERNAME, USERNAME);
                 startActivity(intent);
             }
         }else{

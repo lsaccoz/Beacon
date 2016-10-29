@@ -56,14 +56,12 @@ public class MainActivity extends AppCompatActivity
         GoogleApiClient.ConnectionCallbacks,
         GoogleApiClient.OnConnectionFailedListener {
 
-
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser mFirebaseUser;
+
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
-
-    private String displayName;
 
     MapFragment mMapFragment;
     LinearLayout mCustomActionBar;
@@ -166,9 +164,7 @@ public class MainActivity extends AppCompatActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     mFirebaseUser = user;
-
-                    initMap();
-
+                    //initMap();
                     Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -205,22 +201,23 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    int count;
+
     private void initMap() {
         if (mMap != null) {
-            if (mAuth != null && mAuth.getCurrentUser() != null) {
+            if (SignInActivity.mFirebaseUser != null) {
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                         .position(new LatLng(49.2606, -123.2460))
-
-                        .title(mFirebaseUser.getDisplayName()));
+                        .title(SignInActivity.mFirebaseUser.getDisplayName()));
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
                 marker.showInfoWindow();
             } else {
                 Marker marker = mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.beacon_icon))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                         .position(new LatLng(49.2606, -123.2460))
-                        .title("BECON!"));
+                        .title("You ;)"));
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
                 marker.showInfoWindow();
             }
@@ -276,6 +273,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
+        initMap();
     }
 
     private void resetTabColours() {
