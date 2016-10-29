@@ -48,6 +48,18 @@
             android:textColor="@color/yellow"
             android:textSize="30sp" />
 
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/settings_tab"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/otherTabColor"
+            android:gravity="center"
+            android:text="{fa-gear}"
+            android:textColor="@color/custom_white"
+            android:textSize="30sp" />
+
+
 
     </LinearLayout>
 

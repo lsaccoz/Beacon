@@ -2,6 +2,7 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.app.Activity;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
@@ -20,6 +21,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
@@ -56,11 +58,13 @@ public class MainActivity extends AppCompatActivity
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser mFirebaseUser;
     private GoogleApiClient mGoogleApiClient;
+    private boolean mMapInitialized = false;
 
     MapFragment mMapFragment;
     LinearLayout mCustomActionBar;
     List<IconTextView> mTabs;
     TextView mTitle;
+    MainActivity mContext;
 
     private static final String TAG = "MainActivity";
 
@@ -68,6 +72,8 @@ public class MainActivity extends AppCompatActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mContext = this;
 
         ActionBar actionBar = getSupportActionBar();
 
@@ -92,18 +98,19 @@ public class MainActivity extends AppCompatActivity
 
         final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
-
         final IconTextView navigation = (IconTextView) findViewById(R.id.settings);
         final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
+        final IconTextView settings = (IconTextView) findViewById(R.id.settings_tab);
 
-
-        final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
+        mMapFragment = MapFragment.newInstance();
+        //final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
 
         mTabs = new ArrayList<>();
 
         mTabs.add(list);
         mTabs.add(world);
         mTabs.add(favourites);
+        mTabs.add(settings);
 
         list.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -119,6 +126,16 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 resetTabColours();
                 world.setBackgroundResource(R.color.currentTabColor);
+
+                FragmentTransaction fragmentTransaction =
+                        getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.events_view, mMapFragment);
+
+                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                fragmentTransaction.commit();
+
+
+                mMapFragment.getMapAsync(mContext);
             }
         });
 
@@ -144,6 +161,24 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v) {
                 resetTabColours();
                 favourites.setBackgroundResource(R.color.currentTabColor);
+            }
+        });
+
+        settings.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetTabColours();
+                settings.setBackgroundResource(R.color.currentTabColor);
+
+                SettingsFragment settings_fragment = new SettingsFragment();
+                FragmentTransaction fragmentTransaction =
+                        getFragmentManager().beginTransaction();
+                fragmentTransaction.replace(R.id.events_view, settings_fragment);
+
+                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                fragmentTransaction.commit();
+
+
             }
         });
 
@@ -179,15 +214,20 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
+        if (!mMapInitialized) {
 
-        mMapFragment = MapFragment.newInstance();
-        FragmentTransaction fragmentTransaction =
-                getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.events_view, mMapFragment);
-        fragmentTransaction.commit();
+            FragmentTransaction fragmentTransaction =
+                    getFragmentManager().beginTransaction();
+            fragmentTransaction.replace(R.id.events_view, mMapFragment);
+
+            fragmentTransaction.commit();
 
 
-        mMapFragment.getMapAsync(this);
+            mMapFragment.getMapAsync(this);
+            mMapInitialized = true;
+        }
+
+
     }
 
     protected void onStop() {
