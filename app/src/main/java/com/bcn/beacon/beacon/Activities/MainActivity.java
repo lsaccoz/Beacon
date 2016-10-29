@@ -1,12 +1,14 @@
 package com.bcn.beacon.beacon.Activities;
 
-import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+import android.location.Location;
+import android.location.LocationManager;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -16,10 +18,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.R;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
@@ -32,17 +35,22 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.joanzapata.iconify.Iconify;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 
@@ -59,14 +67,24 @@ public class MainActivity extends AppCompatActivity
     private GoogleApiClient mGoogleApiClient;
 
     MapFragment mMapFragment;
+    ListFragment mListFragment;
     LinearLayout mCustomActionBar;
     List<IconTextView> mTabs;
     TextView mTitle;
 
     private static final String TAG = "MainActivity";
 
+    /**
+     * Copied over from BeaconListView
+     */
+    private DatabaseReference mDatabase;
+    private ArrayList<Event> events = new ArrayList<Event>();;
+    private ArrayList<String> eventNames;
+    private double userLng, userLat, eventLng, eventLat;
+    private static final double maxRadius = 100.0;
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -77,6 +95,8 @@ public class MainActivity extends AppCompatActivity
         actionBar.setDisplayShowCustomEnabled(true);
 
         LayoutInflater inflater = LayoutInflater.from(this);
+
+        getUserLocation();
 
         mCustomActionBar = (LinearLayout) inflater.inflate(R.layout.custom_action_bar, null);
         actionBar.setCustomView(mCustomActionBar);
@@ -102,13 +122,24 @@ public class MainActivity extends AppCompatActivity
         mTabs.add(world);
         mTabs.add(favourites);
 
+
         list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //resetTabColours();
-                //list.setBackgroundResource(R.color.currentTabColor);
-                Intent intent = new Intent(MainActivity.this, BeaconListView.class);
-                startActivity(intent);
+                resetTabColours();
+                list.setBackgroundResource(R.color.currentTabColor);
+
+                if (savedInstanceState == null) {
+                    // This null check is apparently good to have in order to not have fragments created over and over again
+                    mListFragment = ListFragment.newInstance();
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                    transaction.replace(R.id.events_view, mListFragment);
+                    transaction.addToBackStack(null);
+
+                    transaction.commit();
+                }
+
             }
         });
 
@@ -117,6 +148,8 @@ public class MainActivity extends AppCompatActivity
             public void onClick(View v){
                 resetTabColours();
                 world.setBackgroundResource(R.color.currentTabColor);
+
+                getFragmentManager().popBackStackImmediate();
             }
         });
 
@@ -167,12 +200,15 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
+        getNearbyEvents();
+
         mMapFragment = MapFragment.newInstance();
         FragmentTransaction fragmentTransaction =
                 getFragmentManager().beginTransaction();
         fragmentTransaction.add(R.id.events_view, mMapFragment);
+        // push to stack in order to switch between fragments with ease
+        fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-
 
         mMapFragment.getMapAsync(this);
     }
@@ -198,6 +234,97 @@ public class MainActivity extends AppCompatActivity
                     }
                 });
     }
+
+    /**
+     * Gets the location of the user
+     */
+    private void getUserLocation() {
+        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        if (checkGPSPermission()) {
+            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            userLng = location.getLongitude();
+            userLat = location.getLatitude();
+        }
+    }
+
+    /**
+     * Gets nearby events according to the user's location
+     */
+    private void getNearbyEvents() {
+        if (!events.isEmpty()) {
+            events.clear();
+        }
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                double distance;
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    eventLng = Double.parseDouble(child.child("location").child("xcoord").getValue().toString());
+                    eventLat = Double.parseDouble(child.child("location").child("ycoord").getValue().toString());
+                    distance = distFrom(userLng, userLat, eventLng, eventLat);
+                    if (distance <= maxRadius) {
+                        Event event = new Event(child.child("title").getValue().toString(),
+                                                child.child("host").getValue().toString(),
+                                                distance,
+                                                child.child("start").getValue().toString());
+                        //Log.i("NAME:", event.getName());
+                        //Log.i("DISTANCE:", Double.toString(distance));
+                        events.add(event);
+                    }
+                }
+                Collections.sort(events, new DistanceComparator());
+            }
+            @Override
+            public void onCancelled(DatabaseError databaseError) { }
+        });
+    }
+
+    /**
+     * Check for GPS permission
+     * @return true if user has allowed access to location, false otherwise
+     */
+    private boolean checkGPSPermission() {
+        String permission = "android.permission.ACCESS_FINE_LOCATION";
+        int res = getApplicationContext().checkCallingPermission(permission);
+        return (res == PackageManager.PERMISSION_GRANTED);
+    }
+
+
+    /**
+     * Java implementation of the Haversine formula for calculating the distance between two locations.
+     * Taken from http://stackoverflow.com/questions/120283
+     *                  /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
+     * @param userLat - latitude of the user's location
+     * @param userLng - longitude of the user's location
+     * @param eventLat - latitude of the event's location
+     * @param eventLng - longitude of the event's location
+     * @return dist - distance between the two locations
+     */
+    private static double distFrom(double userLat, double userLng, double eventLat, double eventLng) {
+        double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
+        double dLat = Math.toRadians(eventLat-userLat);
+        double dLng = Math.toRadians(eventLng-userLng);
+        double sindLat = Math.sin(dLat / 2);
+        double sindLng = Math.sin(dLng / 2);
+        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
+                * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double dist = earthRadius * c;
+        Math.floor(dist);
+
+        return dist; // in kilometers
+    }
+
+    /**
+     * Getter method for that returns the events list
+     * @return list of nearby events
+     */
+    public ArrayList<Event> getEventList() {
+        return events;
+    }
+
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -254,6 +381,7 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
     private void resetTabColours(){
         for(IconTextView itv : mTabs){
             itv.setBackgroundResource(R.color.otherTabColor);
@@ -263,5 +391,19 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapClick(LatLng latLng) {
 
+    }
+}
+
+/**
+ * Comparator class for sorting events list by distance
+ */
+class DistanceComparator implements Comparator<Event> {
+    public int compare(Event left, Event right) {
+        if (left.getDistance() < right.getDistance()) {
+            return 1;
+        }
+        else {
+            return 0;
+        }
     }
 }

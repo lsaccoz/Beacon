@@ -11,7 +11,6 @@ import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.R;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by neema on 2016-10-16.
