@@ -11,18 +11,18 @@
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="45dp"
-        android:orientation="horizontal"
-        android:layout_alignParentTop="true">
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal">
 
         <com.joanzapata.iconify.widget.IconTextView
             android:id="@+id/world"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:layout_weight="1"
             android:layout_gravity="center"
-            android:text="{fa-globe}"
+            android:layout_weight="1"
             android:background="@color/currentTabColor"
+            android:gravity="center"
+            android:text="{fa-globe}"
             android:textColor="@color/custom_white"
             android:textSize="30sp" />
 
@@ -31,9 +31,9 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/otherTabColor"
             android:gravity="center"
             android:text="{fa-list-ul}"
-            android:background="@color/otherTabColor"
             android:textColor="@color/custom_white"
             android:textSize="30sp" />
 
@@ -42,16 +42,15 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/otherTabColor"
             android:gravity="center"
             android:text="{fa-star}"
-            android:background="@color/otherTabColor"
             android:textColor="@color/yellow"
             android:textSize="30sp" />
 
 
-
     </LinearLayout>
-    
+
 
     <!-- Place holder for now, will be used to show syncing status -->
     <LinearLayout
@@ -59,9 +58,9 @@
         android:layout_width="match_parent"
         android:layout_height="30dp"
         android:layout_alignParentBottom="true"
-        android:padding="8dp"
+        android:background="#000000"
         android:orientation="horizontal"
-        android:background="#000000">
+        android:padding="8dp">
 
         <!--
         <TextView
@@ -93,7 +92,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_above="@id/create_event"
-        android:layout_below="@id/tabs"/>
+        android:layout_below="@id/tabs" />
 
 
 </RelativeLayout>

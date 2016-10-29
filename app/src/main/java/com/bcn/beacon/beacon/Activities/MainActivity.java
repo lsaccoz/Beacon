@@ -50,18 +50,18 @@ import com.joanzapata.iconify.widget.IconTextView;
 import java.util.ArrayList;
 import java.util.List;
 
-
 public class MainActivity extends AppCompatActivity
-            implements OnMapReadyCallback,
-            GoogleMap.OnMapClickListener,
-            GoogleApiClient.ConnectionCallbacks,
-            GoogleApiClient.OnConnectionFailedListener {
+        implements OnMapReadyCallback,
+        GoogleMap.OnMapClickListener,
+        GoogleApiClient.ConnectionCallbacks,
+        GoogleApiClient.OnConnectionFailedListener {
 
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser mFirebaseUser;
     private GoogleApiClient mGoogleApiClient;
+    private GoogleMap mMap;
 
     private String displayName;
 
@@ -104,7 +104,10 @@ public class MainActivity extends AppCompatActivity
 
         final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
+
+        final IconTextView navigation = (IconTextView) findViewById(R.id.settings);
         final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
+
 
         final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
 
@@ -132,11 +135,10 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
+
         favourites.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //resetTabColours();
-                //favourites.setBackgroundResource(R.color.currentTabColor);
                 signOut();
             }
         });
@@ -144,10 +146,26 @@ public class MainActivity extends AppCompatActivity
 
         final Intent intent = new Intent(this, CreateEventActivity.class);
 
-        create_event.setOnClickListener(new View.OnClickListener(){
+        create_event.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v){
+            public void onClick(View v) {
                 startActivity(intent);
+            }
+        });
+
+        navigation.setOnClickListener(new View.OnClickListener() {
+
+            @Override
+            public void onClick(View v) {
+
+            }
+        });
+
+        favourites.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetTabColours();
+                favourites.setBackgroundResource(R.color.currentTabColor);
             }
         });
 
@@ -188,6 +206,13 @@ public class MainActivity extends AppCompatActivity
 
         mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
+
+        mMapFragment = MapFragment.newInstance();
+        FragmentTransaction fragmentTransaction =
+                getFragmentManager().beginTransaction();
+        fragmentTransaction.add(R.id.events_view, mMapFragment);
+        fragmentTransaction.commit();
+        mMapFragment.getMapAsync(this);
     }
 
     protected void onStop() {
@@ -202,13 +227,26 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private void initMap(){
-        mMapFragment = MapFragment.newInstance();
-        FragmentTransaction fragmentTransaction =
-                getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.events_view, mMapFragment);
-        fragmentTransaction.commit();
-        mMapFragment.getMapAsync(this);
+    private void initMap() {
+        if (mMap != null) {
+            if (mAuth != null && mAuth.getCurrentUser() != null) {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(49.2606, -123.2460))
+
+                        .title(mFirebaseUser.getDisplayName()));
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                marker.showInfoWindow();
+            } else {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.beacon_icon))
+                        .position(new LatLng(49.2606, -123.2460))
+                        .title("BECON!"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                marker.showInfoWindow();
+            }
+        }
     }
 
     private void revokeAccess() {
@@ -247,7 +285,7 @@ public class MainActivity extends AppCompatActivity
                         Toast toast = Toast.makeText(MainActivity.this,
                                 "Signed Out Successfully",
                                 Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER,0,0);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
                         toast.show();
 
                         Intent i = new Intent(MainActivity.this, SignInActivity.class);
@@ -259,17 +297,11 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onMapReady(GoogleMap map) {
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title(mFirebaseUser.getDisplayName()));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();
+        mMap = map;
     }
 
-
-    private void resetTabColours(){
-        for(IconTextView itv : mTabs){
+    private void resetTabColours() {
+        for (IconTextView itv : mTabs) {
             itv.setBackgroundResource(R.color.otherTabColor);
         }
     }

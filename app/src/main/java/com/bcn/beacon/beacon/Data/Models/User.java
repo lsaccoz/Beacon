@@ -12,6 +12,7 @@ public class User {
     private String[] host_EventIds;
     private String[] favourite_EventIds;
 
+
     public User(){
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
     }
@@ -57,7 +58,4 @@ public class User {
         this.host_EventIds = host_eventIds;
     }
 
-    public void setFavourite_EventIds(String[] favourite_eventIds){
-        this.favourite_EventIds = favourite_eventIds;
-    }
 }

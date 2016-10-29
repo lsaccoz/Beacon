@@ -5,7 +5,7 @@ android {
         config {
             keyAlias 'BeaconDebugKey'
             keyPassword 'P4ngea'
-            storeFile file('/Users/andytertzakian/.android/android.jks')
+            storeFile file('android.jks')
             storePassword 'Sunshine123'
         }
     }
@@ -38,7 +38,8 @@ android {
 
 dependencies {
     compile 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2'
-    compile fileTree(include: ['*.jar'], dir: 'libs')
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
     androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
         exclude group: 'com.android.support', module: 'support-annotations'
     })
@@ -58,5 +59,10 @@ dependencies {
     compile 'com.google.android.gms:play-services-appindexing:9.6.1'
 }
 
-
+apply plugin: 'com.android.application'
+//apply plugin: 'org.greenrobot.greendao'
 apply plugin: 'com.google.gms.google-services'
+
+//greendao {
+//    schemaVersion 1
+//}
