@@ -33,72 +33,71 @@ public class Event {
         this.setTimeStart_Id(timeStart_Id);
     }
 
-    public String getId(){
+    public String getId() {
         return uuid;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public String getHostId(){
+    public String getHostId() {
         return hostId;
     }
 
-    public int getNumAttendees(){
+    public int getNumAttendees() {
         return num_attendees;
     }
 
-    public String getLocationId(){
+    public String getLocationId() {
         return locationId;
     }
 
-    public String getTimeStart_Id(){
+    public String getTimeStart_Id() {
         return timeStart_Id;
     }
 
-    public String getTimeEnd_Id(){
+    public String getTimeEnd_Id() {
         return timeEnd_Id;
     }
 
-<<<<<<< HEAD
-    public String[] getPostIds(){
+    public String[] getPostIds() {
         return postIds;
     }
 
-    public String[] getTags(){
+    public String[] getTags() {
         return tags;
     }
 
-    public double getDistance() { return distance; }
+    public double getDistance() {
+        return distance;
+    }
 
-=======
->>>>>>> master
-    public void setId(String id){
+    public void setId(String id) {
         this.uuid = id;
     }
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name = name;
     }
 
-    public void setHostId(String hostId){
+    public void setHostId(String hostId) {
         this.hostId = hostId;
     }
 
-    public void setNumAttendees(int num_attendees){
+    public void setNumAttendees(int num_attendees) {
         this.num_attendees = num_attendees;
     }
 
-    public void setLocationId(String locationId){
+    public void setLocationId(String locationId) {
         this.locationId = locationId;
     }
 
-    public void setTimeStart_Id(String timeStart_Id){
+    public void setTimeStart_Id(String timeStart_Id) {
         this.timeStart_Id = timeStart_Id;
     }
 
-    public void setTimeEnd_Id(String timeEnd_Id){
+    public void setTimeEnd_Id(String timeEnd_Id) {
         this.timeEnd_Id = timeEnd_Id;
     }
 
@@ -110,7 +109,9 @@ public class Event {
         this._id = _id;
     }
 
-    public void setDistance(double distance) { this.distance = distance; }
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
 
     public String getUuid() {
         return this.uuid;
@@ -127,7 +128,5 @@ public class Event {
     public void setNum_attendees(int num_attendees) {
         this.num_attendees = num_attendees;
     }
-
-
 
 }
