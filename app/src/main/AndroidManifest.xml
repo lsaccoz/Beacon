@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bcn.beacon.beacon">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".BeaconApplication"
         android:allowBackup="true"
@@ -28,17 +32,8 @@
             android:name=".Activities.MainActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".Activities.SignInActivity" />
-        <activity android:name=".ListView" />
-        <activity
-            android:name=".Activities.BeaconListView"
-            android:label="@string/title_activity_list_view"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
 
     </application>
-
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"></uses-permission>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"></uses-permission>
-    <uses-permission android:name="android.permission.INTERNET"></uses-permission>
 
 
 </manifest>

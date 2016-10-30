@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
@@ -79,7 +80,6 @@ public class MainActivity extends AppCompatActivity
      */
     private DatabaseReference mDatabase;
     private ArrayList<Event> events = new ArrayList<Event>();;
-    private ArrayList<String> eventNames;
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
@@ -121,6 +121,31 @@ public class MainActivity extends AppCompatActivity
         mTabs.add(list);
         mTabs.add(world);
         mTabs.add(favourites);
+
+        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                .build();
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .build();
+
+        mAuth = FirebaseAuth.getInstance();
+
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    mFirebaseUser = user;
+                    Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged_Main:signed_out");
+                }
+            }
+        };
 
 
         list.setOnClickListener(new View.OnClickListener() {
@@ -167,31 +192,6 @@ public class MainActivity extends AppCompatActivity
                 signOut();
             }
         });
-
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
-                .build();
-
-        mAuth = FirebaseAuth.getInstance();
-
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    mFirebaseUser = user;
-                    Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged_Main:signed_out");
-                }
-            }
-        };
     }
 
     protected void onStart() {
@@ -236,6 +236,16 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
+     * Check for GPS permission
+     * @return true if user has allowed access to location, false otherwise
+     */
+    private boolean checkGPSPermission() {
+        String permission = "android.permission.ACCESS_FINE_LOCATION";
+        int res = getApplicationContext().checkCallingOrSelfPermission(permission);
+        return (res == PackageManager.PERMISSION_GRANTED);
+    }
+
+    /**
      * Gets the location of the user
      */
     private void getUserLocation() {
@@ -243,8 +253,41 @@ public class MainActivity extends AppCompatActivity
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
         if (checkGPSPermission()) {
             Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            userLng = location.getLongitude();
-            userLat = location.getLatitude();
+            if (location != null) {
+                userLng = location.getLongitude();
+                userLat = location.getLatitude();
+                //Log.i("PERMISSION:", "ALLOWED");
+            }
+        }
+    }
+
+    /**
+     * Call back method: app supposedly calls this again after user allows location services
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == 1) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Location location = null;
+                LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+                try {
+                    location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                }
+                catch (SecurityException e) {
+                    e.printStackTrace();
+                }
+                if (location != null) {
+                    userLng = location.getLongitude();
+                    userLat = location.getLatitude();
+                }
+            }
+            else {
+                Toast.makeText(getApplicationContext(), "You need to enable location services in order to use this app", Toast.LENGTH_LONG);
+            }
+            return;
         }
     }
 
@@ -282,17 +325,6 @@ public class MainActivity extends AppCompatActivity
     }
 
     /**
-     * Check for GPS permission
-     * @return true if user has allowed access to location, false otherwise
-     */
-    private boolean checkGPSPermission() {
-        String permission = "android.permission.ACCESS_FINE_LOCATION";
-        int res = getApplicationContext().checkCallingPermission(permission);
-        return (res == PackageManager.PERMISSION_GRANTED);
-    }
-
-
-    /**
      * Java implementation of the Haversine formula for calculating the distance between two locations.
      * Taken from http://stackoverflow.com/questions/120283
      *                  /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
@@ -312,7 +344,6 @@ public class MainActivity extends AppCompatActivity
                 * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
         double dist = earthRadius * c;
-        Math.floor(dist);
 
         return dist; // in kilometers
     }

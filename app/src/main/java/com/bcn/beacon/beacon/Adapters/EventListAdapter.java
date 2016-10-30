@@ -39,7 +39,7 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         // Populate events into the list view using the Event's getter methods
         title.setText(event.getName());
         host.setText(event.getHostId());
-        distance.setText(Double.toString(event.getDistance()));
+        distance.setText(Double.toString(Math.floor(event.getDistance())));
         start.setText(event.getTimeStart_Id());
 
         // Return the completed view
