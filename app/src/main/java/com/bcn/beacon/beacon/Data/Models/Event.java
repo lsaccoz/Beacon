@@ -20,6 +20,8 @@ public class Event {
     private String timeEnd_Id;
     private String[] postIds;
     private String[] tags;
+    private double[] location;
+
     // temporary distance variable addition
     private double distance;
 
@@ -27,10 +29,10 @@ public class Event {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
     }
 
-    public Event(String name, String hostId, double distance, String timeStart_Id) {
+    public Event(String name, String hostId, double latitude, double longitude, String timeStart_Id) {
         this.setName(name);
         this.setHostId(hostId);
-        this.setDistance(distance);
+        this.setLocation(latitude, longitude);
         this.setTimeStart_Id(timeStart_Id);
     }
 
@@ -76,6 +78,8 @@ public class Event {
 
     public double getDistance() { return distance; }
 
+    public double[] getLocation() { return location; }
+
     public void setId(String id){
         this.uuid = id;
     }
@@ -117,6 +121,13 @@ public class Event {
     }
 
     public void setDistance(double distance) { this.distance = distance; }
+
+    public void setLocation(double latitude, double longitude) {
+        // convention = {ycoord, xcoord}
+        double[] location = {latitude, longitude};
+        this.location = location;
+
+    }
 
 
 

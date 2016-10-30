@@ -83,6 +83,9 @@ public class MainActivity extends AppCompatActivity
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
+    // constant for permission id
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -250,7 +253,7 @@ public class MainActivity extends AppCompatActivity
      */
     private void getUserLocation() {
         LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
         if (checkGPSPermission()) {
             Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location != null) {
@@ -269,7 +272,7 @@ public class MainActivity extends AppCompatActivity
      */
     @Override
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
-        if (requestCode == 1) {
+        if (requestCode == PERMISSION_ACCESS_FINE_LOCATION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Location location = null;
                 LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
@@ -310,8 +313,15 @@ public class MainActivity extends AppCompatActivity
                     if (distance <= maxRadius) {
                         Event event = new Event(child.child("title").getValue().toString(),
                                                 child.child("host").getValue().toString(),
-                                                distance,
+                                                Double.parseDouble(child.child("location").child("ycoord").getValue().toString()),
+                                                Double.parseDouble(child.child("location").child("xcoord").getValue().toString()),
                                                 child.child("start").getValue().toString());
+
+                        // The arraylist "events" is specific to each user, and will be different for each Android phone.
+                        // The distance field for events would not be on the Firebase database, but it is required to keep track
+                        // of it here in order to do the comparisons (for distance sorting) and list view (for showing distance).
+                        event.setDistance(distance);
+
                         //Log.i("NAME:", event.getName());
                         //Log.i("DISTANCE:", Double.toString(distance));
                         events.add(event);
