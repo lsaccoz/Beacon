@@ -18,6 +18,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -48,12 +49,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
+import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.R;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.joanzapata.iconify.widget.IconTextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 
@@ -68,6 +75,7 @@ public class CreateEventActivity extends AppCompatActivity {
     ImageButton eAddImage;
     ImageView eImage;
     Uri picUri;
+    Button upload;
 
     final int PIC_CROP = 2;
     final int PIC_SAVE = 0;
@@ -94,6 +102,7 @@ public class CreateEventActivity extends AppCompatActivity {
         eDescription = (EditText) findViewById(R.id.input_description);
         eAddImage = (ImageButton) findViewById(R.id.addImageButton);
         //eImage = (ImageView) findViewById(R.id.eventImage);
+        upload = (Button) findViewById(R.id.upload);
 
 
         eDate.setOnClickListener(new android.view.View.OnClickListener() {
@@ -151,6 +160,13 @@ public class CreateEventActivity extends AppCompatActivity {
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+        upload.setOnClickListener(new android.view.View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                upload();
+            }
+        });
     }
 
     private void selectImage() {
@@ -173,17 +189,30 @@ public class CreateEventActivity extends AppCompatActivity {
         builder.create().show();
     }
 
+    private void upload() {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//
+//        builder.setTitle("Yo");
+//        builder.setMessage("you pressed a button");
+//
+//        builder.create().show();
+
+        Event toUpload = new Event();
+
+        toUpload.setName("testName");
+        toUpload.upload();
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         // TODO Auto-generated method stub
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if(requestCode == PIC_SAVE) {
+            if (requestCode == PIC_SAVE) {
                 picUri = data.getData();
                 performCrop(picUri);
-            }
-            else if(requestCode == PIC_CROP){
+            } else if (requestCode == PIC_CROP) {
                 //Bundle extras = data.getExtras();
                 //Bitmap thePic = extras.getParcelable("data");
                 Bitmap thePic = null;
@@ -205,7 +234,7 @@ public class CreateEventActivity extends AppCompatActivity {
         Intent cropIntent = new Intent("com.android.camera.action.CROP");
 
         //indicate image type and Uri
-        cropIntent.setDataAndType(picUri,"image/*");
+        cropIntent.setDataAndType(picUri, "image/*");
         //set crop properties
         cropIntent.putExtra("crop", "true");
         //indicate aspect of desired crop
