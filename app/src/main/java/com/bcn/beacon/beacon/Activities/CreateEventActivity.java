@@ -49,7 +49,9 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
+import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -70,8 +72,10 @@ public class CreateEventActivity extends AppCompatActivity {
 
     EditText eTime;
     EditText eDate;
+    Date date = new Date();
     EditText eName;
     EditText eDescription;
+    Location location = new Location();
     ImageButton eAddImage;
     ImageView eImage;
     Uri picUri;
@@ -123,6 +127,9 @@ public class CreateEventActivity extends AppCompatActivity {
                     /*      Your code   to get date and time    */
                         selectedmonth = selectedmonth + 1;
                         eDate.setText("" + selectedday + "/" + selectedmonth + "/" + selectedyear);
+                        date.setDay(selectedday);
+                        date.setMonth(selectedmonth);
+                        date.setYear(selectedyear);
                     }
                 }, mYear, mMonth, mDay);
                 mDatePicker.setTitle("Select Date");
@@ -144,6 +151,8 @@ public class CreateEventActivity extends AppCompatActivity {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         eTime.setText(selectedHour + ":" + selectedMinute);
+                        date.setHour(selectedHour);
+                        date.setMinute(selectedMinute);
                     }
                 }, hour, minute, true);//Yes 24 hour time
                 mTimePicker.setTitle("Select Time");
@@ -187,20 +196,6 @@ public class CreateEventActivity extends AppCompatActivity {
             }
         });
         builder.create().show();
-    }
-
-    private void upload() {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//
-//        builder.setTitle("Yo");
-//        builder.setMessage("you pressed a button");
-//
-//        builder.create().show();
-
-        Event toUpload = new Event();
-
-        toUpload.setName("testName");
-        toUpload.upload();
     }
 
     @Override
@@ -250,5 +245,25 @@ public class CreateEventActivity extends AppCompatActivity {
 
         cropIntent.putExtra(MediaStore.EXTRA_OUTPUT, picUri);
         startActivityForResult(cropIntent, PIC_CROP);
+    }
+
+    private void upload() {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//
+//        builder.setTitle("Yo");
+//        builder.setMessage("you pressed a button");
+//
+//        builder.create().show();
+
+        location.setLatitude(50.50);
+        location.setLongitude(90.90);
+
+        Event toUpload = new Event();
+
+        toUpload.setName(eName.getText().toString());
+        toUpload.setDescription(eDescription.getText().toString());
+        toUpload.setDate(date);
+        toUpload.setLocation(location);
+        toUpload.upload();
     }
 }

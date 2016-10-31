@@ -1,20 +1,24 @@
 package com.bcn.beacon.beacon.Data.Models;
 
 
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-import java.util.Date;
 
 /**
  * Created by neema on 2016-10-16.
  */
 public class Event {
 
-    private Long _id;
-    private String id;
+    //    private Long _id;
+    private String eventId;
     private String name;
-//    private String hostId;
+    private String hostId;
+    private String description;
+    private Date date;
+    private Location location;
 //    private int num_attendees;
 //    private String locationId;
 //    private String[] attendee_Ids;
@@ -23,26 +27,44 @@ public class Event {
 //    private String[] postIds;
 //    private String[] tags;
 
-    public void upload(){
+    public void upload() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference myRef = database.getReference("Events");
+        DatabaseReference events = database.getReference("Events");
+        String eventId = events.push().getKey();
+        setEventId(eventId);
 
-        String key = myRef.push().getKey();
-        setId(key);
-        myRef.child(key).setValue(this);
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        setHostId(userId);
+
+        events.child(eventId).setValue(this);
+
+        DatabaseReference users = database.getReference("Users");
+        users.child(userId).child("hosting").child(eventId).setValue(true);
     }
 
-    public String getId(){
-        return id;
+    public String getEventId() {
+        return eventId;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-//    public String getHostId(){
-//        return hostId;
-//    }
+    public String getHostId() {
+        return hostId;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public Date getDate() {
+        return date;
+    }
+
+    public Location getLocation() {
+        return location;
+    }
 
 //    public int getNumAttendees(){
 //        return num_attendees;
@@ -72,17 +94,29 @@ public class Event {
 //        return tags;
 //    }
 
-    public void setId(String id){
-        this.id = id;
+    public void setEventId(String id) {
+        this.eventId = eventId;
     }
 
-    public void setName(String name){
+    public void setName(String name) {
         this.name = name;
     }
 
-//    public void setHostId(String hostId){
-//        this.hostId = hostId;
-//    }
+    public void setHostId(String hostId) {
+        this.hostId = hostId;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setLocation(Location location) {
+        this.location = location;
+    }
 
 //    public void setNumAttendees(int num_attendees){
 //        this.num_attendees = num_attendees;
@@ -111,8 +145,6 @@ public class Event {
 //    public void setTags(String[] tags){
 //        this.tags = tags;
 //    }
-
-
 
 
 }
