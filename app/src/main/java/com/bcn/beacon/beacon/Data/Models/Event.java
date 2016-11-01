@@ -5,7 +5,6 @@ import java.util.Date;
 
 /**
  * Created by neema on 2016-10-16.
- * Edited by epekel on 2016-10-23.
  */
 public class Event {
 
