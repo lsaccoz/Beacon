@@ -94,7 +94,7 @@ public class Event {
 //        return tags;
 //    }
 
-    public void setEventId(String id) {
+    public void setEventId(String eventId) {
         this.eventId = eventId;
     }
 
