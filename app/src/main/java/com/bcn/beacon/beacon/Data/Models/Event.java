@@ -19,10 +19,10 @@ public class Event {
     private String description;
     private Date date;
     private Location location;
+    private String timeStart_Id;
 //    private int num_attendees;
 //    private String locationId;
 //    private String[] attendee_Ids;
-//    private String timeStart_Id;
 //    private String timeEnd_Id;
 //    private String[] postIds;
 //    private String[] tags;
@@ -40,6 +40,22 @@ public class Event {
 
         DatabaseReference users = database.getReference("Users");
         users.child(userId).child("hosting").child(eventId).setValue(true);
+    }
+
+    // temporary distance variable addition
+    private double distance;
+
+    public Event() {
+        // Default constructor required for calls to DataSnapshot.getValue(Event.class)
+    }
+
+    public Event(String eventId, String name, String hostId, double latitude, double longitude, String timeStart_Id, String description) {
+        this.setEventId(eventId);
+        this.setName(name);
+        this.setHostId(hostId);
+        this.setLocation(latitude, longitude);
+        this.setTimeStart_Id(timeStart_Id);
+        this.setDescription(description);
     }
 
     public String getEventId() {
@@ -78,9 +94,9 @@ public class Event {
 //        return attendee_Ids;
 //    }
 
-//    public String getTimeStart_Id(){
-//        return timeStart_Id;
-//    }
+    public String getTimeStart_Id(){
+        return timeStart_Id;
+    }
 
 //    public String getTimeEnd_Id(){
 //        return timeEnd_Id;
@@ -97,6 +113,8 @@ public class Event {
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
+
+    public double getDistance() { return distance; }
 
     public void setName(String name) {
         this.name = name;
@@ -130,9 +148,9 @@ public class Event {
 //        this.attendee_Ids = attendee_Ids;
 //    }
 
-//    public void setTimeStart_Id(String timeStart_Id){
-//        this.timeStart_Id = timeStart_Id;
-//    }
+    public void setTimeStart_Id(String timeStart_Id){
+        this.timeStart_Id = timeStart_Id;
+    }
 
 //    public void setTimeEnd_Id(String timeEnd_Id){
 //        this.timeEnd_Id = timeEnd_Id;
@@ -141,6 +159,14 @@ public class Event {
 //    public void setPosts(String[] postIds){
 //        this.postIds = postIds;
 //    }
+    public void setDistance(double distance) { this.distance = distance; }
+
+    public void setLocation(double latitude, double longitude) {
+        // convention = {ycoord, xcoord}
+        location = new Location();
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+    }
 
 //    public void setTags(String[] tags){
 //        this.tags = tags;

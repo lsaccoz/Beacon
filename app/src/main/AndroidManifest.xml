@@ -2,6 +2,10 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.bcn.beacon.beacon">
 
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".BeaconApplication"
         android:allowBackup="true"
@@ -28,6 +32,7 @@
             android:name=".Activities.MainActivity"
             android:screenOrientation="portrait" />
         <activity android:name=".Activities.SignInActivity" />
+
         <!--
  ATTENTION: This was auto-generated to add Google Play services to your project for
      App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -40,6 +45,14 @@
 
             <!-- android:theme="@style/CreateEventTheme"> -->
         </activity>
+
+        <activity
+            android:name=".Activities.EventPageActivity"
+            android:label="@string/title_activity_event_page"
+            android:theme="@style/AppTheme.NoActionBar">
+
+        </activity>
+
     </application>
 
 </manifest>

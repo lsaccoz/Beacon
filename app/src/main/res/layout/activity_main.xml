@@ -50,34 +50,6 @@
             android:textSize="30sp" />
 
     </LinearLayout>
-    
-
- Place holder for now, will be used to show syncing status -->
-<!--
-
-        <TextView
-            android:id="@+id/create_event_text"
-            android:layout_width="0dp"
-            android:layout_weight="5"
-            android:gravity="end"
-            android:layout_height="wrap_content"
-            android:text="@string/create_event"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
-            />
-
-        <com.joanzapata.iconify.widget.IconTextView
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="{fa-plus}"
-            android:textSize="25sp"
-            android:background="#000000"
-            android:textColor="#FFFFFF"
-            />
-
-    </LinearLayout> -->
 
     <FrameLayout
         android:id="@+id/events_view"
