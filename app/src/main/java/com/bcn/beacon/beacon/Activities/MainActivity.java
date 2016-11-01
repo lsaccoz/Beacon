@@ -318,8 +318,7 @@ public class MainActivity extends AppCompatActivity
                     if (distance <= maxRadius) {
                         Event event = new Event(child.child("name").getValue().toString(),
                                                 child.child("host").getValue().toString(),
-                                                Double.parseDouble(child.child("location").child("latitude").getValue().toString()),
-                                                Double.parseDouble(child.child("location").child("longitude").getValue().toString()),
+                                                eventLat, eventLng,
                                                 child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
                                                 child.child("description").getValue().toString());
 
