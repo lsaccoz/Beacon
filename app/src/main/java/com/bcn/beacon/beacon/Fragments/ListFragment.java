@@ -4,6 +4,7 @@ import android.app.Fragment;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -29,6 +30,7 @@ public class ListFragment extends Fragment {
     private ListView listView;
     private ArrayList<Event> events;
     private Context appContext;
+    EventListAdapter adapter;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -64,7 +66,7 @@ public class ListFragment extends Fragment {
         super.onStart();
 
         // Populate the list view
-        EventListAdapter adapter = new EventListAdapter(appContext, 0, events);
+        adapter = new EventListAdapter(appContext, 0, events);
         listView.setAdapter(adapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -72,6 +74,7 @@ public class ListFragment extends Fragment {
                 Event event = (Event) parent.getAdapter().getItem(position);
                 Intent intent = new Intent(getActivity(), EventPageActivity.class);
                 intent.putExtra("eventId", event.getId());
+
                 getActivity().startActivity(intent);
             }
         });

@@ -160,35 +160,38 @@ public class MainActivity extends AppCompatActivity
         list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                resetTabColours();
-                list.setBackgroundResource(R.color.currentTabColor);
+                world.setEnabled(true);
+                if (list.isEnabled()) {
+                    resetTabColours();
+                    list.setBackgroundResource(R.color.currentTabColor);
 
-                if (savedInstanceState == null) {
-                    // This null check is apparently good to have in order to not have fragments created over and over again
-                    mListFragment = ListFragment.newInstance();
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                    if (savedInstanceState == null) {
+                        // This null check is apparently good to have in order to not have fragments created over and over again
+                        mListFragment = ListFragment.newInstance();
+                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-                    transaction.replace(R.id.events_view, mListFragment);
-                    transaction.addToBackStack(null);
+                        transaction.replace(R.id.events_view, mListFragment);
+                        transaction.addToBackStack(null);
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
 
-                    world.setClickable(true);
-                    list.setClickable(false);
-
-                    transaction.commit();
+                        transaction.commit();
+                    }
                 }
-
+                list.setEnabled(false);
             }
         });
 
         world.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
-                resetTabColours();
-                world.setBackgroundResource(R.color.currentTabColor);
+                list.setEnabled(true);
+                if (world.isEnabled()) {
+                    resetTabColours();
+                    world.setBackgroundResource(R.color.currentTabColor);
 
-                getFragmentManager().popBackStackImmediate();
-                list.setClickable(true);
-                world.setClickable(false);
+                    getFragmentManager().popBackStackImmediate();
+                }
+                world.setEnabled(false);
             }
         });
 
@@ -216,13 +219,16 @@ public class MainActivity extends AppCompatActivity
 
         getNearbyEvents();
 
-        mMapFragment = MapFragment.newInstance();
-        FragmentTransaction fragmentTransaction =
-                getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.events_view, mMapFragment);
-        // push to stack in order to switch between fragments with ease
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+        // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
+            mMapFragment = MapFragment.newInstance();
+            FragmentTransaction fragmentTransaction =
+                    getFragmentManager().beginTransaction();
+            fragmentTransaction.add(R.id.events_view, mMapFragment);
+            // push to stack in order to switch between fragments with ease
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        }
 
         mMapFragment.getMapAsync(this);
     }
