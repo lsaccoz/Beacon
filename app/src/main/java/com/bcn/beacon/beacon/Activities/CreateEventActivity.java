@@ -174,6 +174,8 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         boolean isPM = (selectedHour >= 12);
+                        date.setHour(selectedHour);
+                        date.setMinute(selectedMinute);
                         eTime.setText(String.format(Locale.US, "%02d:%02d %s",
                                 (selectedHour == 12 || selectedHour == 0) ? 12 : selectedHour % 12, selectedMinute,
                                 isPM ? "PM" : "AM"));
