@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -56,12 +57,20 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 
+import com.bcn.beacon.beacon.Data.Models.Date;
+import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.joanzapata.iconify.widget.IconTextView;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -72,13 +81,18 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
 
     EditText eTime;
     EditText eDate;
+    Date date = new Date();
     EditText eName;
     EditText eDescription;
+    Location location = new Location();
     ImageButton eAddImage;
     ImageView eImage;
     Uri picUri;
+
     Spinner categorySpinner;
    // FloatingActionButton myFab;
+
+    Button upload;
 
     final int PIC_CROP = 2;
     final int REQUEST_IMAGE_CAPTURE = 1;
@@ -105,7 +119,6 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         eName = (EditText) findViewById(R.id.input_name);
         eDescription = (EditText) findViewById(R.id.input_description);
         eAddImage = (ImageButton) findViewById(R.id.addImageButton);
-        eImage = (ImageView) findViewById(R.id.eventImage);
         categorySpinner = (Spinner) findViewById(R.id.spinner);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.categories_array, android.R.layout.simple_spinner_item);
@@ -113,6 +126,9 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         categorySpinner.setAdapter(adapter);
         categorySpinner.setOnItemSelectedListener(this);
         //myFab = (FloatingActionButton) findViewById(R.id.fab);
+
+        upload = (Button) findViewById(R.id.upload);
+
 
 
         eDate.setOnClickListener(new android.view.View.OnClickListener() {
@@ -133,6 +149,9 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
                     /*      Your code   to get date and time    */
                         selectedmonth = selectedmonth + 1;
                         eDate.setText("" + selectedday + "/" + selectedmonth + "/" + selectedyear);
+                        date.setDay(selectedday);
+                        date.setMonth(selectedmonth);
+                        date.setYear(selectedyear);
                     }
                 }, mYear, mMonth, mDay);
                 mDatePicker.setTitle("Select Date");
@@ -174,6 +193,13 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
+
+        upload.setOnClickListener(new android.view.View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                upload();
+            }
+        });
     }
 
     private void selectImage() {
@@ -205,12 +231,14 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK) {
-            if(requestCode == PIC_SAVE) {
+            if (requestCode == PIC_SAVE) {
                 picUri = data.getData();
                 performCrop(picUri);
+
             }
-            else if(requestCode == PIC_CROP){
-                /*Bitmap pic = null;
+            else if (requestCode == PIC_CROP) {
+                /*
+                Bitmap pic = null;
                 try {
                     pic = MediaStore.Images.Media.getBitmap(
                             getContentResolver(), picUri);
@@ -318,6 +346,7 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         startActivityForResult(cropIntent, PIC_CROP);
     }
 
+
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
         // An item was selected. You can retrieve the selected item using
@@ -326,5 +355,25 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
 
     public void onNothingSelected(AdapterView<?> parent) {
         // Another interface callback
+    }
+
+    private void upload() {
+//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+//
+//        builder.setTitle("Yo");
+//        builder.setMessage("you pressed a button");
+//
+//        builder.create().show();
+
+        location.setLatitude(50.50);
+        location.setLongitude(90.90);
+
+        Event toUpload = new Event();
+
+        toUpload.setName(eName.getText().toString());
+        toUpload.setDescription(eDescription.getText().toString());
+        toUpload.setDate(date);
+        toUpload.setLocation(location);
+        toUpload.upload();
     }
 }

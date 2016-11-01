@@ -5,50 +5,50 @@ package com.bcn.beacon.beacon.Data.Models;
  */
 public class Date {
 
-    private Long _id;
-    private String uuid;
-    private int day;
-    private int month;
     private int year;
-    private int timestamp;
+    private int month;
+    private int day;
+    private int hour;
+    private int minute;
 
-    public String getId(){
-        return uuid;
-    }
-
-    public int getDay(){
-        return day;
-    }
-
-    public int getMonth(){
-        return month;
-    }
-
-    public int getYear(){
+    public int getYear() {
         return year;
     }
 
-    public int getTimestamp(){
-        return timestamp;
+    public int getMonth() {
+        return month;
     }
 
-    public void setId(String uuid){
-        this.uuid = uuid;
+    public int getDay() {
+        return day;
     }
 
-    public void setDay(int day){
-        this.day = day;
+    public int getHour() {
+        return hour;
     }
 
-    public void setMonth(int month){
-        this.month = month;
+    public int getMinute() {
+        return minute;
     }
 
-    public void setYear(int year){
+
+    public void setYear(int year) {
         this.year = year;
     }
 
-    public void setTimestamp(int timestamp){
-        this.timestamp = timestamp;
+    public void setMonth(int month) {
+        this.month = month;
+    }
+
+    public void setDay(int day) {
+        this.day = day;
+    }
+
+    public void setHour(int hour) {
+        this.hour = hour;
+    }
+
+    public void setMinute(int minute) {
+        this.minute = minute;
     }
 }

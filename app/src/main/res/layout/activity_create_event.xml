@@ -99,6 +99,14 @@
                     style="@style/Widget.AppCompat.Spinner.Underlined"/>
 
             </android.support.design.widget.TextInputLayout>
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="New Button"
+                android:id="@+id/upload"
+                android:layout_alignBottom="@+id/fab"
+                android:layout_centerHorizontal="true"
+                android:layout_gravity="center_horizontal" />
 
         </LinearLayout>
 
@@ -115,5 +123,6 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@android:drawable/ic_dialog_map"
         app:backgroundTint="@color/colorPrimary" />
+
 
 </RelativeLayout>
