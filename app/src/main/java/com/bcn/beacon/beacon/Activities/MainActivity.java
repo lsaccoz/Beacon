@@ -52,7 +52,9 @@ import com.joanzapata.iconify.widget.IconTextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity
@@ -82,6 +84,9 @@ public class MainActivity extends AppCompatActivity
     private ArrayList<Event> events = new ArrayList<Event>();;
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+
+    // Map for easily populating Event Pages
+    private Map<String, Event> eventsMap = new HashMap<String, Event>();
 
     // constant for permission id
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
@@ -257,8 +262,8 @@ public class MainActivity extends AppCompatActivity
         if (checkGPSPermission()) {
             Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
             if (location != null) {
-                userLng = location.getLongitude();
                 userLat = location.getLatitude();
+                userLng = location.getLongitude();
                 //Log.i("PERMISSION:", "ALLOWED");
             }
         }
@@ -307,15 +312,16 @@ public class MainActivity extends AppCompatActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 double distance;
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    eventLng = Double.parseDouble(child.child("location").child("xcoord").getValue().toString());
-                    eventLat = Double.parseDouble(child.child("location").child("ycoord").getValue().toString());
-                    distance = distFrom(userLng, userLat, eventLng, eventLat);
+                    eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
+                    eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
+                    distance = distFrom(userLat, userLng, eventLat, eventLng);
                     if (distance <= maxRadius) {
-                        Event event = new Event(child.child("title").getValue().toString(),
+                        Event event = new Event(child.child("name").getValue().toString(),
                                                 child.child("host").getValue().toString(),
-                                                Double.parseDouble(child.child("location").child("ycoord").getValue().toString()),
-                                                Double.parseDouble(child.child("location").child("xcoord").getValue().toString()),
-                                                child.child("start").getValue().toString());
+                                                Double.parseDouble(child.child("location").child("latitude").getValue().toString()),
+                                                Double.parseDouble(child.child("location").child("longitude").getValue().toString()),
+                                                child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
+                                                child.child("description").getValue().toString());
 
                         // The arraylist "events" is specific to each user, and will be different for each Android phone.
                         // The distance field for events would not be on the Firebase database, but it is required to keep track
@@ -325,6 +331,7 @@ public class MainActivity extends AppCompatActivity
                         //Log.i("NAME:", event.getName());
                         //Log.i("DISTANCE:", Double.toString(distance));
                         events.add(event);
+                        eventsMap.put(child.getValue().toString(), event);
                     }
                 }
                 Collections.sort(events, new DistanceComparator());
@@ -365,6 +372,7 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<Event> getEventList() {
         return events;
     }
+    public Map<String, Event> getEventsMap() { return eventsMap; }
 
 
     @Override
