@@ -99,16 +99,24 @@
                     style="@style/Widget.AppCompat.Spinner.Underlined"/>
 
             </android.support.design.widget.TextInputLayout>
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:id="@+id/location_select_view">
+            </FrameLayout>
+
             <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="New Button"
+                android:text="UPLOAD"
                 android:id="@+id/upload"
                 android:layout_alignBottom="@+id/fab"
                 android:layout_centerHorizontal="true"
                 android:layout_gravity="center_horizontal" />
 
         </LinearLayout>
+
 
     </ScrollView>
 

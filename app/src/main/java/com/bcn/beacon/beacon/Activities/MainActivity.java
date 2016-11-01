@@ -5,6 +5,7 @@ import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
@@ -62,6 +63,7 @@ public class MainActivity extends AppCompatActivity
     LinearLayout mCustomActionBar;
     List<IconTextView> mTabs;
     TextView mTitle;
+    FloatingActionButton mCreateEvent;
 
     private static final String TAG = "MainActivity";
 
@@ -71,35 +73,13 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         getSupportActionBar().hide();
-        /*
-
-        ActionBar actionBar = getSupportActionBar();
-
-        actionBar.setDisplayShowHomeEnabled(false);
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setDisplayShowCustomEnabled(true);
-
-        LayoutInflater inflater = LayoutInflater.from(this);
-
-        mCustomActionBar = (LinearLayout) inflater.inflate(R.layout.custom_action_bar, null);
-        actionBar.setCustomView(mCustomActionBar);
-        Toolbar parent =(Toolbar) mCustomActionBar.getParent();//first get parent toolbar of current action bar
-        parent.setContentInsetsAbsolute(0,0);// set padding programmatically to 0dp
-
-        ViewGroup.LayoutParams lp = mCustomActionBar.getLayoutParams();
-        lp.width= ViewGroup.LayoutParams.MATCH_PARENT;
-        lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
-        mCustomActionBar.setLayoutParams(lp);
-
-        mTitle = (TextView) mCustomActionBar.findViewById(R.id.my_title);
-        mTitle.setTypeface(Typeface.MONOSPACE);
-        */
 
         final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
         final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
 
-        final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
+        //final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
+        mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
 
         mTabs = new ArrayList <>();
         mTabs.add(list);
@@ -133,7 +113,7 @@ public class MainActivity extends AppCompatActivity
 
         final Intent intent = new Intent(this, CreateEventActivity.class);
 
-        create_event.setOnClickListener(new View.OnClickListener(){
+        mCreateEvent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v){
                 startActivity(intent);
