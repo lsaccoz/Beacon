@@ -2,18 +2,23 @@ package com.bcn.beacon.beacon.Fragments;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 
+import com.bcn.beacon.beacon.Activities.EventPageActivity;
 import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.Adapters.EventListAdapter;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.R;
 
 import java.util.ArrayList;
+
+import static android.provider.AlarmClock.EXTRA_MESSAGE;
 
 /**
  * Created by neema on 2016-10-16.
@@ -42,15 +47,16 @@ public class ListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.list_fragment, container, false);
         listView = (ListView) view.findViewById(R.id.listView);
+
         return view;
     }
 
 
     @Override
-    public void onCreate(Bundle savedInstanceState){
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        events = ((MainActivity)getActivity()).getEventList();
+        events = ((MainActivity) getActivity()).getEventList();
     }
 
     @Override
@@ -60,10 +66,19 @@ public class ListFragment extends Fragment {
         // Populate the list view
         EventListAdapter adapter = new EventListAdapter(appContext, 0, events);
         listView.setAdapter(adapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Event event = (Event) parent.getAdapter().getItem(position);
+                Intent intent = new Intent(getActivity(), EventPageActivity.class);
+                intent.putExtra("eventId", event.getId());
+                getActivity().startActivity(intent);
+            }
+        });
     }
 
     @Override
-    public void onResume(){
+    public void onResume() {
         super.onResume();
     }
 

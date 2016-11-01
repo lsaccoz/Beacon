@@ -22,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.R;
@@ -170,6 +171,9 @@ public class MainActivity extends AppCompatActivity
                     transaction.replace(R.id.events_view, mListFragment);
                     transaction.addToBackStack(null);
 
+                    world.setClickable(true);
+                    list.setClickable(false);
+
                     transaction.commit();
                 }
 
@@ -183,6 +187,8 @@ public class MainActivity extends AppCompatActivity
                 world.setBackgroundResource(R.color.currentTabColor);
 
                 getFragmentManager().popBackStackImmediate();
+                list.setClickable(true);
+                world.setClickable(false);
             }
         });
 
@@ -316,8 +322,9 @@ public class MainActivity extends AppCompatActivity
                     eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
                     distance = distFrom(userLat, userLng, eventLat, eventLng);
                     if (distance <= maxRadius) {
-                        Event event = new Event(child.child("name").getValue().toString(),
-                                                child.child("host").getValue().toString(),
+                        Event event = new Event(child.getValue().toString(),
+                                                child.child("name").getValue().toString(),
+                                                child.child("hostId").getValue().toString(),
                                                 eventLat, eventLng,
                                                 child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
                                                 child.child("description").getValue().toString());
@@ -330,7 +337,7 @@ public class MainActivity extends AppCompatActivity
                         //Log.i("NAME:", event.getName());
                         //Log.i("DISTANCE:", Double.toString(distance));
                         events.add(event);
-                        eventsMap.put(child.getValue().toString(), event);
+                        eventsMap.put(event.getId(), event);
                     }
                 }
                 Collections.sort(events, new DistanceComparator());
@@ -439,19 +446,5 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapClick(LatLng latLng) {
 
-    }
-}
-
-/**
- * Comparator class for sorting events list by distance
- */
-class DistanceComparator implements Comparator<Event> {
-    public int compare(Event left, Event right) {
-        if (left.getDistance() < right.getDistance()) {
-            return 1;
-        }
-        else {
-            return 0;
-        }
     }
 }

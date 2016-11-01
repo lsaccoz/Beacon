@@ -30,7 +30,8 @@ public class Event {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
     }
 
-    public Event(String name, String hostId, double latitude, double longitude, String timeStart_Id, String description) {
+    public Event(String uuid, String name, String hostId, double latitude, double longitude, String timeStart_Id, String description) {
+        this.setId(uuid);
         this.setName(name);
         this.setHostId(hostId);
         this.setLocation(latitude, longitude);
