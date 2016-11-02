@@ -362,8 +362,8 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
 //
 //        builder.create().show();
 
-        location.setLatitude(50.50);
-        location.setLongitude(90.90);
+        location.setLatitude(49.2765);
+        location.setLongitude(-123.2177);
 
         Event toUpload = new Event();
 
