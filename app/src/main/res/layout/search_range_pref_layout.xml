@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        style="@android:style/TextAppearance.DeviceDefault.SearchResult.Title"
+        android:text="@string/pref_range_label" />
+
+    <TextView
+        android:id="@+id/summary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/black"
+        style="@android:style/TextAppearance.DeviceDefault.SearchResult.Subtitle"
+        android:text="@string/pref_range_summary"/>
+
+    <SeekBar
+        android:id="@+id/range"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="right"
+        android:max="100" />
+
+    <TextView
+        android:id="@+id/range_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        style="@android:style/TextAppearance.DeviceDefault.SearchResult.Subtitle"
+        android:text=""/>
+
+
+
+</LinearLayout>

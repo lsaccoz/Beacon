@@ -13,7 +13,7 @@ public class BeaconApplication extends Application {
 
 
     @Override
-    public void onCreate(){
+    public void onCreate() {
         super.onCreate();
 
         Iconify.

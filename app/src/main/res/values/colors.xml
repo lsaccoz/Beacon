@@ -3,6 +3,7 @@
 
     <!-- App Specific Colors -->
     <color name="colorPrimary">#9C27B0</color>
+    <color name="colorSecondary">#E1BEE7</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="signInColor">#BA68C8</color>
