@@ -33,6 +33,7 @@
     <style name="myListViewStyle" parent="@android:style/Widget.ListView">
         <item name="android:background">@color/colorSecondary</item>
         <item name="android:cacheColorHint">@color/colorSecondary</item>
+
     </style>
 
     <style name="AppTheme.NoActionBar">

@@ -10,15 +10,15 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textColor="@color/black"
-        style="@android:style/TextAppearance.DeviceDefault.SearchResult.Title"
+        style="@android:style/TextAppearance.SearchResult.Title"
         android:text="@string/pref_range_label" />
 
     <TextView
         android:id="@+id/summary"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/black"
-        style="@android:style/TextAppearance.DeviceDefault.SearchResult.Subtitle"
+        android:textColor="@color/dark_gray"
+        style="@android:style/TextAppearance.SearchResult.Subtitle"
         android:text="@string/pref_range_summary"/>
 
     <SeekBar
@@ -33,7 +33,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        style="@android:style/TextAppearance.DeviceDefault.SearchResult.Subtitle"
+        android:textColor="@color/dark_gray"
+        style="@android:style/TextAppearance.SearchResult.Subtitle"
         android:text=""/>
 
 
