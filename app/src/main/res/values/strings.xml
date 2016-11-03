@@ -8,6 +8,10 @@
     <string name="app_name">BEACON</string>
     <string name="title_activity_launcher">LauncherActivity</string>
 
+    <!-- Fragment Names -->
+    <string name="settings_fragment">Settings</string>
+    <string name="map_fragment">Map</string>
+
     <!-- Google Maps API Key -->
     <string name="google_maps_key">AIzaSyBq0s_kXLltw-BmRwL4HRQGFA50I4FamKE </string>
 

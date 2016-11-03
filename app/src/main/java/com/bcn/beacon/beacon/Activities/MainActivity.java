@@ -1,6 +1,7 @@
 package com.bcn.beacon.beacon.Activities;
 
 import android.app.Activity;
+import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
@@ -52,7 +53,8 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        View.OnClickListener {
 
 
     private FirebaseAuth mAuth;
@@ -62,10 +64,17 @@ public class MainActivity extends AppCompatActivity
     private boolean mMapInitialized = false;
 
     MapFragment mMapFragment;
+    SettingsFragment mSettingsFragment;
     LinearLayout mCustomActionBar;
     List<IconTextView> mTabs;
     TextView mTitle;
     MainActivity mContext;
+
+    IconTextView mList;
+    IconTextView mWorld;
+    IconTextView mNavigation;
+    IconTextView mFavourites;
+    IconTextView mSettings;
 
     private static final String TAG = "MainActivity";
 
@@ -100,91 +109,27 @@ public class MainActivity extends AppCompatActivity
         mTitle = (TextView) mCustomActionBar.findViewById(R.id.my_title);
         mTitle.setTypeface(Typeface.MONOSPACE);
 
-        final IconTextView list = (IconTextView) findViewById(R.id.list);
-        final IconTextView world = (IconTextView) findViewById(R.id.world);
-        final IconTextView navigation = (IconTextView) findViewById(R.id.settings);
-        final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
-        final IconTextView settings = (IconTextView) findViewById(R.id.settings_tab);
+        mList = (IconTextView) findViewById(R.id.list);
+        mWorld = (IconTextView) findViewById(R.id.world);
+        mNavigation = (IconTextView) findViewById(R.id.settings);
+        mFavourites = (IconTextView) findViewById(R.id.favourites);
+        mSettings = (IconTextView) findViewById(R.id.settings_tab);
+
+        mList.setOnClickListener(this);
+        mWorld.setOnClickListener(this);
+        mNavigation.setOnClickListener(this);
+        mFavourites.setOnClickListener(this);
+        mSettings.setOnClickListener(this);
 
         mMapFragment = MapFragment.newInstance();
         //final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
 
         mTabs = new ArrayList<>();
 
-        mTabs.add(list);
-        mTabs.add(world);
-        mTabs.add(favourites);
-        mTabs.add(settings);
-
-        list.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                list.setBackgroundResource(R.color.currentTabColor);
-
-            }
-        });
-
-        world.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                world.setBackgroundResource(R.color.currentTabColor);
-
-                FragmentTransaction fragmentTransaction =
-                        getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.events_view, mMapFragment);
-
-                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                fragmentTransaction.commit();
-
-
-                mMapFragment.getMapAsync(mContext);
-            }
-        });
-
-
-        favourites.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                favourites.setBackgroundResource(R.color.currentTabColor);
-            }
-        });
-
-        navigation.setOnClickListener(new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                signOut();
-            }
-        });
-
-        favourites.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                favourites.setBackgroundResource(R.color.currentTabColor);
-            }
-        });
-
-        settings.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                settings.setBackgroundResource(R.color.currentTabColor);
-
-                SettingsFragment settings_fragment = new SettingsFragment();
-                FragmentTransaction fragmentTransaction =
-                        getFragmentManager().beginTransaction();
-                fragmentTransaction.replace(R.id.events_view, settings_fragment);
-
-                fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                fragmentTransaction.commit();
-
-
-            }
-        });
+        mTabs.add(mList);
+        mTabs.add(mWorld);
+        mTabs.add(mFavourites);
+        mTabs.add(mSettings);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -214,7 +159,6 @@ public class MainActivity extends AppCompatActivity
 
     protected void onStart() {
         super.onStart();
-
         mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
@@ -222,7 +166,7 @@ public class MainActivity extends AppCompatActivity
 
             FragmentTransaction fragmentTransaction =
                     getFragmentManager().beginTransaction();
-            fragmentTransaction.replace(R.id.events_view, mMapFragment);
+            fragmentTransaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
 
             fragmentTransaction.commit();
 
@@ -245,6 +189,68 @@ public class MainActivity extends AppCompatActivity
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
+
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case (R.id.list): {
+                resetTabColours();
+                mList.setBackgroundResource(R.color.currentTabColor);
+                break;
+            }
+            case (R.id.world): {
+                resetTabColours();
+                mWorld.setBackgroundResource(R.color.currentTabColor);
+
+                //check if visible fragment is an instance of Map fragment already, if so do nothing
+                Fragment currentFragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
+                if(!(currentFragment instanceof MapFragment)) {
+//                    mMapFragment = MapFragment.newInstance();
+
+                    FragmentTransaction fragmentTransaction =
+                            getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+
+                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    fragmentTransaction.commit();
+
+                    mMapFragment.getMapAsync(mContext);
+                }
+
+
+                break;
+            }
+            case (R.id.settings):{
+                signOut();
+                break;
+            }
+            case (R.id.favourites):{
+                resetTabColours();
+                mFavourites.setBackgroundResource(R.color.currentTabColor);
+                break;
+            }
+            case (R.id.settings_tab):{
+
+                resetTabColours();
+                mSettings.setBackgroundResource(R.color.currentTabColor);
+
+                //check if visible fragment is an instance of settings fragment already, if so do nothing
+                Fragment currentFragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
+
+                if(!(currentFragment instanceof SettingsFragment)) {
+                    mSettingsFragment = SettingsFragment.getInstance();
+                    FragmentTransaction fragmentTransaction =
+                            getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.events_view, mSettingsFragment, getString(R.string.settings_fragment));
+
+                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    fragmentTransaction.commit();
+                }
+                break;
+            }
+        }
+    }
+
 
     private void revokeAccess() {
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(

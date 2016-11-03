@@ -19,9 +19,9 @@ import com.bcn.beacon.beacon.R;
 /**
  * Created by neema on 2016-10-28.
  */
-public class SettingsFragment extends PreferenceFragment
-        implements Preference.OnPreferenceChangeListener {
+public class SettingsFragment extends PreferenceFragment {
 
+    private static SettingsFragment settingsFragment;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -30,71 +30,15 @@ public class SettingsFragment extends PreferenceFragment
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.settings_fragment);
 
-        // For certain preferences, attach an OnPreferenceChangeListener so the UI summary can be
-        // updated when the preference changes.
-
-        //bindPreferenceSummaryToValue(rangePreference);
-
     }
 
-    /**
-     * Attaches a listener so the summary is always updated with the preference value.
-     * Also fires the listener once, to initialize the summary (so it shows up before the value
-     * is changed.)
-     */
+    public static SettingsFragment getInstance() {
 
-    //TODO currently this method is unused, remove if not used in future
-
-//    private void bindPreferenceSummaryToValue(Preference preference) {
-//        // Set the listener to watch for value changes.
-//        preference.setOnPreferenceChangeListener(this);
-//
-//        // Trigger the listener immediately with the preference's
-//        // current value.
-//        if(preference instanceof CheckBoxPreference){
-//            onPreferenceChange(preference,
-//                    PreferenceManager
-//                            .getDefaultSharedPreferences(preference.getContext())
-//                            .getBoolean(preference.getKey(), true));
-//
-//            //case where the preference is the search range preference
-//        }else if(preference instanceof SearchRangePreference){
-//            onPreferenceChange(preference,
-//                    PreferenceManager
-//                            .getDefaultSharedPreferences(preference.getContext())
-//                            .getInt(preference.getKey(), 40));
-//
-//            //default preference case
-//        } else{
-//            onPreferenceChange(preference,
-//                    PreferenceManager
-//                            .getDefaultSharedPreferences(preference.getContext())
-//                            .getString(preference.getKey(), ""));
-//        }
-//    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-    }
-
-    @Override
-    public boolean onPreferenceChange(Preference preference, Object value) {
-
-        // For list preferences, look up the correct display value in
-        // the preference's 'entries' list (since they have separate labels/values).
-
-
-
-//        String stringValue = value.toString();
-//        preference.setSummary(stringValue);
-
-        //TODO if there are preferences for which we need to bind their preference summary
-        //TODO to their value, do so in this block
-
-
-        return true;
-
+        if (settingsFragment != null) {
+            return settingsFragment;
+        } else{
+            settingsFragment = new SettingsFragment();
+            return settingsFragment;
+        }
     }
 }
