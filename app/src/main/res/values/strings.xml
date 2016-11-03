@@ -10,5 +10,13 @@
 
     <!-- Google Maps API Key -->
     <string name="google_maps_key">AIzaSyBq0s_kXLltw-BmRwL4HRQGFA50I4FamKE </string>
-    \
+
+    <string-array name="categories_array">
+        <item>#party</item>
+        <item>#sports</item>
+        <item>custom</item>
+    </string-array>
+    <string name="title_activity_alsdfjlk">Alsdfjlk</string>
+    <string name="title_activity_list_view">ListView</string>
+    <string name="title_activity_event_page">EventPageActivity</string>
 </resources>

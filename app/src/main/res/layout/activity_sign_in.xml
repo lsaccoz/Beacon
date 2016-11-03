@@ -22,9 +22,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:textColor="@color/custom_white"
+            android:textColor="@color/signInColor"
             android:textStyle="normal|bold"
             android:textSize="36sp" />
+
     </LinearLayout>
 
     <LinearLayout

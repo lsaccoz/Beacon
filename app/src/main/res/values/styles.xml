@@ -6,12 +6,17 @@
         <item name="colorPrimary">#9C27B0</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:actionBarStyle">@style/AppTheme.ActionBar</item>
-        <item name="actionBarStyle">@style/AppTheme.ActionBar</item>
+        <!-- <item name="android:actionBarStyle">@style/AppTheme.ActionBar</item>
+        <item name="actionBarStyle">@style/AppTheme.ActionBar</item>-->
     </style>
 
     <style name="LauncherTheme" parent="Theme.AppCompat.NoActionBar">
         <item name="android:windowBackground">@drawable/launcher</item>
+    </style>
+
+    <style name="CreateEventTheme" parent="AppTheme">
+        <item name="android:actionBarStyle">@style/AppTheme.ActionBar2</item>
+        <item name="actionBarStyle">@style/AppTheme.ActionBar2</item>
     </style>
 
     <style name="AppTheme.ActionBar" parent="android:Theme.Holo.Light.DarkActionBar">
@@ -19,6 +24,10 @@
         <item name="height">@dimen/action_bar_height</item>
     </style>
 
+    <style name="AppTheme.ActionBar2" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:height">@dimen/small_action_bar_height</item>
+        <item name="height">@dimen/small_action_bar_height</item>
+    </style>
 
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>

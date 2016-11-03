@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/activity_main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -48,52 +49,24 @@
             android:textColor="@color/yellow"
             android:textSize="30sp" />
 
-
-
-    </LinearLayout>
-    
-
-    <!-- Place holder for now, will be used to show syncing status -->
-    <LinearLayout
-        android:id="@+id/create_event"
-        android:layout_width="match_parent"
-        android:layout_height="30dp"
-        android:layout_alignParentBottom="true"
-        android:padding="8dp"
-        android:orientation="horizontal"
-        android:background="#000000">
-
-        <!--
-        <TextView
-            android:id="@+id/create_event_text"
-            android:layout_width="0dp"
-            android:layout_weight="5"
-            android:gravity="end"
-            android:layout_height="wrap_content"
-            android:text="@string/create_event"
-            android:textSize="20sp"
-            android:textColor="#FFFFFF"
-            />
-
-        <com.joanzapata.iconify.widget.IconTextView
-            android:layout_height="wrap_content"
-            android:layout_width="0dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:text="{fa-plus}"
-            android:textSize="25sp"
-            android:background="#000000"
-            android:textColor="#FFFFFF"
-            />
-    -->
     </LinearLayout>
 
     <FrameLayout
         android:id="@+id/events_view"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_above="@id/create_event"
+        android:layout_height="match_parent"
         android:layout_below="@id/tabs"/>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/create_event_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_input_add"
+        app:backgroundTint="@color/colorPrimary" />
 
 </RelativeLayout>
