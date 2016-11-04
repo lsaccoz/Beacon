@@ -16,6 +16,7 @@ import android.graphics.PorterDuffXfermode;
 import android.media.ExifInterface;
 import android.provider.OpenableColumns;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -83,6 +84,7 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
     ImageButton eAddImage;
     ImageView eImage;
     Uri picUri;
+    FloatingActionButton myFab;
 
     Spinner categorySpinner;
     // FloatingActionButton myFab;
@@ -106,7 +108,7 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
 
 
         ActionBar actionBar = getSupportActionBar();
-        actionBar.setDisplayHomeAsUpEnabled(true);
+        //actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle("Create Event");
 
         eTime = (EditText) findViewById(R.id.event_time);
@@ -120,10 +122,10 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         categorySpinner.setAdapter(adapter);
         categorySpinner.setOnItemSelectedListener(this);
-        //myFab = (FloatingActionButton) findViewById(R.id.fab);
+        myFab = (FloatingActionButton) findViewById(R.id.fab);
+        //upload = (Button) findViewById(R.id.upload);
 
-        upload = (Button) findViewById(R.id.upload);
-
+        initialzieDateandTime();
 
 
         eDate.setOnClickListener(new android.view.View.OnClickListener() {
@@ -140,8 +142,6 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
                 DatePickerDialog mDatePicker;
                 mDatePicker = new DatePickerDialog(CreateEventActivity.this, new DatePickerDialog.OnDateSetListener() {
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
-                        // TODO Auto-generated method stub
-                    /*      Your code   to get date and time    */
                         selectedmonth = selectedmonth + 1;
                         eDate.setText("" + selectedday + "/" + selectedmonth + "/" + selectedyear);
                         date.setDay(selectedday);
@@ -160,7 +160,6 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
 
             @Override
             public void onClick(View v) {
-                // TODO Auto-generated method stub
                 Calendar mcurrentTime = Calendar.getInstance();
                 int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
                 int minute = mcurrentTime.get(Calendar.MINUTE);
@@ -191,10 +190,14 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
-        upload.setOnClickListener(new android.view.View.OnClickListener() {
+        myFab.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                upload();
+                if( eName.getText().toString().trim().equals("")){
+                    eName.setError( "Your event needs a name!" );
+                }else {
+                    upload();
+                }
             }
         });
     }
@@ -372,5 +375,31 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         toUpload.setDate(date);
         toUpload.setLocation(location);
         toUpload.upload();
+    }
+
+
+    void initialzieDateandTime(){
+        Calendar mCurrentTime = Calendar.getInstance();
+        int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
+        int minute = mCurrentTime.get(Calendar.MINUTE);
+
+        int mYear = mCurrentTime.get(Calendar.YEAR);
+        int mMonth = mCurrentTime.get(Calendar.MONTH);
+        int mDay = mCurrentTime.get(Calendar.DAY_OF_MONTH);
+
+        boolean isPM = (hour >= 12);
+
+        mMonth = mMonth + 1;
+        eDate.setText("" + mDay + "/" + mMonth + "/" + mYear);
+        date.setDay(mDay);
+        date.setMonth(mMonth);
+        date.setYear(mYear);
+
+        date.setHour(hour);
+        date.setMinute(minute);
+
+        eTime.setText(String.format(Locale.US, "%02d:%02d %s",
+                (hour == 12 || hour == 0) ? 12 : hour % 12, minute,
+                isPM ? "PM" : "AM"));
     }
 }

@@ -41,6 +41,7 @@
                     android:id="@+id/input_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:maxLines="1"
                     android:hint="Name" />
             </android.support.design.widget.TextInputLayout>
 
@@ -106,14 +107,14 @@
                 android:id="@+id/location_select_view">
             </FrameLayout>
 
-            <Button
+           <!-- <Button
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="UPLOAD"
                 android:id="@+id/upload"
                 android:layout_alignBottom="@+id/fab"
                 android:layout_centerHorizontal="true"
-                android:layout_gravity="center_horizontal" />
+                android:layout_gravity="center_horizontal" /> -->
 
         </LinearLayout>
 
