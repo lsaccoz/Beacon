@@ -77,7 +77,6 @@ public class MainActivity extends AuthBaseActivity
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
-    private boolean mMapInitialized = false;
 
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -149,20 +148,20 @@ public class MainActivity extends AuthBaseActivity
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
                 .build();
 
-//        mAuthListener = new FirebaseAuth.AuthStateListener() {
-//            @Override
-//            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-//                FirebaseUser user = firebaseAuth.getCurrentUser();
-//                if (user != null) {
-//                    mFirebaseUser = user;
-//                    initMap();
-//                    Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
-//                } else {
-//                    // User is signed out
-//                    Log.d(TAG, "onAuthStateChanged_Main:signed_out");
-//                }
-//            }
-//        };
+        mAuthListener = new FirebaseAuth.AuthStateListener() {
+            @Override
+            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+                FirebaseUser user = firebaseAuth.getCurrentUser();
+                if (user != null) {
+                    mFirebaseUser = user;
+                    //initMap();
+                    Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
+                } else {
+                    // User is signed out
+                    Log.d(TAG, "onAuthStateChanged_Main:signed_out");
+                }
+            }
+        };
     }
 
     protected void onStart() {
@@ -286,6 +285,8 @@ public class MainActivity extends AuthBaseActivity
                 //hide create event button on this page
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
+
+                signOut();
                 break;
             }
             case (R.id.settings): {
