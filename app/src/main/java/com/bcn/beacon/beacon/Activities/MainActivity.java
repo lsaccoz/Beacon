@@ -37,7 +37,6 @@ import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
-import com.firebase.client.Firebase;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -73,107 +72,121 @@ import java.util.Map;
 public class MainActivity extends AuthBaseActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
-        GoogleApiClient.ConnectionCallbacks{
+        GoogleApiClient.ConnectionCallbacks,
+        View.OnClickListener{
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
+    private boolean mMapInitialized = false;
 
-    MapFragment mMapFragment;
-    LinearLayout mCustomActionBar;
-    List<IconTextView> mTabs;
-    TextView mTitle;
+    private MapFragment mMapFragment;
+    private ListFragment mListFragment;
+    private SettingsFragment mSettingsFragment;
+    private List<IconTextView> mTabs;
+    private TextView mTitle;
 
+    private Map<String, Event> eventsMap = new HashMap<String, Event>();
+
+    private FloatingActionButton mCreateEvent;
+    private MainActivity mContext;
+
+    private IconTextView mList;
+    private IconTextView mWorld;
+    private IconTextView mFavourites;
+    private IconTextView mSettings;
     private static final String TAG = "MainActivity";
 
-    Firebase mRef;
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
+    /**
+     * Copied over from BeaconListView
+     */
+    private DatabaseReference mDatabase;
+    private ArrayList<Event> events = new ArrayList<Event>();
+    private double userLng, userLat, eventLng, eventLat;
+    private static final double maxRadius = 100.0;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-
+        //hide the action bar
         getSupportActionBar().hide();
 
-        final IconTextView list = (IconTextView) findViewById(R.id.list);
-        final IconTextView world = (IconTextView) findViewById(R.id.world);
-        final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
-        final LinearLayout create_event = (LinearLayout) findViewById(R.id.create_event);
+//set default values for preferences if they haven't been modified yet
+        PreferenceManager.setDefaultValues(this, R.xml.settings_fragment, false);
 
+        //get the users location using location services
+        getUserLocation();
+
+        //retrieve all the Views that we would want to modify here
+        mList = (IconTextView) findViewById(R.id.list);
+        mWorld = (IconTextView) findViewById(R.id.world);
+        mFavourites = (IconTextView) findViewById(R.id.favourites);
+        mSettings = (IconTextView) findViewById(R.id.settings);
+        mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
+
+        //set the onClickListener to this activity
+        mList.setOnClickListener(this);
+        mWorld.setOnClickListener(this);
+        mFavourites.setOnClickListener(this);
+        mSettings.setOnClickListener(this);
+        mCreateEvent.setOnClickListener(this);
+
+        //create an initial map fragment
+        mMapFragment = MapFragment.newInstance();
+
+        //create our tab array to keep track of the state of each tab
         mTabs = new ArrayList<>();
-        mTabs.add(list);
-        mTabs.add(world);
-        mTabs.add(favourites);
-
-        list.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(MainActivity.this, BeaconListView.class);
-                startActivity(intent);
-            }
-        });
-
-        world.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                world.setBackgroundResource(R.color.currentTabColor);
-            }
-        });
-
-
-        favourites.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                signOut();
-            }
-        });
-
-
-        final Intent intent = new Intent(this, CreateEventActivity.class);
-
-        create_event.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(intent);
-            }
-        });
+        mTabs.add(mList);
+        mTabs.add(mWorld);
+        mTabs.add(mFavourites);
+        mTabs.add(mSettings);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
-                .addApi(AppIndex.API).build();
+                .build();
 
-        mAuth = FirebaseAuth.getInstance();
-
-        mAuthListener = new FirebaseAuth.AuthStateListener() {
-            @Override
-            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
-                    mFirebaseUser = user;
-                    initMap();
-                    Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
-                } else {
-                    // User is signed out
-                    Log.d(TAG, "onAuthStateChanged_Main:signed_out");
-                }
-            }
-        };
+//        mAuthListener = new FirebaseAuth.AuthStateListener() {
+//            @Override
+//            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
+//                FirebaseUser user = firebaseAuth.getCurrentUser();
+//                if (user != null) {
+//                    mFirebaseUser = user;
+//                    initMap();
+//                    Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
+//                } else {
+//                    // User is signed out
+//                    Log.d(TAG, "onAuthStateChanged_Main:signed_out");
+//                }
+//            }
+//        };
     }
 
     protected void onStart() {
         super.onStart();
 
-        //mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
-        mMapFragment = MapFragment.newInstance();
-        FragmentTransaction fragmentTransaction =
-                getFragmentManager().beginTransaction();
-        fragmentTransaction.add(R.id.events_view, mMapFragment);
-        fragmentTransaction.commit();
+        //get events from firebase
+        getNearbyEvents();
+
+        // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
+        if (getFragmentManager().getBackStackEntryCount() == 0) {
+            mMapFragment = MapFragment.newInstance();
+            FragmentTransaction fragmentTransaction =
+                    getFragmentManager().beginTransaction();
+            fragmentTransaction.add(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+            // push to stack so that the fragment transaction is recorded and the fragment will be
+            // obtainable from the fragment manager
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
+        }
+
         mMapFragment.getMapAsync(this);
+
     }
 
     protected void onStop() {
@@ -188,28 +201,133 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-    int count;
+    /**
+     * Here we implement the listener for all the views in this activity's view hierarchy
+     *
+     * @param v
+     */
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case (R.id.list): {
+                //change tab colour
+                resetTabColours();
+                mList.setBackgroundResource(R.color.currentTabColor);
 
-    private void initMap() {
-        if (mMap != null) {
-            if (mAuth.getCurrentUser() != null) {
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                        .position(new LatLng(49.2606, -123.2460))
-                        .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
+                //show create event button on this page
+                mCreateEvent.setEnabled(true);
+                mCreateEvent.setVisibility(View.VISIBLE);
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-                marker.showInfoWindow();
-            } else {
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                        .position(new LatLng(49.2606, -123.2460))
-                        .title("You ;)"));
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-                marker.showInfoWindow();
+                //get List fragment if exists
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                if (fragment == null || !fragment.isVisible()) {
+                    if (fragment == null) {
+                        //if fragment hasn't been created, get a new one
+                        mListFragment = ListFragment.newInstance();
+                    } else {
+                        //if fragment already exists, use it
+                        mListFragment = (ListFragment) fragment;
+                    }
+
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                    //attach this fragment to the screen
+                    transaction.replace(R.id.events_view, mListFragment, getString(R.string.list_fragment));
+                    transaction.addToBackStack(null);
+
+                    //allows for smoother transitions between screens
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                    transaction.commit();
+                }
+                break;
+            }
+            case (R.id.world): {
+
+                //change tab colours
+                resetTabColours();
+                mWorld.setBackgroundResource(R.color.currentTabColor);
+
+                //show create event button on this page
+                mCreateEvent.setEnabled(true);
+                mCreateEvent.setVisibility(View.VISIBLE);
+
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
+
+                if (fragment == null || !fragment.isVisible()) {
+                    //if fragment hasn't been created, create a new instance
+                    if (fragment == null) {
+                        mMapFragment = MapFragment.newInstance();
+
+                        //else, set map fragment to retrieved fragment
+                    } else {
+                        mMapFragment = (MapFragment) fragment;
+                    }
+
+                    FragmentTransaction fragmentTransaction =
+                            getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+                    fragmentTransaction.addToBackStack(null);
+
+                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    fragmentTransaction.commit();
+
+                    mMapFragment.getMapAsync(this);
+                }
+                break;
+
+            }
+
+            case (R.id.favourites): {
+                //TODO need to attach a fragment for this tab also
+                resetTabColours();
+                mFavourites.setBackgroundResource(R.color.currentTabColor);
+
+                //hide create event button on this page
+                mCreateEvent.setEnabled(false);
+                mCreateEvent.setVisibility(View.GONE);
+                break;
+            }
+            case (R.id.settings): {
+                //change tab colours
+                resetTabColours();
+                mSettings.setBackgroundResource(R.color.currentTabColor);
+
+                //hide create event button on this page
+                mCreateEvent.setEnabled(false);
+                mCreateEvent.setVisibility(View.GONE);
+
+                //check if visible fragment is an instance of settings fragment already, if so do nothing
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
+
+                if (fragment == null || !fragment.isVisible()) {
+                    if (fragment == null) {
+                        mSettingsFragment = SettingsFragment.getInstance();
+                    } else {
+                        mSettingsFragment = (SettingsFragment) fragment;
+                    }
+
+                    FragmentTransaction fragmentTransaction =
+                            getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.events_view, mSettingsFragment, getString(R.string.settings_fragment));
+                    fragmentTransaction.addToBackStack(null);
+
+                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    fragmentTransaction.commit();
+
+                }
+                break;
+            }
+
+            //if the user presses the floating button, launch the create event activity
+            case (R.id.create_event_fab): {
+                Intent intent = new Intent(this, CreateEventActivity.class);
+                startActivity(intent);
             }
         }
+
     }
+
 
 
 
@@ -250,6 +368,117 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
+    /**
+     * Call back method: app supposedly calls this again after user allows location services
+     *
+     * @param requestCode
+     * @param permissions
+     * @param grantResults
+     */
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (requestCode == PERMISSION_ACCESS_FINE_LOCATION) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Location location = null;
+                LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+                try {
+                    location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                } catch (SecurityException e) {
+                    e.printStackTrace();
+                }
+                if (location != null) {
+                    userLng = location.getLongitude();
+                    userLat = location.getLatitude();
+                }
+            } else {
+                Toast.makeText(getApplicationContext(), "You need to enable location services in order to use this app", Toast.LENGTH_LONG);
+            }
+            return;
+        }
+    }
+
+    /**
+     * Gets nearby events according to the user's location
+     */
+    private void getNearbyEvents() {
+        if (!events.isEmpty()) {
+            events.clear();
+        }
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                double distance;
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+
+                    eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
+                    eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
+                    distance = distFrom(userLat, userLng, eventLat, eventLng);
+                    if (distance <= maxRadius) {
+                        Event event = new Event(child.getValue().toString(),
+                                child.child("name").getValue().toString(),
+                                child.child("hostId").getValue().toString(),
+                                eventLat, eventLng,
+                                child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
+                                child.child("description").getValue().toString());
+
+                        // The arraylist "events" is specific to each user, and will be different for each Android phone.
+                        // The distance field for events would not be on the Firebase database, but it is required to keep track
+                        // of it here in order to do the comparisons (for distance sorting) and list view (for showing distance).
+                        event.setDistance(distance);
+
+                        //Log.i("NAME:", event.getName());
+                        //Log.i("DISTANCE:", Double.toString(distance));
+                        events.add(event);
+                        eventsMap.put(event.getEventId(), event);
+                    }
+                }
+                Collections.sort(events, new DistanceComparator());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    /**
+     * Java implementation of the Haversine formula for calculating the distance between two locations.
+     * Taken from http://stackoverflow.com/questions/120283
+     * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
+     *
+     * @param userLat  - latitude of the user's location
+     * @param userLng  - longitude of the user's location
+     * @param eventLat - latitude of the event's location
+     * @param eventLng - longitude of the event's location
+     * @return dist - distance between the two locations
+     */
+    private static double distFrom(double userLat, double userLng, double eventLat, double eventLng) {
+        double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
+        double dLat = Math.toRadians(eventLat - userLat);
+        double dLng = Math.toRadians(eventLng - userLng);
+        double sindLat = Math.sin(dLat / 2);
+        double sindLng = Math.sin(dLng / 2);
+        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
+                * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double dist = earthRadius * c;
+
+        return dist; // in kilometers
+    }
+
+    /**
+     * Getter method for that returns the events list
+     *
+     * @return list of nearby events
+     */
+    public ArrayList<Event> getEventList() {
+        return events;
+    }
+
+    public Map<String, Event> getEventsMap() {
+        return eventsMap;
+    }
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
@@ -281,12 +510,37 @@ public class MainActivity extends AuthBaseActivity
                 });
     }
 
+    private void initMap() {
+        if (mMap != null) {
+            if (mAuth.getCurrentUser() != null) {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(49.2606, -123.2460))
+                        .title(mAuth.getCurrentUser().getDisplayName()));
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                marker.showInfoWindow();
+            } else {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(49.2606, -123.2460))
+                        .title("You ;)"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                marker.showInfoWindow();
+            }
+        }
+    }
+
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
         mMap.clear();
+        initMap();
     }
 
+    /**
+     * resets all the tabs to the unselected color
+     */
     private void resetTabColours() {
         for (IconTextView itv : mTabs) {
             itv.setBackgroundResource(R.color.otherTabColor);
@@ -295,5 +549,6 @@ public class MainActivity extends AuthBaseActivity
 
     @Override
     public void onMapClick(LatLng latLng) {
+
     }
 }

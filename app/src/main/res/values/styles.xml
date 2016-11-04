@@ -6,8 +6,12 @@
         <item name="colorPrimary">#9C27B0</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-       <!-- <item name="android:actionBarStyle">@style/AppTheme.ActionBar</item>
-        <item name="actionBarStyle">@style/AppTheme.ActionBar</item>-->
+        <item name="android:listViewStyle">@style/myListViewStyle</item>
+        <!--
+        <item name="android:actionBarStyle">@style/AppTheme.ActionBar2</item>
+        <item name="actionBarStyle">@style/AppTheme.ActionBar2</item>
+        -->
+
     </style>
 
     <style name="LauncherTheme" parent="Theme.AppCompat.NoActionBar">
@@ -29,9 +33,31 @@
         <item name="height">@dimen/small_action_bar_height</item>
     </style>
 
+    <style name="myPreferenceStyle">
+        <item name="android:background">@color/colorPrimary</item>
+        <!--
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="textColor">@color/custom_white</item>
+        <item name="textSize">@dimens/preferences_text_size</item>
+        -->
+
+    </style>
+
+    <style name="myListViewStyle" parent="@android:style/Widget.ListView">
+        <item name="android:background">@color/colorSecondary</item>
+        <item name="android:cacheColorHint">@color/colorSecondary</item>
+
+    </style>
+
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
+    </style>
+
+    <!-- Checkbox Theme -->
+    <style name="MyCheckBoxTheme" parent="Theme.AppCompat.Light">
+        <item name="colorControlNormal">@color/colorPrimary</item>
+        <item name="colorControlActivated">@color/colorPrimary</item>
     </style>
 
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
