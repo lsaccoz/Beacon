@@ -33,7 +33,7 @@
             android:screenOrientation="portrait" />
         <activity
             android:name=".Activities.SignInActivity"
-            android:noHistory="true"/>
+            />
 
     <!--
 ATTENTION: This was auto-generated to add Google Play services to your project for
