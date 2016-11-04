@@ -1,13 +1,25 @@
 package com.bcn.beacon.beacon.Activities;
 
+import android.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+
 import android.app.Activity;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Typeface;
-import android.net.Uri;
+
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+
+import android.preference.PreferenceManager;
+
 import android.support.annotation.NonNull;
+import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
@@ -17,15 +29,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Data.DistanceComparator;
+import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Fragments.ListFragment;
+import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
+import com.firebase.client.Firebase;
 import com.firebase.client.annotations.Nullable;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -36,29 +49,31 @@ import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserInfo;
-import com.joanzapata.iconify.Iconify;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AuthBaseActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
-        GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
-
-    private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
-    private FirebaseUser mFirebaseUser;
+        GoogleApiClient.ConnectionCallbacks{
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -70,35 +85,15 @@ public class MainActivity extends AppCompatActivity
 
     private static final String TAG = "MainActivity";
 
+    Firebase mRef;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+
         getSupportActionBar().hide();
-        /*
-
-        ActionBar actionBar = getSupportActionBar();
-
-        actionBar.setDisplayShowHomeEnabled(false);
-        actionBar.setDisplayShowTitleEnabled(false);
-        actionBar.setDisplayShowCustomEnabled(true);
-
-        LayoutInflater inflater = LayoutInflater.from(this);
-
-        mCustomActionBar = (LinearLayout) inflater.inflate(R.layout.custom_action_bar, null);
-        actionBar.setCustomView(mCustomActionBar);
-        Toolbar parent = (Toolbar) mCustomActionBar.getParent();//first get parent toolbar of current action bar
-        parent.setContentInsetsAbsolute(0, 0);// set padding programmatically to 0dp
-
-        ViewGroup.LayoutParams lp = mCustomActionBar.getLayoutParams();
-        lp.width = ViewGroup.LayoutParams.MATCH_PARENT;
-        lp.height = ViewGroup.LayoutParams.MATCH_PARENT;
-        mCustomActionBar.setLayoutParams(lp);
-
-        mTitle = (TextView) mCustomActionBar.findViewById(R.id.my_title);
-        mTitle.setTypeface(Typeface.MONOSPACE);
-        */
 
         final IconTextView list = (IconTextView) findViewById(R.id.list);
         final IconTextView world = (IconTextView) findViewById(R.id.world);
@@ -113,9 +108,6 @@ public class MainActivity extends AppCompatActivity
         list.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
-                //resetTabColours();
-                //list.setBackgroundResource(R.color.currentTabColor);
                 Intent intent = new Intent(MainActivity.this, BeaconListView.class);
                 startActivity(intent);
             }
@@ -147,13 +139,9 @@ public class MainActivity extends AppCompatActivity
             }
         });
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
                 .addApi(AppIndex.API).build();
 
         mAuth = FirebaseAuth.getInstance();
@@ -164,7 +152,7 @@ public class MainActivity extends AppCompatActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     mFirebaseUser = user;
-                    //initMap();
+                    initMap();
                     Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -172,13 +160,12 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
-
     }
 
     protected void onStart() {
         super.onStart();
 
-        mGoogleApiClient.connect();
+        //mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
         mMapFragment = MapFragment.newInstance();
@@ -205,11 +192,11 @@ public class MainActivity extends AppCompatActivity
 
     private void initMap() {
         if (mMap != null) {
-            if (SignInActivity.mFirebaseUser != null) {
+            if (mAuth.getCurrentUser() != null) {
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                         .position(new LatLng(49.2606, -123.2460))
-                        .title(SignInActivity.mFirebaseUser.getDisplayName()));
+                        .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
                 marker.showInfoWindow();
@@ -224,6 +211,8 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+
+
     private void revokeAccess() {
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
@@ -234,9 +223,31 @@ public class MainActivity extends AppCompatActivity
                 });
     }
 
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
+    /**
+     * Check for GPS permission
+     *
+     * @return true if user has allowed access to location, false otherwise
+     */
+    private boolean checkGPSPermission() {
+        String permission = "android.permission.ACCESS_FINE_LOCATION";
+        int res = getApplicationContext().checkCallingOrSelfPermission(permission);
+        return (res == PackageManager.PERMISSION_GRANTED);
+    }
+
+    /**
+     * Gets the location of the user
+     */
+    private void getUserLocation() {
+        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
+        if (checkGPSPermission()) {
+            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+            if (location != null) {
+                userLat = location.getLatitude();
+                userLng = location.getLongitude();
+                //Log.i("PERMISSION:", "ALLOWED");
+            }
+        }
     }
 
     @Override
@@ -273,7 +284,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
-        initMap();
+        mMap.clear();
     }
 
     private void resetTabColours() {
@@ -284,7 +295,5 @@ public class MainActivity extends AppCompatActivity
 
     @Override
     public void onMapClick(LatLng latLng) {
-
     }
-
 }
