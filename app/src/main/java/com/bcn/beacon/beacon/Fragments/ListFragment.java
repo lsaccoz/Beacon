@@ -47,6 +47,8 @@ public class ListFragment extends Fragment {
     public void onAttach(Context context) {
         super.onAttach(context);
 
+        //since onAttach isn't called on versions of android with sdk level < 23
+        //we need to check the version before we set the context
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
             this.appContext = context;
         }
@@ -58,14 +60,36 @@ public class ListFragment extends Fragment {
     public void onAttach(Activity activity) {
         super.onAttach(activity);
 
+        //for older versions of android, this callback method is used instead
+        //so set the context within this method
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
             this.appContext = activity;
         }
     }
 
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        //create our view from the xml doc
         View view = inflater.inflate(R.layout.list_fragment, container, false);
+
         listView = (ListView) view.findViewById(R.id.listView);
+
+        //set adapter for the events list view
+        listView.setAdapter(adapter);
+
+        //Launch the event details page if the user clicks on an event item
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Event event = (Event) parent.getAdapter().getItem(position);
+                Intent intent = new Intent(getActivity(), EventPageActivity.class);
+
+                //pass the event id to the new activity
+                intent.putExtra("eventId", event.getEventId());
+
+                getActivity().startActivity(intent);
+            }
+        });
 
         return view;
     }
@@ -74,32 +98,28 @@ public class ListFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        //get the events from the parent activity
+        //TODO ensure this gets an updated version of the events list
+        events = ((MainActivity) getActivity()).getEventList();
+        // Populate the list view
+        adapter = new EventListAdapter(appContext, 0, events);
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
 
-        events = ((MainActivity) getActivity()).getEventList();
-
-        // Populate the list view
-        adapter = new EventListAdapter(appContext, 0, events);
-        listView.setAdapter(adapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Event event = (Event) parent.getAdapter().getItem(position);
-                Intent intent = new Intent(getActivity(), EventPageActivity.class);
-                intent.putExtra("eventId", event.getEventId());
-
-                getActivity().startActivity(intent);
-            }
-        });
     }
 
     @Override
     public void onResume() {
+
+        events = ((MainActivity) getActivity()).getEventList();
+        adapter.notifyDataSetChanged();
         super.onResume();
+
     }
 
 }

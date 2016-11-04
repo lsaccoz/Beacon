@@ -1,12 +1,21 @@
 package com.bcn.beacon.beacon.Activities;
 
+import android.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
+
+import android.app.Activity;
 import android.app.FragmentTransaction;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Typeface;
+
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+
+import android.preference.PreferenceManager;
+
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -26,6 +35,7 @@ import android.widget.Toast;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
+import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
@@ -53,7 +63,6 @@ import com.joanzapata.iconify.widget.IconTextView;
 
 import java.util.ArrayList;
 import java.util.List;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -64,60 +73,81 @@ public class MainActivity extends AppCompatActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener {
+        GoogleApiClient.OnConnectionFailedListener,
+        View.OnClickListener {
 
 
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
     private FirebaseUser mFirebaseUser;
     private GoogleApiClient mGoogleApiClient;
+    private boolean mMapInitialized = false;
 
-    MapFragment mMapFragment;
-    ListFragment mListFragment;
-    LinearLayout mCustomActionBar;
-    List<IconTextView> mTabs;
-    TextView mTitle;
-    FloatingActionButton mCreateEvent;
+    private MapFragment mMapFragment;
+    private ListFragment mListFragment;
+    private SettingsFragment mSettingsFragment;
+    private List<IconTextView> mTabs;
+    private TextView mTitle;
+
+    private Map<String, Event> eventsMap = new HashMap<String, Event>();
+
+    private FloatingActionButton mCreateEvent;
+    private MainActivity mContext;
+
+    private IconTextView mList;
+    private IconTextView mWorld;
+    private IconTextView mFavourites;
+    private IconTextView mSettings;
 
     private static final String TAG = "MainActivity";
 
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
     /**
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
     private ArrayList<Event> events = new ArrayList<Event>();
-    ;
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
-
-    // Map for easily populating Event Pages
-    private Map<String, Event> eventsMap = new HashMap<String, Event>();
-
-    // constant for permission id
-    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        //hide the action bar
         getSupportActionBar().hide();
 
+        //set default values for preferences if they haven't been modified yet
+        PreferenceManager.setDefaultValues(this, R.xml.settings_fragment, false);
+
+        //get the users location using location services
         getUserLocation();
 
-        final IconTextView list = (IconTextView) findViewById(R.id.list);
-        final IconTextView world = (IconTextView) findViewById(R.id.world);
-        final IconTextView favourites = (IconTextView) findViewById(R.id.favourites);
-
-
+        //retrieve all the Views that we would want to modify here
+        mList = (IconTextView) findViewById(R.id.list);
+        mWorld = (IconTextView) findViewById(R.id.world);
+        mFavourites = (IconTextView) findViewById(R.id.favourites);
+        mSettings = (IconTextView) findViewById(R.id.settings);
         mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
 
+        //set the onClickListener to this activity
+        mList.setOnClickListener(this);
+        mWorld.setOnClickListener(this);
+        mFavourites.setOnClickListener(this);
+        mSettings.setOnClickListener(this);
+        mCreateEvent.setOnClickListener(this);
+
+        //create an initial map fragment
+        mMapFragment = MapFragment.newInstance();
+
+        //create our tab array to keep track of the state of each tab
         mTabs = new ArrayList<>();
 
-        mTabs.add(list);
-        mTabs.add(world);
-        mTabs.add(favourites);
-
+        mTabs.add(mList);
+        mTabs.add(mWorld);
+        mTabs.add(mFavourites);
+        mTabs.add(mSettings);
 
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
@@ -143,65 +173,8 @@ public class MainActivity extends AppCompatActivity
                 }
             }
         };
-
-
-        list.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                world.setEnabled(true);
-                if (list.isEnabled()) {
-                    resetTabColours();
-                    list.setBackgroundResource(R.color.currentTabColor);
-
-                    if (savedInstanceState == null) {
-                        // This null check is apparently good to have in order to not have fragments created over and over again
-                        mListFragment = ListFragment.newInstance();
-
-                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-                        transaction.replace(R.id.events_view, mListFragment);
-                        transaction.addToBackStack(null);
-                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-
-                        transaction.commit();
-                    }
-                }
-                list.setEnabled(false);
-            }
-        });
-
-        world.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                list.setEnabled(true);
-                if (world.isEnabled()) {
-                    resetTabColours();
-                    world.setBackgroundResource(R.color.currentTabColor);
-
-                    getFragmentManager().popBackStackImmediate();
-                }
-                world.setEnabled(false);
-            }
-        });
-
-        favourites.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                resetTabColours();
-                favourites.setBackgroundResource(R.color.currentTabColor);
-            }
-        });
-
-
-        final Intent intent = new Intent(this, CreateEventActivity.class);
-
-        mCreateEvent.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(intent);
-            }
-        });
     }
+
 
     protected void onStart() {
         super.onStart();
@@ -209,6 +182,7 @@ public class MainActivity extends AppCompatActivity
         mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
+        //get events from firebase
         getNearbyEvents();
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
@@ -216,13 +190,15 @@ public class MainActivity extends AppCompatActivity
             mMapFragment = MapFragment.newInstance();
             FragmentTransaction fragmentTransaction =
                     getFragmentManager().beginTransaction();
-            fragmentTransaction.add(R.id.events_view, mMapFragment);
-            // push to stack in order to switch between fragments with ease
+            fragmentTransaction.add(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+            // push to stack so that the fragment transaction is recorded and the fragment will be
+            // obtainable from the fragment manager
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
         }
 
         mMapFragment.getMapAsync(this);
+
     }
 
     protected void onStop() {
@@ -236,6 +212,134 @@ public class MainActivity extends AppCompatActivity
             mAuth.removeAuthStateListener(mAuthListener);
         }
     }
+
+    /**
+     * Here we implement the listener for all the views in this activity's view hierarchy
+     *
+     * @param v
+     */
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case (R.id.list): {
+                //change tab colour
+                resetTabColours();
+                mList.setBackgroundResource(R.color.currentTabColor);
+
+                //show create event button on this page
+                mCreateEvent.setEnabled(true);
+                mCreateEvent.setVisibility(View.VISIBLE);
+
+                //get List fragment if exists
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                if (fragment == null || !fragment.isVisible()) {
+                    if (fragment == null) {
+                        //if fragment hasn't been created, get a new one
+                        mListFragment = ListFragment.newInstance();
+                    } else {
+                        //if fragment already exists, use it
+                        mListFragment = (ListFragment) fragment;
+                    }
+
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                    //attach this fragment to the screen
+                    transaction.replace(R.id.events_view, mListFragment, getString(R.string.list_fragment));
+                    transaction.addToBackStack(null);
+
+                    //allows for smoother transitions between screens
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                    transaction.commit();
+                }
+                break;
+            }
+            case (R.id.world): {
+
+                //change tab colours
+                resetTabColours();
+                mWorld.setBackgroundResource(R.color.currentTabColor);
+
+                //show create event button on this page
+                mCreateEvent.setEnabled(true);
+                mCreateEvent.setVisibility(View.VISIBLE);
+
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
+
+                if (fragment == null || !fragment.isVisible()) {
+                    //if fragment hasn't been created, create a new instance
+                    if (fragment == null) {
+                        mMapFragment = MapFragment.newInstance();
+
+                    //else, set map fragment to retrieved fragment
+                    } else {
+                        mMapFragment = (MapFragment) fragment;
+                    }
+
+                    FragmentTransaction fragmentTransaction =
+                            getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+                    fragmentTransaction.addToBackStack(null);
+
+                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    fragmentTransaction.commit();
+
+                    mMapFragment.getMapAsync(this);
+                }
+                break;
+
+            }
+
+            case (R.id.favourites): {
+                //TODO need to attach a fragment for this tab also
+                resetTabColours();
+                mFavourites.setBackgroundResource(R.color.currentTabColor);
+
+                //hide create event button on this page
+                mCreateEvent.setEnabled(false);
+                mCreateEvent.setVisibility(View.GONE);
+                break;
+            }
+            case (R.id.settings): {
+                //change tab colours
+                resetTabColours();
+                mSettings.setBackgroundResource(R.color.currentTabColor);
+
+                //hide create event button on this page
+                mCreateEvent.setEnabled(false);
+                mCreateEvent.setVisibility(View.GONE);
+
+                //check if visible fragment is an instance of settings fragment already, if so do nothing
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
+
+                if (fragment == null || !fragment.isVisible()) {
+                    if (fragment == null) {
+                        mSettingsFragment = SettingsFragment.getInstance();
+                    } else {
+                        mSettingsFragment = (SettingsFragment) fragment;
+                    }
+
+                    FragmentTransaction fragmentTransaction =
+                            getFragmentManager().beginTransaction();
+                    fragmentTransaction.replace(R.id.events_view, mSettingsFragment, getString(R.string.settings_fragment));
+                    fragmentTransaction.addToBackStack(null);
+
+                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                    fragmentTransaction.commit();
+
+                }
+                break;
+            }
+
+            //if the user presses the floating button, launch the create event activity
+            case (R.id.create_event_fab): {
+                Intent intent = new Intent(this, CreateEventActivity.class);
+                startActivity(intent);
+            }
+        }
+
+    }
+
 
     private void revokeAccess() {
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
@@ -442,7 +546,9 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-
+    /**
+     * resets all the tabs to the unselected color
+     */
     private void resetTabColours() {
         for (IconTextView itv : mTabs) {
             itv.setBackgroundResource(R.color.otherTabColor);

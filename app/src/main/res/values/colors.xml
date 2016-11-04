@@ -2,7 +2,9 @@
 <resources>
 
     <!-- App Specific Colors -->
-    <color name="colorPrimary">#9c27b0</color>
+
+    <color name="colorPrimary">#9C27B0</color>
+    <color name="colorSecondary">#E1BEE7</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
     <color name="signInColor">#BA68C8</color>
@@ -14,6 +16,8 @@
     <color name="black">#000000</color>
     <color name="white">#FFFFFF</color>
     <color name="yellow">#FFEB3B</color>
+    <color name="light_gray">#9E9E9E</color>
+    <color name="dark_gray">#545454</color>
 
 
 </resources>
