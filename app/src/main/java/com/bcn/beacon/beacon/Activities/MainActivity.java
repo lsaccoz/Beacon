@@ -106,7 +106,7 @@ public class MainActivity extends AuthBaseActivity
     private static final double maxRadius = 100.0;
 
     @Override
-    protected void onCreate(final Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
@@ -154,7 +154,7 @@ public class MainActivity extends AuthBaseActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     mFirebaseUser = user;
-                    //initMap();
+                    initMap();
                     Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -513,11 +513,12 @@ public class MainActivity extends AuthBaseActivity
 
     private void initMap() {
         if (mMap != null) {
-            if (mAuth.getCurrentUser() != null) {
+            mMap.clear();
+            if (mAuth.getInstance().getCurrentUser() != null) {
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                         .position(new LatLng(49.2606, -123.2460))
-                        .title(mAuth.getCurrentUser().getDisplayName()));
+                        .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
 
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
                 marker.showInfoWindow();
@@ -535,7 +536,6 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onMapReady(GoogleMap map) {
         mMap = map;
-        mMap.clear();
         initMap();
     }
 
