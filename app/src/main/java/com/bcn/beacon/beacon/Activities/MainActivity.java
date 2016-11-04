@@ -552,4 +552,42 @@ public class MainActivity extends AuthBaseActivity
     public void onMapClick(LatLng latLng) {
 
     }
+    /**
+     * This method overrides the default back button functionality
+     *
+     * If the user is looking at a different tab the world tab will be loaded,
+     * otherwise the activity will end and the user will return to the android home screen
+     *
+     */
+    @Override
+    public void onBackPressed() {
+        //currently viewing the map
+        if (mMapFragment != null && mMapFragment.isVisible()) {
+            //return to home screen
+            finish();
+
+            //map fragment is active but not currently shown
+        } else if (mMapFragment != null && !mMapFragment.isVisible()) {
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+            transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+            transaction.addToBackStack(null);
+
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            transaction.commit();
+
+            //set the world tab as being selected
+            resetTabColours();
+            mWorld.setBackgroundResource(R.color.currentTabColor);
+
+            mMapFragment.getMapAsync(this);
+
+            //ensure that the create event tab is visible again
+            mCreateEvent.setEnabled(true);
+            mCreateEvent.setVisibility(View.VISIBLE);
+
+        } else {
+            finish();
+        }
+    }
 }
