@@ -12,7 +12,7 @@
         android:id="@+id/tabs"
         android:layout_width="match_parent"
         android:layout_height="55dp"
-        android:elevation="16dp"
+        android:elevation="10dp"
         android:background="@color/otherTabColor"
         android:layout_alignParentTop="true"
         android:orientation="horizontal">
