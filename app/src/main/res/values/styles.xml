@@ -34,7 +34,7 @@
     </style>
 
     <style name="myPreferenceStyle">
-        <item name="android:background">@color/colorPrimary</item>
+        <item name="android:background">@color/custom_white</item>
         <!--
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="textColor">@color/custom_white</item>
@@ -44,8 +44,8 @@
     </style>
 
     <style name="myListViewStyle" parent="@android:style/Widget.ListView">
-        <item name="android:background">@color/colorSecondary</item>
-        <item name="android:cacheColorHint">@color/colorSecondary</item>
+        <item name="android:background">@color/custom_white</item>
+        <item name="android:cacheColorHint">@color/custom_white</item>
 
     </style>
 
