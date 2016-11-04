@@ -69,19 +69,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AuthBaseActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener {
+        View.OnClickListener{
 
-
-    private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
-    private FirebaseUser mFirebaseUser;
     private GoogleApiClient mGoogleApiClient;
-    private boolean mMapInitialized = false;
+    private GoogleMap mMap;
 
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -98,10 +93,10 @@ public class MainActivity extends AppCompatActivity
     private IconTextView mWorld;
     private IconTextView mFavourites;
     private IconTextView mSettings;
-
     private static final String TAG = "MainActivity";
 
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
     /**
      * Copied over from BeaconListView
      */
@@ -118,7 +113,7 @@ public class MainActivity extends AppCompatActivity
         //hide the action bar
         getSupportActionBar().hide();
 
-        //set default values for preferences if they haven't been modified yet
+//set default values for preferences if they haven't been modified yet
         PreferenceManager.setDefaultValues(this, R.xml.settings_fragment, false);
 
         //get the users location using location services
@@ -143,22 +138,15 @@ public class MainActivity extends AppCompatActivity
 
         //create our tab array to keep track of the state of each tab
         mTabs = new ArrayList<>();
-
         mTabs.add(mList);
         mTabs.add(mWorld);
         mTabs.add(mFavourites);
         mTabs.add(mSettings);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
                 .build();
-
-        mAuth = FirebaseAuth.getInstance();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -166,6 +154,7 @@ public class MainActivity extends AppCompatActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     mFirebaseUser = user;
+                    //initMap();
                     Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -175,11 +164,9 @@ public class MainActivity extends AppCompatActivity
         };
     }
 
-
     protected void onStart() {
         super.onStart();
 
-        mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
         //get events from firebase
@@ -298,6 +285,8 @@ public class MainActivity extends AppCompatActivity
                 //hide create event button on this page
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
+
+                signOut();
                 break;
             }
             case (R.id.settings): {
@@ -339,6 +328,8 @@ public class MainActivity extends AppCompatActivity
         }
 
     }
+
+
 
 
     private void revokeAccess() {
@@ -489,13 +480,6 @@ public class MainActivity extends AppCompatActivity
     public Map<String, Event> getEventsMap() {
         return eventsMap;
     }
-
-
-    @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
-    }
-
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
@@ -527,23 +511,32 @@ public class MainActivity extends AppCompatActivity
                 });
     }
 
+    private void initMap() {
+        if (mMap != null) {
+            if (mAuth.getCurrentUser() != null) {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(49.2606, -123.2460))
+                        .title(mAuth.getCurrentUser().getDisplayName()));
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                marker.showInfoWindow();
+            } else {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(49.2606, -123.2460))
+                        .title("You ;)"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                marker.showInfoWindow();
+            }
+        }
+    }
+
     @Override
     public void onMapReady(GoogleMap map) {
-        if (mAuth != null && mAuth.getCurrentUser() != null) {
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title(mAuth.getCurrentUser().getDisplayName()));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();
-        } else {
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title("BECON!"));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();
-        }
+        mMap = map;
+        mMap.clear();
+        initMap();
     }
 
     /**

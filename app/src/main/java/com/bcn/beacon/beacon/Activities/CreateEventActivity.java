@@ -87,7 +87,7 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
     FloatingActionButton myFab;
 
     Spinner categorySpinner;
-   // FloatingActionButton myFab;
+    // FloatingActionButton myFab;
 
     Button upload;
 
@@ -376,6 +376,7 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         toUpload.setLocation(location);
         toUpload.upload();
     }
+
 
     void initialzieDateandTime(){
         Calendar mCurrentTime = Calendar.getInstance();
