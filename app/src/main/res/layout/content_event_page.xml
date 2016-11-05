@@ -13,4 +13,10 @@
     tools:context="com.bcn.beacon.beacon.Activities.EventPageActivity"
     tools:showIn="@layout/activity_event_page">
 
+    <TextView android:id = "@+id/text"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="" />
+
+
 </RelativeLayout>

@@ -3,14 +3,18 @@ package com.bcn.beacon.beacon.Data.Models;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+import java.io.Serializable;
 
 
 /**
  * Created by neema on 2016-10-16.
  */
-public class Event {
+public class Event{
 
     //    private Long _id;
     private String eventId;
@@ -27,21 +31,6 @@ public class Event {
 //    private String[] postIds;
 //    private String[] tags;
 
-    public void upload() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference events = database.getReference("Events");
-        String eventId = events.push().getKey();
-        setEventId(eventId);
-
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        setHostId(userId);
-
-        events.child(eventId).setValue(this);
-
-        DatabaseReference users = database.getReference("Users");
-        users.child(userId).child("hosting").child(eventId).setValue(true);
-    }
-
     // temporary distance variable addition
     private double distance;
 
@@ -56,6 +45,21 @@ public class Event {
         this.setLocation(latitude, longitude);
         this.setTimeStart_Id(timeStart_Id);
         this.setDescription(description);
+    }
+
+    public void upload() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference events = database.getReference("Events");
+        String eventId = events.push().getKey();
+        setEventId(eventId);
+
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        setHostId(userId);
+
+        events.child(eventId).setValue(this);
+
+        DatabaseReference users = database.getReference("Users");
+        users.child(userId).child("hosting").child(eventId).setValue(true);
     }
 
     public String getEventId() {

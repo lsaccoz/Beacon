@@ -7,6 +7,7 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
@@ -51,6 +52,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -61,9 +63,11 @@ import java.util.Map;
 
 public class MainActivity extends AppCompatActivity
             implements OnMapReadyCallback,
-            GoogleMap.OnMapClickListener,
+            //GoogleMap.OnMapClickListener,
             GoogleApiClient.ConnectionCallbacks,
-            GoogleApiClient.OnConnectionFailedListener {
+            GoogleApiClient.OnConnectionFailedListener,
+            GoogleMap.OnMarkerClickListener,
+            GoogleMap.OnInfoWindowClickListener{
 
 
     private FirebaseAuth mAuth;
@@ -84,7 +88,9 @@ public class MainActivity extends AppCompatActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-    private ArrayList<Event> events = new ArrayList<Event>();;
+
+    public ArrayList<Event> events = new ArrayList<Event>();
+
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
@@ -197,6 +203,7 @@ public class MainActivity extends AppCompatActivity
         });
     }
 
+
     protected void onStart() {
         super.onStart();
 
@@ -217,6 +224,7 @@ public class MainActivity extends AppCompatActivity
         }
 
         mMapFragment.getMapAsync(this);
+
     }
 
     protected void onStop() {
@@ -313,6 +321,7 @@ public class MainActivity extends AppCompatActivity
                     eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
                     eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
                     distance = distFrom(userLat, userLng, eventLat, eventLng);
+
                     if (distance <= maxRadius) {
                         Event event = new Event(child.getValue().toString(),
                                                 child.child("name").getValue().toString(),
@@ -329,6 +338,7 @@ public class MainActivity extends AppCompatActivity
                         //Log.i("NAME:", event.getName());
                         //Log.i("DISTANCE:", Double.toString(distance));
                         events.add(event);
+
                         eventsMap.put(event.getEventId(), event);
                     }
                 }
@@ -370,8 +380,6 @@ public class MainActivity extends AppCompatActivity
     public ArrayList<Event> getEventList() {
         return events;
     }
-    public Map<String, Event> getEventsMap() { return eventsMap; }
-
 
     @Override
     public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
@@ -409,25 +417,116 @@ public class MainActivity extends AppCompatActivity
                 });
     }
 
+
+   ArrayList<Event> event_list = new ArrayList<Event>();
+
+  public void test() {
+
+        /*Event e = new Event("-KVka9_0ueQWa6SBzBMC", "event1", "host", 49.2606, -123.2460, "time", "test");
+        event_list.add(e);
+
+        Event p = new Event("-KVkXcbfoiCPxuQF-UW5", "event2", "host", 20, -123.2460, "time", "test");
+        event_list.add(p);
+
+        Event x = new Event("-KVka9tUAWdieC-8EN9a", "event3", "host", 30, -123.2460, "time", "test");
+        event_list.add(x);*/
+
+        // mDatabase = FirebaseDatabase.getInstance().getReference();
+
+       //event_list = getEventList();
+
+      mDatabase = FirebaseDatabase.getInstance().getReference();
+      mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
+
+              for (DataSnapshot child : dataSnapshot.getChildren()) {
+                  eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
+                  eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
+
+                  String Event_ID;
+
+                  if(child.child("eventId").getValue() != null)
+                      Event_ID = child.child("eventId").getValue().toString();
+                  else
+                      Event_ID = child.getValue().toString();
+
+                  Event event = new Event(Event_ID,
+                              child.child("name").getValue().toString(),
+                              child.child("hostId").getValue().toString(),
+                              eventLat, eventLng,
+                              child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
+                              child.child("description").getValue().toString());
+
+                  event_list.add(event);
+              }
+
+          }
+          @Override
+          public void onCancelled(DatabaseError databaseError) { }
+      });
+
+    }
+
+    HashMap<String, String> m = new HashMap<>();
+
     @Override
     public void onMapReady(GoogleMap map) {
-        if(mAuth != null && mAuth.getCurrentUser() != null){
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title(mAuth.getCurrentUser().getDisplayName()));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();}
-        else{
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title("BECON!"));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();
+
+        test();
+
+        if (mAuth != null && mAuth.getCurrentUser() != null) {
+            //ArrayList<Event> event_list = getEventList();
+
+            if (!event_list.isEmpty()) {
+                for (int i = 0; i < event_list.size(); i++) {
+
+                    Event e = event_list.get(i);
+
+                    double latitude = e.getLocation().getLatitude();
+                    double longitude = e.getLocation().getLatitude();
+                    String name = e.getName();
+
+                    Marker marker = map.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .position(new LatLng(latitude, longitude))
+                            .title(name));
+
+                    m.put(marker.getId(), e.getEventId());
+
+                    map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                    map.setOnMarkerClickListener(this);
+                    map.setOnInfoWindowClickListener(this);
+                }
+            }else {
+                Marker marker = map.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                        .position(new LatLng(49.2606, -123.2460))
+                        .title("Default"));
+
+                map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+
+            }
         }
     }
 
+    @Override
+    public void onInfoWindowClick(Marker marker) {
+
+        String event = m.get(marker.getId());
+
+        Intent i = new Intent(this, EventPageActivity.class);
+        i.putExtra("Event", event);
+        startActivity(i);
+
+    }
+
+    @Override
+   public boolean onMarkerClick(Marker marker) {
+
+        marker.showInfoWindow();
+        return true;
+    }
 
     private void resetTabColours(){
         for(IconTextView itv : mTabs){
@@ -435,8 +534,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    @Override
-    public void onMapClick(LatLng latLng) {
 
-    }
+
 }
