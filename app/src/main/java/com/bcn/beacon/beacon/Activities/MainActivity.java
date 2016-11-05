@@ -169,7 +169,7 @@ public class MainActivity extends AuthBaseActivity
 
         mAuth.addAuthStateListener(mAuthListener);
 
-        //get events from firebase
+        // get events from firebase
         getNearbyEvents();
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
@@ -392,7 +392,7 @@ public class MainActivity extends AuthBaseActivity
                     userLat = location.getLatitude();
                 }
             } else {
-                Toast.makeText(getApplicationContext(), "You need to enable location services in order to use this app", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "You need to enable location services in order to use Beacon", Toast.LENGTH_LONG);
             }
             return;
         }
@@ -477,9 +477,17 @@ public class MainActivity extends AuthBaseActivity
         return events;
     }
 
+    public ArrayList<Event> getRefreshedEventList() {
+        Log.i("DIST:", Double.toString(distFrom(49.28248319999, -123.11855550, 49.2765, -123.2177)));
+        getNearbyEvents();
+        return events;
+    }
+
     public Map<String, Event> getEventsMap() {
         return eventsMap;
     }
+
+
     @Override
     public void onConnected(@Nullable Bundle bundle) {
 
