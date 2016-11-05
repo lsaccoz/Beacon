@@ -380,17 +380,7 @@ public class MainActivity extends AuthBaseActivity
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (requestCode == PERMISSION_ACCESS_FINE_LOCATION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Location location = null;
-                LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-                try {
-                    location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                }
-                if (location != null) {
-                    userLng = location.getLongitude();
-                    userLat = location.getLatitude();
-                }
+
             } else {
                 Toast.makeText(getApplicationContext(), "You need to enable location services in order to use Beacon", Toast.LENGTH_LONG);
             }
@@ -490,7 +480,7 @@ public class MainActivity extends AuthBaseActivity
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-
+        getUserLocation();
     }
 
     @Override
@@ -525,11 +515,12 @@ public class MainActivity extends AuthBaseActivity
             if (mAuth.getInstance().getCurrentUser() != null) {
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                        .position(new LatLng(49.2606, -123.2460))
+                        .position(new LatLng(userLat, userLng))
                         .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
                 marker.showInfoWindow();
+
             } else {
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
