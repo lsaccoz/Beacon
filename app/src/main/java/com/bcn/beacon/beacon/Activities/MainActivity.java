@@ -101,7 +101,7 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-    private ArrayList<Event> events = new ArrayList<Event>();
+    private ArrayList<Event> events;
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
@@ -391,16 +391,17 @@ public class MainActivity extends AuthBaseActivity
      * Gets nearby events according to the user's location
      */
     private void getNearbyEvents() {
+        /* commented this out for now to fix the bug, look into memory leaks!
         if (!events.isEmpty()) {
             events.clear();
-        }
+        }*/
+        events = new ArrayList<Event>();
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 double distance;
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-
                     eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
                     eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
                     distance = distFrom(userLat, userLng, eventLat, eventLng);
@@ -467,7 +468,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
     public ArrayList<Event> getRefreshedEventList() {
-        Log.i("DIST:", Double.toString(distFrom(49.28248319999, -123.11855550, 49.2765, -123.2177)));
         getNearbyEvents();
         return events;
     }

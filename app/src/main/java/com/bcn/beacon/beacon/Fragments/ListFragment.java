@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -99,6 +100,7 @@ public class ListFragment extends Fragment {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
+                events.clear();
                 events = ((MainActivity) getActivity()).getRefreshedEventList();
                 adapter.notifyDataSetChanged();
                 swipeContainer.setRefreshing(false);
@@ -109,7 +111,6 @@ public class ListFragment extends Fragment {
 
         return view;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -129,10 +130,30 @@ public class ListFragment extends Fragment {
 
     }
 
+
+    /** Code for future functionality, in case we want to restore scroll position in list view
+    @Override
+    public void onPause() {
+        state = listView.onSaveInstanceState();
+        super.onPause();
+    }
+
+    @Override
+    public void onViewCreated(final View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        listView.setAdapter(adapter);
+
+        if (state != null) {
+            listView.onRestoreInstanceState(state);
+        }
+
+    } */
+
     @Override
     public void onResume() {
+        //adapter.notifyDataSetChanged();
         super.onResume();
-        adapter.notifyDataSetChanged();
     }
 
 }
