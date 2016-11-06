@@ -23,6 +23,7 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -98,6 +99,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     Date date = new Date();
     EditText eName;
     EditText eDescription;
+
     Location location = new Location();
     ImageButton eAddImage;
     Uri picUri;
@@ -371,16 +373,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     }
 
     private void upload() {
-//        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-//
-//        builder.setTitle("Yo");
-//        builder.setMessage("you pressed a button");
-//
-//        builder.create().show();
 
+    if(location == null) {
         location.setLatitude(49.2765);
         location.setLongitude(-123.2177);
-
+    }
         Event toUpload = new Event();
 
         toUpload.setName(eName.getText().toString());
@@ -442,6 +439,33 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
     public void initMap(){
         if(mMap != null){
+
+            mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
+                @Override
+                public void onMarkerDragStart(Marker arg0) {
+                    // TODO Auto-generated method stub
+                    Log.d("System out", "onMarkerDragStart..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
+                }
+
+                @SuppressWarnings("unchecked")
+                @Override
+                public void onMarkerDragEnd(Marker arg0) {
+                    // TODO Auto-generated method stub
+                    Log.d("System out", "onMarkerDragEnd..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
+
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(arg0.getPosition()));
+                    location.setLongitude(arg0.getPosition().longitude);
+                    location.setLatitude(arg0.getPosition().latitude);
+                }
+
+                @Override
+                public void onMarkerDrag(Marker arg0) {
+                    // TODO Auto-generated method stub
+                    Log.i("System out", "onMarkerDrag...");
+                }
+            });
+
+
             Marker marker = mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                     .position(new LatLng(49.2606, -123.2460))
