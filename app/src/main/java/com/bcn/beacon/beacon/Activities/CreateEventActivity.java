@@ -2,6 +2,7 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
@@ -64,6 +65,8 @@ import com.bcn.beacon.beacon.CustomViews.WorkaroundMapFragment;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.Location;
+import com.bcn.beacon.beacon.Fragments.ListFragment;
+import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -92,7 +95,7 @@ import static android.support.design.R.styleable.View;
 public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        AdapterView.OnItemSelectedListener {
+        AdapterView.OnItemSelectedListener, View.OnClickListener{
 
     EditText eTime;
     EditText eDate;
@@ -140,6 +143,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         categorySpinner.setOnItemSelectedListener(this);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
 
+        eDate.setOnClickListener(this);
+        eTime.setOnClickListener(this);
+        eAddImage.setOnClickListener(this);
+        myFab.setOnClickListener(this);
+
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
@@ -151,15 +159,36 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         if (extras != null) {
             userLat = extras.getDouble("userlat");
             userLng = extras.getDouble("userlng");
+            location.setLatitude(userLat);
+            location.setLongitude(userLng);
             //The key argument here must match that used in the other activity
         }
+    }
 
-        eDate.setOnClickListener(new android.view.View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                // TODO Auto-generated method stub
-                //To show current date in the datepicker
+    @Override
+    public void onClick(View v) {
+        switch (v.getId()) {
+            case (R.id.event_time): {
+                Calendar mcurrentTime = Calendar.getInstance();
+                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
+                int minute = mcurrentTime.get(Calendar.MINUTE);
+                TimePickerDialog mTimePicker;
+                mTimePicker = new TimePickerDialog(CreateEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                    @Override
+                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
+                        boolean isPM = (selectedHour >= 12);
+                        date.setHour(selectedHour);
+                        date.setMinute(selectedMinute);
+                        eTime.setText(String.format(Locale.US, "%02d:%02d %s",
+                                (selectedHour == 12 || selectedHour == 0) ? 12 : selectedHour % 12, selectedMinute,
+                                isPM ? "PM" : "AM"));
+                    }
+                }, hour, minute, false);//No to 24 hour time
+                mTimePicker.setTitle("Select Time");
+                mTimePicker.show();
+                break;
+            }
+            case (R.id.event_date): {
                 Calendar mcurrentDate = Calendar.getInstance();
                 int mYear = mcurrentDate.get(Calendar.YEAR);
                 int mMonth = mcurrentDate.get(Calendar.MONTH);
@@ -179,50 +208,23 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 //mDatePicker.getDatePicker().setMinDate(mcurrentDate.getTimeInMillis());
                 mDatePicker.getDatePicker().setMinDate(mcurrentDate.getTimeInMillis());
                 mDatePicker.show();
+                break;
             }
-        });
 
-        eTime.setOnClickListener(new android.view.View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                Calendar mcurrentTime = Calendar.getInstance();
-                int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
-                int minute = mcurrentTime.get(Calendar.MINUTE);
-                TimePickerDialog mTimePicker;
-                mTimePicker = new TimePickerDialog(CreateEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
-                    @Override
-                    public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
-                        boolean isPM = (selectedHour >= 12);
-                        date.setHour(selectedHour);
-                        date.setMinute(selectedMinute);
-                        eTime.setText(String.format(Locale.US, "%02d:%02d %s",
-                                (selectedHour == 12 || selectedHour == 0) ? 12 : selectedHour % 12, selectedMinute,
-                                isPM ? "PM" : "AM"));
-                    }
-                }, hour, minute, false);//No to 24 hour time
-                mTimePicker.setTitle("Select Time");
-                mTimePicker.show();
-            }
-        });
-
-        eAddImage.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            case (R.id.addImageButton): {
                 selectImage();
+                break;
             }
-        });
-
-        myFab.setOnClickListener(new android.view.View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+            case (R.id.fab): {
                 if( eName.getText().toString().trim().equals("")){
                     eName.setError( "Your event needs a name!" );
                 }else {
                     upload();
                 }
+                break;
             }
-        });
+        }
+
     }
 
     private void selectImage() {
@@ -284,66 +286,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         }
     }
 
-    private Bitmap normalizeOrientation(Uri imgUri){
-        String filename = getFileName(imgUri);
-        try {
-            ExifInterface ei = new ExifInterface(filename);
-            int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                    1);
-            System.out.println(orientation);
-            Bitmap pic = MediaStore.Images.Media.getBitmap(
-                    getContentResolver(), picUri);
 
-            switch(orientation) {
-                case ExifInterface.ORIENTATION_ROTATE_90:
-                    rotateImage(pic, 90);
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_180:
-                    rotateImage(pic, 180);
-                    break;
-                case ExifInterface.ORIENTATION_ROTATE_270:
-                    rotateImage(pic, 270);
-                    break;
-                case ExifInterface.ORIENTATION_NORMAL:
-                default:
-                    break;
-            }
-            return pic;
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return null;
-    }
-
-    public String getFileName(Uri uri) {
-        String result = null;
-        if (uri.getScheme().equals("content")) {
-            Cursor cursor = getContentResolver().query(uri, null, null, null, null);
-            try {
-                if (cursor != null && cursor.moveToFirst()) {
-                    result = cursor.getString(cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME));
-                }
-            } finally {
-                cursor.close();
-            }
-        }
-        if (result == null) {
-            result = uri.getPath();
-            int cut = result.lastIndexOf('/');
-            if (cut != -1) {
-                result = result.substring(cut + 1);
-            }
-        }
-        return result;
-    }
-
-    public static Bitmap rotateImage(Bitmap source, float angle) {
-        Matrix matrix = new Matrix();
-        matrix.postRotate(angle);
-        return Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix,
-                true);
-    }
 
     private void performCrop(Uri picUri) {
         //call the standard crop action intent (the user device may not support it)
