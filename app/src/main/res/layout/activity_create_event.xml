@@ -9,7 +9,8 @@
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentBottom="true">
+        android:layout_alignParentBottom="true"
+        android:id="@+id/scroll_view">
 
         <LinearLayout
             android:orientation="vertical"
@@ -75,6 +76,7 @@
                     android:focusable="false"
                     android:hint="Date" />
 
+
                 <EditText
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -93,31 +95,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
+
                 <Spinner
                     android:layout_width="match_parent"
                     android:layout_height="51dp"
                     android:id="@+id/spinner"
                     style="@style/Widget.AppCompat.Spinner.Underlined"/>
 
+
             </android.support.design.widget.TextInputLayout>
 
-            <FrameLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:id="@+id/location_select_view">
-            </FrameLayout>
-
-           <!-- <Button
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="UPLOAD"
-                android:id="@+id/upload"
-                android:layout_alignBottom="@+id/fab"
-                android:layout_centerHorizontal="true"
-                android:layout_gravity="center_horizontal" /> -->
-
+            <fragment
+                android:id="@+id/map"
+                android:layout_width="fill_parent"
+                android:layout_height="300dp"
+                class="com.bcn.beacon.beacon.CustomViews.WorkaroundMapFragment"/>
         </LinearLayout>
-
 
     </ScrollView>
 

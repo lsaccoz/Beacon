@@ -329,9 +329,6 @@ public class MainActivity extends AuthBaseActivity
 
     }
 
-
-
-
     private void revokeAccess() {
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
                 new ResultCallback<Status>() {
@@ -356,7 +353,7 @@ public class MainActivity extends AuthBaseActivity
     /**
      * Gets the location of the user
      */
-    private void getUserLocation() {
+    public void getUserLocation() {
         LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
         if (checkGPSPermission()) {

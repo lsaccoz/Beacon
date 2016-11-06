@@ -2,6 +2,7 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
+import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
 import android.database.Cursor;
@@ -15,6 +16,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.media.ExifInterface;
 import android.provider.OpenableColumns;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
@@ -31,6 +33,7 @@ import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.TimePicker;
@@ -55,6 +58,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+
+import com.bcn.beacon.beacon.CustomViews.WorkaroundMapFragment;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.Location;
@@ -62,7 +67,17 @@ import com.bcn.beacon.beacon.R;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
+import com.google.android.gms.auth.api.Auth;
+import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.joanzapata.iconify.widget.IconTextView;
@@ -73,7 +88,10 @@ import java.util.Locale;
 
 import static android.support.design.R.styleable.View;
 
-public class CreateEventActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyCallback,
+        GoogleMap.OnMapClickListener,
+        GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
+        AdapterView.OnItemSelectedListener {
 
     EditText eTime;
     EditText eDate;
@@ -82,24 +100,18 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
     EditText eDescription;
     Location location = new Location();
     ImageButton eAddImage;
-    ImageView eImage;
     Uri picUri;
     FloatingActionButton myFab;
-
+    ScrollView mScrollView;
     Spinner categorySpinner;
-    // FloatingActionButton myFab;
-
-    Button upload;
 
     final int PIC_CROP = 2;
     final int REQUEST_IMAGE_CAPTURE = 1;
     final int PIC_SAVE = 0;
 
-    /**
-     * ATTENTION: This was auto-generated to implement the App Indexing API.
-     * See https://g.co/AppIndexing/AndroidStudio for more information.
-     */
-    private GoogleApiClient client;
+    private GoogleApiClient mGoogleApiClient;
+    private GoogleMap mMap;
+    private WorkaroundMapFragment mMapFragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +135,11 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         categorySpinner.setAdapter(adapter);
         categorySpinner.setOnItemSelectedListener(this);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
-        //upload = (Button) findViewById(R.id.upload);
+
+        mGoogleApiClient = new GoogleApiClient.Builder(this)
+                .enableAutoManage(this, this)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
+                .build();
 
         initialzieDateandTime();
 
@@ -186,9 +202,6 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
                 selectImage();
             }
         });
-        // ATTENTION: This was auto-generated to implement the App Indexing API.
-        // See https://g.co/AppIndexing/AndroidStudio for more information.
-        client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
         myFab.setOnClickListener(new android.view.View.OnClickListener() {
             @Override
@@ -401,5 +414,68 @@ public class CreateEventActivity extends AppCompatActivity implements AdapterVie
         eTime.setText(String.format(Locale.US, "%02d:%02d %s",
                 (hour == 12 || hour == 0) ? 12 : hour % 12, minute,
                 isPM ? "PM" : "AM"));
+    }
+
+    protected void onStart() {
+        mGoogleApiClient.connect();
+        super.onStart();
+
+        if (mMap == null) {
+            mScrollView = (ScrollView) findViewById(R.id.scroll_view);
+            ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
+                    .setListener(new WorkaroundMapFragment.OnTouchListener() {
+                @Override
+                public void onTouch() {
+                    mScrollView.requestDisallowInterceptTouchEvent(true);
+                }
+            });
+            ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
+        }
+    }
+
+    protected void onStop() {
+        if (mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.disconnect();
+        }
+        super.onStop();
+    }
+
+    public void initMap(){
+        if(mMap != null){
+            Marker marker = mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                    .position(new LatLng(49.2606, -123.2460))
+                    .title("Your Event's Location"));
+            marker.setDraggable(true);
+
+            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
+            marker.showInfoWindow();
+        }
+    }
+
+    @Override
+    public void onConnected(Bundle connectionHint) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+    }
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        mMap = googleMap;
+        initMap();
+    }
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+
     }
 }

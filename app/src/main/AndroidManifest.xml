@@ -31,29 +31,24 @@
         <activity
             android:name=".Activities.MainActivity"
             android:screenOrientation="portrait" />
-        <activity
-            android:name=".Activities.SignInActivity"
-            />
+        <activity android:name=".Activities.SignInActivity" />
 
-    <!--
+        <!--
 ATTENTION: This was auto-generated to add Google Play services to your project for
  App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
-    -->
-    <meta-data
-        android:name="com.google.android.gms.version"
-        android:value="@integer/google_play_services_version" />
+        -->
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
 
-    <activity android:name=".Activities.CreateEventActivity">
+        <activity android:name=".Activities.CreateEventActivity">
 
-        <!-- android:theme="@style/CreateEventTheme"> -->
-    </activity>
-
-    <activity
-        android:name=".Activities.EventPageActivity"
-        android:label="@string/title_activity_event_page"
-        android:theme="@style/AppTheme.NoActionBar">
-
-    </activity>
+            <!-- android:theme="@style/CreateEventTheme"> -->
+        </activity>
+        <activity
+            android:name=".Activities.EventPageActivity"
+            android:label="@string/title_activity_event_page"
+            android:theme="@style/AppTheme.NoActionBar"></activity>
     </application>
 
 </manifest>
