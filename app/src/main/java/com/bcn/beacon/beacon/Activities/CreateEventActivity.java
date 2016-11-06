@@ -107,6 +107,8 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     ScrollView mScrollView;
     Spinner categorySpinner;
 
+    private double userLat, userLng;
+
     final int PIC_CROP = 2;
     final int REQUEST_IMAGE_CAPTURE = 1;
     final int PIC_SAVE = 0;
@@ -145,6 +147,12 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
         initialzieDateandTime();
 
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            userLat = extras.getDouble("userlat");
+            userLng = extras.getDouble("userlng");
+            //The key argument here must match that used in the other activity
+        }
 
         eDate.setOnClickListener(new android.view.View.OnClickListener() {
 
@@ -385,6 +393,14 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         toUpload.setDate(date);
         toUpload.setLocation(location);
         toUpload.upload();
+
+        kill_activity();
+
+    }
+
+    void kill_activity()
+    {
+        finish();
     }
 
 
@@ -468,7 +484,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
             Marker marker = mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                    .position(new LatLng(49.2606, -123.2460))
+                    .position(new LatLng(userLat, userLng))
                     .title("Your Event's Location"));
             marker.setDraggable(true);
 

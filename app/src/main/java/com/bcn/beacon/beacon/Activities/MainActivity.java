@@ -323,6 +323,8 @@ public class MainActivity extends AuthBaseActivity
             //if the user presses the floating button, launch the create event activity
             case (R.id.create_event_fab): {
                 Intent intent = new Intent(this, CreateEventActivity.class);
+                intent.putExtra("userlat", userLat);
+                intent.putExtra("userlng", userLng);
                 startActivity(intent);
             }
         }
