@@ -602,6 +602,7 @@ public class MainActivity extends AuthBaseActivity
             //set the world tab as being selected
             resetTabColours();
             mList.setBackgroundResource(R.color.currentTabColor);
+            eventPageClickedFrom = 0;
         }
         super.onResume();
     }
