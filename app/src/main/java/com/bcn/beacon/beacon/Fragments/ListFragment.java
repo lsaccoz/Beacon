@@ -89,6 +89,8 @@ public class ListFragment extends Fragment {
 
                 // pass the event id to the new activity
                 intent.putExtra("eventId", event.getEventId());
+                // to indicate that event page was clicked from list view
+                intent.putExtra("from", 1);
 
                 getActivity().startActivity(intent);
             }
@@ -121,7 +123,6 @@ public class ListFragment extends Fragment {
         events = ((MainActivity) getActivity()).getEventList();
         // Populate the list view
         adapter = new EventListAdapter(appContext, 0, events);
-
     }
 
     @Override

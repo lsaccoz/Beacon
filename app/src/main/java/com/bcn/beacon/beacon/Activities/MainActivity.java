@@ -94,6 +94,7 @@ public class MainActivity extends AuthBaseActivity
     private IconTextView mFavourites;
     private IconTextView mSettings;
     private static final String TAG = "MainActivity";
+    public static int eventPageClickedFrom = 0;
 
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
@@ -101,7 +102,7 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-    private ArrayList<Event> events;
+    private ArrayList<Event> events = new ArrayList<Event>();
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
@@ -391,11 +392,10 @@ public class MainActivity extends AuthBaseActivity
      * Gets nearby events according to the user's location
      */
     private void getNearbyEvents() {
-        /* commented this out for now to fix the bug, look into memory leaks!
-        if (!events.isEmpty()) {
+        /* commented this out for now to fix the bug, look into memory leaks! */
+        /*if (!events.isEmpty()) {
             events.clear();
         }*/
-        events = new ArrayList<Event>();
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
             @Override
@@ -587,5 +587,22 @@ public class MainActivity extends AuthBaseActivity
         } else {
             finish();
         }
+    }
+
+    // To keep track of the view the event page was clicked on
+    public static void setEventPageClickedFrom(int from) {
+        eventPageClickedFrom = from;
+    }
+
+    @Override
+    public void onResume() {
+        // Temporary fix for going back to list view from event page
+        // it actually shows fragment but the action bar goes back to map view
+        if (eventPageClickedFrom == 1) {
+            //set the world tab as being selected
+            resetTabColours();
+            mList.setBackgroundResource(R.color.currentTabColor);
+        }
+        super.onResume();
     }
 }
