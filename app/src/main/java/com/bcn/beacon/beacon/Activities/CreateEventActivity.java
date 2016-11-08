@@ -134,6 +134,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         setContentView(R.layout.activity_create_event);
 
 
+
         ActionBar actionBar = getSupportActionBar();
         //actionBar.setDisplayHomeAsUpEnabled(true);
         actionBar.setTitle("Create Event");
