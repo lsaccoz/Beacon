@@ -112,8 +112,8 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     FloatingActionButton myFab;
     ScrollView mScrollView;
     Spinner categorySpinner;
-    EditText eLocationText;
-    Button locationSearch;
+    ImageButton locationSearch;
+    EditText eLocationSearch;
 
 
 
@@ -149,7 +149,8 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         categorySpinner.setAdapter(adapter);
         categorySpinner.setOnItemSelectedListener(this);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
-        locationSearch = (Button) findViewById(R.id.search_button);
+        locationSearch = (ImageButton) findViewById(R.id.search_button);
+        eLocationSearch = (EditText) findViewById(R.id.input_location_search);
 
         eDate.setOnClickListener(this);
         eTime.setOnClickListener(this);
@@ -233,8 +234,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 break;
             }
             case (R.id.search_button): {
-                EditText locationSearch = (EditText) findViewById(R.id.input_location_search);
-                String inputLocation = locationSearch.getText().toString();
+                String inputLocation = eLocationSearch.getText().toString();
                 List<Address> addressList = null;
 
                 if (inputLocation != null && !inputLocation.equals("")) {
@@ -245,17 +245,21 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    Address address = addressList.get(0);
-                    LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                    mMap.clear();
-                    Marker marker = mMap.addMarker(new MarkerOptions()
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                            .position(latLng)
-                            .title(address.getAddressLine(0)));
-                    marker.setDraggable(true);
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-                    location.setLongitude(address.getLongitude());
-                    location.setLatitude(address.getLatitude());
+                    if(!addressList.isEmpty()) {
+                        Address address = addressList.get(0);
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                        mMap.clear();
+                        Marker marker = mMap.addMarker(new MarkerOptions()
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                                .position(latLng)
+                                .title(address.getAddressLine(0)));
+                        marker.setDraggable(true);
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                        location.setLongitude(address.getLongitude());
+                        location.setLatitude(address.getLatitude());
+                    }else{
+                        eLocationSearch.setError( "No results" );
+                    }
                 }
                 break;
             }
@@ -448,9 +452,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     // TODO Auto-generated method stub
                     Log.d("System out", "onMarkerDragEnd..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
 
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(arg0.getPosition()));
-                    location.setLongitude(arg0.getPosition().longitude);
-                    location.setLatitude(arg0.getPosition().latitude);
+                    setLocationAndPin(arg0.getPosition().latitude, arg0.getPosition().longitude, arg0, false);
                 }
 
                 @Override
@@ -463,13 +465,41 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
             Marker marker = mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                    .position(new LatLng(userLat, userLng))
-                    .title("Your Event's Location"));
+                    .position(new LatLng(userLat, userLng)));
+
             marker.setDraggable(true);
 
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
-            marker.showInfoWindow();
+            setLocationAndPin(userLat, userLng, marker, true);
         }
+    }
+
+    void setLocationAndPin(double lat, double lng, Marker arg, boolean zoom){
+        List<Address> addresses = null;
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(lat,lng, 1);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        location.setLongitude(lng);
+        location.setLatitude(lat);
+        arg.hideInfoWindow();
+
+        if(!addresses.isEmpty()) {
+            arg.setTitle(addresses.get(0).getAddressLine(0));
+            eLocationSearch.setText(addresses.get(0).getAddressLine(0));
+        }else{
+            arg.setTitle("");
+            eLocationSearch.setText("");
+        }
+        if(zoom) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom((new LatLng(lat, lng)), 15));
+        }else{
+            mMap.animateCamera(CameraUpdateFactory.newLatLng((new LatLng(lat, lng))));
+        }
+        arg.showInfoWindow();
     }
 
     @Override

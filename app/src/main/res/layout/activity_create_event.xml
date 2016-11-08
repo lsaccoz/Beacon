@@ -121,16 +121,18 @@
                     android:id="@+id/input_location_search"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:selectAllOnFocus="true"
                     android:hint="Location" />
 
             </android.support.design.widget.TextInputLayout>
 
-            <Button
+            <ImageButton
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="search"
                 android:layout_weight="0.5"
-                android:id="@+id/search_button"/>
+                android:id="@+id/search_button"
+                app:srcCompat="@android:drawable/ic_menu_search" />
 
         </LinearLayout>
 
