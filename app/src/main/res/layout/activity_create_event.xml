@@ -130,6 +130,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="search"
+                android:layout_weight="0.25"
+                android:id="@+id/return_location_button"
+                app:srcCompat="@android:drawable/ic_menu_mylocation" />
+
+            <ImageButton
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="search"
                 android:layout_weight="0.5"
                 android:id="@+id/search_button"
                 app:srcCompat="@android:drawable/ic_menu_search" />

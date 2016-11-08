@@ -113,6 +113,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     ScrollView mScrollView;
     Spinner categorySpinner;
     ImageButton locationSearch;
+    ImageButton returnUserLocation;
     EditText eLocationSearch;
 
 
@@ -151,12 +152,14 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         myFab = (FloatingActionButton) findViewById(R.id.fab);
         locationSearch = (ImageButton) findViewById(R.id.search_button);
         eLocationSearch = (EditText) findViewById(R.id.input_location_search);
+        returnUserLocation = (ImageButton) findViewById(R.id.return_location_button);
 
         eDate.setOnClickListener(this);
         eTime.setOnClickListener(this);
         eAddImage.setOnClickListener(this);
         myFab.setOnClickListener(this);
         locationSearch.setOnClickListener(this);
+        returnUserLocation.setOnClickListener(this);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -262,6 +265,17 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     }
                 }
                 break;
+            }
+            case(R.id.return_location_button):{
+                mMap.clear();
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(userLat, userLng))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin)));
+                marker.setDraggable(true);
+
+                setLocationAndPin(userLat, userLng, marker, false);
+
+                return;
             }
         }
 
