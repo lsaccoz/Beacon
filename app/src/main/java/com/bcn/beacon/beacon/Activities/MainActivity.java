@@ -142,6 +142,9 @@ public class MainActivity extends AuthBaseActivity
         //get the users location using location services
         getUserLocation();
 
+        // get events from firebase
+        getNearbyEvents();
+
         //retrieve all the Views that we would want to modify here
         mList = (IconTextView) findViewById(list);
         mWorld = (IconTextView) findViewById(world);
@@ -171,7 +174,8 @@ public class MainActivity extends AuthBaseActivity
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
-                .addApi(AppIndex.API).build();
+                .build();
+          //      .addApi(AppIndex.API).build();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -253,9 +257,6 @@ public class MainActivity extends AuthBaseActivity
         mGoogleApiClient.connect();
 
         mAuth.addAuthStateListener(mAuthListener);
-
-        // get events from firebase
-        getNearbyEvents();
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
@@ -472,9 +473,8 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-
-
             private void getNearbyEvents () {
+
                 mDatabase = FirebaseDatabase.getInstance().getReference();
                 mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
                     @Override
@@ -592,40 +592,40 @@ public class MainActivity extends AuthBaseActivity
 
         ArrayList<Event> event_list = new ArrayList<Event>();
 
- public void test() {
-
-      mDatabase = FirebaseDatabase.getInstance().getReference();
-      mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
-          @Override
-          public void onDataChange(DataSnapshot dataSnapshot) {
-
-              for (DataSnapshot child : dataSnapshot.getChildren()) {
-                  eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
-                  eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
-
-                  String Event_ID;
-
-                  if(child.child("eventId").getValue() != null)
-                      Event_ID = child.child("eventId").getValue().toString();
-                  else
-                      Event_ID = child.getValue().toString();
-
-                  Event event = new Event(Event_ID,
-                              child.child("name").getValue().toString(),
-                              child.child("hostId").getValue().toString(),
-                              eventLat, eventLng,
-                              child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
-                              child.child("description").getValue().toString());
-
-                  event_list.add(event);
-              }
-
-          }
-          @Override
-          public void onCancelled(DatabaseError databaseError) { }
-      });
-
-    }
+// public void test() {
+//
+//      mDatabase = FirebaseDatabase.getInstance().getReference();
+//      mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
+//          @Override
+//          public void onDataChange(DataSnapshot dataSnapshot) {
+//
+//              for (DataSnapshot child : dataSnapshot.getChildren()) {
+//                  eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
+//                  eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
+//
+//                  String Event_ID;
+//
+//                  if(child.child("eventId").getValue() != null)
+//                      Event_ID = child.child("eventId").getValue().toString();
+//                  else
+//                      Event_ID = child.getValue().toString();
+//
+//                  Event event = new Event(Event_ID,
+//                              child.child("name").getValue().toString(),
+//                              child.child("hostId").getValue().toString(),
+//                              eventLat, eventLng,
+//                              child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
+//                              child.child("description").getValue().toString());
+//
+//                  event_list.add(event);
+//              }
+//
+//          }
+//          @Override
+//          public void onCancelled(DatabaseError databaseError) { }
+//      });
+//
+//    }
 
         HashMap<String, String> m = new HashMap<String, String>();
 
@@ -636,10 +636,10 @@ public class MainActivity extends AuthBaseActivity
 
                 if (mAuth != null && mAuth.getCurrentUser() != null) {
 
-                    if (!event_list.isEmpty()) {
-                        for (int i = 0; i < event_list.size(); i++) {
+                    if (!events.isEmpty()) {
+                        for (int i = 0; i < events.size(); i++) {
 
-                            Event e = event_list.get(i);
+                            Event e = events.get(i);
 
                             double latitude = e.getLocation().getLatitude();
                             double longitude = e.getLocation().getLatitude();
