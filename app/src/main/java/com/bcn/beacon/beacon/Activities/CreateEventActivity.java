@@ -247,8 +247,15 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     }
                     Address address = addressList.get(0);
                     LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                    mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+                    mMap.clear();
+                    Marker marker = mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                            .position(latLng)
+                            .title(address.getAddressLine(0)));
+                    marker.setDraggable(true);
                     mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                    location.setLongitude(address.getLongitude());
+                    location.setLatitude(address.getLatitude());
                 }
                 break;
             }
