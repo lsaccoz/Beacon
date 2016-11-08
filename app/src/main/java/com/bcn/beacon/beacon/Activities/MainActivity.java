@@ -164,6 +164,9 @@ public class MainActivity extends AuthBaseActivity
                 }
             }
         };
+
+        // get events from firebase
+        getNearbyEvents();
     }
 
     protected void onStart() {
@@ -171,8 +174,7 @@ public class MainActivity extends AuthBaseActivity
 
         mAuth.addAuthStateListener(mAuthListener);
 
-        // get events from firebase
-        getNearbyEvents();
+
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
