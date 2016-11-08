@@ -94,9 +94,6 @@ public class MainActivity extends AppCompatActivity
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
-    // Map for easily populating Event Pages
-    private Map<String, Event> eventsMap = new HashMap<String, Event>();
-
     // constant for permission id
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
@@ -201,6 +198,7 @@ public class MainActivity extends AppCompatActivity
                 startActivity(intent);
             }
         });
+
     }
 
 
@@ -308,7 +306,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Gets nearby events according to the user's location
      */
-    private void getNearbyEvents() {
+    public void getNearbyEvents() {
         if (!events.isEmpty()) {
             events.clear();
         }
@@ -339,7 +337,6 @@ public class MainActivity extends AppCompatActivity
                         //Log.i("DISTANCE:", Double.toString(distance));
                         events.add(event);
 
-                        eventsMap.put(event.getEventId(), event);
                     }
                 }
                 Collections.sort(events, new DistanceComparator());
@@ -417,23 +414,9 @@ public class MainActivity extends AppCompatActivity
                 });
     }
 
+    ArrayList<Event> event_list = new ArrayList<Event>();
 
-   ArrayList<Event> event_list = new ArrayList<Event>();
-
-  public void test() {
-
-        /*Event e = new Event("-KVka9_0ueQWa6SBzBMC", "event1", "host", 49.2606, -123.2460, "time", "test");
-        event_list.add(e);
-
-        Event p = new Event("-KVkXcbfoiCPxuQF-UW5", "event2", "host", 20, -123.2460, "time", "test");
-        event_list.add(p);
-
-        Event x = new Event("-KVka9tUAWdieC-8EN9a", "event3", "host", 30, -123.2460, "time", "test");
-        event_list.add(x);*/
-
-        // mDatabase = FirebaseDatabase.getInstance().getReference();
-
-       //event_list = getEventList();
+ public void test() {
 
       mDatabase = FirebaseDatabase.getInstance().getReference();
       mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
@@ -473,10 +456,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onMapReady(GoogleMap map) {
 
+        map.clear();
         test();
 
         if (mAuth != null && mAuth.getCurrentUser() != null) {
-            //ArrayList<Event> event_list = getEventList();
 
             if (!event_list.isEmpty()) {
                 for (int i = 0; i < event_list.size(); i++) {
@@ -498,7 +481,7 @@ public class MainActivity extends AppCompatActivity
                     map.setOnMarkerClickListener(this);
                     map.setOnInfoWindowClickListener(this);
                 }
-            }else {
+            } else {
                 Marker marker = map.addMarker(new MarkerOptions()
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                         .position(new LatLng(49.2606, -123.2460))
@@ -533,7 +516,5 @@ public class MainActivity extends AppCompatActivity
             itv.setBackgroundResource(R.color.otherTabColor);
         }
     }
-
-
 
 }

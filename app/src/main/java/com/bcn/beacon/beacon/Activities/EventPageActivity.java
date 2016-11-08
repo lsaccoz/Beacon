@@ -68,8 +68,9 @@ public class EventPageActivity extends AppCompatActivity {
 
     private void populate() {
         setTitle(event.getName());
-        TextView description = (TextView) findViewById(R.id.text);
+        TextView description = (TextView) findViewById(R.id.description);
         description.setText(event.getDescription());
+
     }
 
    /* private void on_directions_click(Button Directions) {
