@@ -69,19 +69,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends AuthBaseActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        GoogleApiClient.OnConnectionFailedListener,
-        View.OnClickListener {
+        View.OnClickListener{
 
-
-    private FirebaseAuth mAuth;
-    private FirebaseAuth.AuthStateListener mAuthListener;
-    private FirebaseUser mFirebaseUser;
     private GoogleApiClient mGoogleApiClient;
-    private boolean mMapInitialized = false;
+    private GoogleMap mMap;
 
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -98,10 +93,11 @@ public class MainActivity extends AppCompatActivity
     private IconTextView mWorld;
     private IconTextView mFavourites;
     private IconTextView mSettings;
-
     private static final String TAG = "MainActivity";
+    public static int eventPageClickedFrom = 0;
 
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
     /**
      * Copied over from BeaconListView
      */
@@ -111,14 +107,14 @@ public class MainActivity extends AppCompatActivity
     private static final double maxRadius = 100.0;
 
     @Override
-    protected void onCreate(final Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         //hide the action bar
         getSupportActionBar().hide();
 
-        //set default values for preferences if they haven't been modified yet
+//set default values for preferences if they haven't been modified yet
         PreferenceManager.setDefaultValues(this, R.xml.settings_fragment, false);
 
         //get the users location using location services
@@ -143,22 +139,15 @@ public class MainActivity extends AppCompatActivity
 
         //create our tab array to keep track of the state of each tab
         mTabs = new ArrayList<>();
-
         mTabs.add(mList);
         mTabs.add(mWorld);
         mTabs.add(mFavourites);
         mTabs.add(mSettings);
 
-        GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestEmail()
-                .build();
-
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
-                .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
+                .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
                 .build();
-
-        mAuth = FirebaseAuth.getInstance();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -166,6 +155,7 @@ public class MainActivity extends AppCompatActivity
                 FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
                     mFirebaseUser = user;
+                    initMap();
                     Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -175,14 +165,12 @@ public class MainActivity extends AppCompatActivity
         };
     }
 
-
     protected void onStart() {
         super.onStart();
 
-        mGoogleApiClient.connect();
         mAuth.addAuthStateListener(mAuthListener);
 
-        //get events from firebase
+        // get events from firebase
         getNearbyEvents();
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
@@ -298,6 +286,8 @@ public class MainActivity extends AppCompatActivity
                 //hide create event button on this page
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
+
+                signOut();
                 break;
             }
             case (R.id.settings): {
@@ -334,12 +324,13 @@ public class MainActivity extends AppCompatActivity
             //if the user presses the floating button, launch the create event activity
             case (R.id.create_event_fab): {
                 Intent intent = new Intent(this, CreateEventActivity.class);
+                intent.putExtra("userlat", userLat);
+                intent.putExtra("userlng", userLng);
                 startActivity(intent);
             }
         }
 
     }
-
 
     private void revokeAccess() {
         Auth.GoogleSignInApi.revokeAccess(mGoogleApiClient).setResultCallback(
@@ -365,7 +356,7 @@ public class MainActivity extends AppCompatActivity
     /**
      * Gets the location of the user
      */
-    private void getUserLocation() {
+    public void getUserLocation() {
         LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
         if (checkGPSPermission()) {
@@ -389,19 +380,9 @@ public class MainActivity extends AppCompatActivity
     public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
         if (requestCode == PERMISSION_ACCESS_FINE_LOCATION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Location location = null;
-                LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-                try {
-                    location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-                } catch (SecurityException e) {
-                    e.printStackTrace();
-                }
-                if (location != null) {
-                    userLng = location.getLongitude();
-                    userLat = location.getLatitude();
-                }
+
             } else {
-                Toast.makeText(getApplicationContext(), "You need to enable location services in order to use this app", Toast.LENGTH_LONG);
+                Toast.makeText(getApplicationContext(), "You need to enable location services in order to use Beacon", Toast.LENGTH_LONG);
             }
             return;
         }
@@ -411,16 +392,16 @@ public class MainActivity extends AppCompatActivity
      * Gets nearby events according to the user's location
      */
     private void getNearbyEvents() {
-        if (!events.isEmpty()) {
+        /* commented this out for now to fix the bug, look into memory leaks! */
+        /*if (!events.isEmpty()) {
             events.clear();
-        }
+        }*/
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 double distance;
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
-
                     eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
                     eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
                     distance = distFrom(userLat, userLng, eventLat, eventLng);
@@ -486,19 +467,19 @@ public class MainActivity extends AppCompatActivity
         return events;
     }
 
+    public ArrayList<Event> getRefreshedEventList() {
+        getNearbyEvents();
+        return events;
+    }
+
     public Map<String, Event> getEventsMap() {
         return eventsMap;
     }
 
 
     @Override
-    public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-        Log.d(TAG, "onConnectionFailed:" + connectionResult);
-    }
-
-    @Override
     public void onConnected(@Nullable Bundle bundle) {
-
+        getUserLocation();
     }
 
     @Override
@@ -527,23 +508,33 @@ public class MainActivity extends AppCompatActivity
                 });
     }
 
+    private void initMap() {
+        if (mMap != null) {
+            mMap.clear();
+            if (mAuth.getInstance().getCurrentUser() != null) {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(userLat, userLng))
+                        .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
+
+                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
+                marker.showInfoWindow();
+
+            } else {
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(49.2606, -123.2460))
+                        .title("You ;)"));
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                marker.showInfoWindow();
+            }
+        }
+    }
+
     @Override
     public void onMapReady(GoogleMap map) {
-        if (mAuth != null && mAuth.getCurrentUser() != null) {
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title(mAuth.getCurrentUser().getDisplayName()));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();
-        } else {
-            Marker marker = map.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                    .position(new LatLng(49.2606, -123.2460))
-                    .title("BECON!"));
-            map.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-            marker.showInfoWindow();
-        }
+        mMap = map;
+        initMap();
     }
 
     /**
@@ -559,7 +550,6 @@ public class MainActivity extends AppCompatActivity
     public void onMapClick(LatLng latLng) {
 
     }
-
     /**
      * This method overrides the default back button functionality
      *
@@ -597,5 +587,23 @@ public class MainActivity extends AppCompatActivity
         } else {
             finish();
         }
+    }
+
+    // To keep track of the view the event page was clicked on
+    public static void setEventPageClickedFrom(int from) {
+        eventPageClickedFrom = from;
+    }
+
+    @Override
+    public void onResume() {
+        // Temporary fix for going back to list view from event page
+        // it actually shows fragment but the action bar goes back to map view
+        if (eventPageClickedFrom == 1) {
+            //set the world tab as being selected
+            resetTabColours();
+            mList.setBackgroundResource(R.color.currentTabColor);
+            eventPageClickedFrom = 0;
+        }
+        super.onResume();
     }
 }

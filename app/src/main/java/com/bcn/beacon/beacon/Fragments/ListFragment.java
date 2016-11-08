@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.support.v4.widget.SwipeRefreshLayout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +34,7 @@ public class ListFragment extends Fragment {
     private ListView listView;
     private ArrayList<Event> events;
     private Context appContext;
+    private SwipeRefreshLayout swipeContainer;
     EventListAdapter adapter;
 
     public static ListFragment newInstance() {
@@ -84,16 +87,32 @@ public class ListFragment extends Fragment {
                 Event event = (Event) parent.getAdapter().getItem(position);
                 Intent intent = new Intent(getActivity(), EventPageActivity.class);
 
-                //pass the event id to the new activity
+                // pass the event id to the new activity
                 intent.putExtra("eventId", event.getEventId());
+                // to indicate that event page was clicked from list view
+                intent.putExtra("from", 1);
 
                 getActivity().startActivity(intent);
             }
         });
 
+        // initialize the swap container variable with the view
+        swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
+        // refresh listener for loading new data
+        swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
+            @Override
+            public void onRefresh() {
+                events.clear();
+                events = ((MainActivity) getActivity()).getRefreshedEventList();
+                adapter.notifyDataSetChanged();
+                swipeContainer.setRefreshing(false);
+            }
+        });
+
+        swipeContainer.setColorSchemeResources(android.R.color.holo_purple);
+
         return view;
     }
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -104,7 +123,6 @@ public class ListFragment extends Fragment {
         events = ((MainActivity) getActivity()).getEventList();
         // Populate the list view
         adapter = new EventListAdapter(appContext, 0, events);
-
     }
 
     @Override
@@ -113,13 +131,30 @@ public class ListFragment extends Fragment {
 
     }
 
+
+    /** Code for future functionality, in case we want to restore scroll position in list view
+    @Override
+    public void onPause() {
+        state = listView.onSaveInstanceState();
+        super.onPause();
+    }
+
+    @Override
+    public void onViewCreated(final View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        listView.setAdapter(adapter);
+
+        if (state != null) {
+            listView.onRestoreInstanceState(state);
+        }
+
+    } */
+
     @Override
     public void onResume() {
-
-        events = ((MainActivity) getActivity()).getEventList();
-        adapter.notifyDataSetChanged();
+        //adapter.notifyDataSetChanged();
         super.onResume();
-
     }
 
 }
