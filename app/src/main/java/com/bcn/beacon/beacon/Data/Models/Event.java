@@ -1,6 +1,10 @@
 package com.bcn.beacon.beacon.Data.Models;
 
 
+import android.util.Log;
+
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 
 import com.bcn.beacon.beacon.Data.Models.Date;
@@ -8,6 +12,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 
 /**
@@ -24,6 +29,9 @@ public class Event {
     private Date date;
     private Location location;
     private String timeStart_Id;
+    private User host;
+    private String userName;
+    private String email;
 //    private int num_attendees;
 //    private String locationId;
 //    private String[] attendee_Ids;
@@ -38,12 +46,45 @@ public class Event {
         setEventId(eventId);
 
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
         setHostId(userId);
 
         events.child(eventId).setValue(this);
 
         DatabaseReference users = database.getReference("Users");
         users.child(userId).child("hosting").child(eventId).setValue(true);
+        /* Commented out because Andy has done the same
+        String name = FirebaseAuth.getInstance().getCurrentUser().getDisplayName();
+        String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
+        users.child(userId).child("name").setValue(name);
+        users.child(userId).child("email").setValue(email);*/
+    }
+
+    public void setUserName(String userName) { this.userName = userName; }
+    public void setEmail(String email) { this.email = email; }
+    public String getUserName() { return userName; }
+    public String getEmail() { return email; }
+
+    public void setHost(String uuid) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        users.child(uuid).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                setUserName(dataSnapshot.child("name").getValue().toString());
+                //Log.i("USERNAME", dataSnapshot.child("name").getValue().toString());
+                setEmail(dataSnapshot.child("email").getValue().toString());
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+        //this.host = new User(uuid, userName, email);
+    }
+
+    public User getHost() {
+        return host;
     }
 
     // temporary distance variable addition

@@ -52,8 +52,8 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         }
         // Populate data via viewHolder
         viewHolder.title.setText(event.getName());
-        viewHolder.host.setText(event.getHostId());
-        viewHolder.distance.setText(Double.toString(Math.floor(event.getDistance())));
+        viewHolder.host.setText(event.getUserName());
+        viewHolder.distance.setText(Double.toString(event.getDistance()));
         viewHolder.start.setText(event.getTimeStart_Id());
 
         /*// Lookup view for data population (commented out for now)

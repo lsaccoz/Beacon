@@ -1,6 +1,7 @@
 package com.bcn.beacon.beacon.Activities;
 
 import android.app.Fragment;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -83,8 +84,9 @@ public class MainActivity extends AuthBaseActivity
     private SettingsFragment mSettingsFragment;
     private List<IconTextView> mTabs;
     private TextView mTitle;
+    private Fragment mActiveFragment;
 
-    private Map<String, Event> eventsMap = new HashMap<String, Event>();
+    private static HashMap<String, Event> eventsMap = new HashMap<String, Event>();
 
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
@@ -94,7 +96,10 @@ public class MainActivity extends AuthBaseActivity
     private IconTextView mFavourites;
     private IconTextView mSettings;
     private static final String TAG = "MainActivity";
+
     public static int eventPageClickedFrom = 0;
+    public static int REQUEST_CODE_EVENTPAGE = 10;
+    public static int REQUEST_CODE_CREATEEVENT = 20;
 
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
@@ -119,6 +124,7 @@ public class MainActivity extends AuthBaseActivity
 
         //get the users location using location services
         getUserLocation();
+        Log.i("CREATE", "BRUV");
 
         //retrieve all the Views that we would want to modify here
         mList = (IconTextView) findViewById(R.id.list);
@@ -163,6 +169,8 @@ public class MainActivity extends AuthBaseActivity
                 }
             }
         };
+
+        getNearbyEvents();
     }
 
     protected void onStart() {
@@ -171,7 +179,7 @@ public class MainActivity extends AuthBaseActivity
         mAuth.addAuthStateListener(mAuthListener);
 
         // get events from firebase
-        getNearbyEvents();
+        //getNearbyEvents();
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
@@ -183,6 +191,7 @@ public class MainActivity extends AuthBaseActivity
             // obtainable from the fragment manager
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
+            Log.i("DUDE", "SUH");
         }
 
         mMapFragment.getMapAsync(this);
@@ -234,6 +243,7 @@ public class MainActivity extends AuthBaseActivity
                     //attach this fragment to the screen
                     transaction.replace(R.id.events_view, mListFragment, getString(R.string.list_fragment));
                     transaction.addToBackStack(null);
+                    mActiveFragment = mListFragment;
 
                     //allows for smoother transitions between screens
                     transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -263,6 +273,7 @@ public class MainActivity extends AuthBaseActivity
                     } else {
                         mMapFragment = (MapFragment) fragment;
                     }
+                    mActiveFragment = mMapFragment;
 
                     FragmentTransaction fragmentTransaction =
                             getFragmentManager().beginTransaction();
@@ -400,23 +411,36 @@ public class MainActivity extends AuthBaseActivity
         mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!events.isEmpty()) {
+                    events.clear();
+                }
                 double distance;
                 for (DataSnapshot child : dataSnapshot.getChildren()) {
                     eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
                     eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
                     distance = distFrom(userLat, userLng, eventLat, eventLng);
                     if (distance <= maxRadius) {
+                        String minute = child.child("date").child("minute").getValue().toString();
+                        if (minute.length() == 1) {
+                            minute = "0" + minute;
+                        }
                         Event event = new Event(child.getValue().toString(),
                                 child.child("name").getValue().toString(),
                                 child.child("hostId").getValue().toString(),
                                 eventLat, eventLng,
-                                child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
+                                child.child("date").child("hour").getValue().toString() + ':' + minute,
                                 child.child("description").getValue().toString());
 
                         // The arraylist "events" is specific to each user, and will be different for each Android phone.
                         // The distance field for events would not be on the Firebase database, but it is required to keep track
                         // of it here in order to do the comparisons (for distance sorting) and list view (for showing distance).
                         event.setDistance(distance);
+
+                        // for gathering host information
+                        event.setHost(event.getHostId());
+
+                        // set info needed for event pages (might change the constructor for this later)
+                        // comments, tags, event photo needs to be set
 
                         //Log.i("NAME:", event.getName());
                         //Log.i("DISTANCE:", Double.toString(distance));
@@ -454,6 +478,8 @@ public class MainActivity extends AuthBaseActivity
                 * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double dist = earthRadius * c;
+        // for rounding to 3 decimal places
+        dist = Math.floor(1000 * dist + 0.5)/1000;
 
         return dist; // in kilometers
     }
@@ -472,7 +498,7 @@ public class MainActivity extends AuthBaseActivity
         return events;
     }
 
-    public Map<String, Event> getEventsMap() {
+    public static HashMap<String, Event> getEventsMap() {
         return eventsMap;
     }
 
@@ -573,12 +599,14 @@ public class MainActivity extends AuthBaseActivity
 
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             transaction.commit();
+            Log.i("STATUS", "MAP FRAG ACTIVE, BUT NOT SHOWN");
 
             //set the world tab as being selected
             resetTabColours();
             mWorld.setBackgroundResource(R.color.currentTabColor);
 
             mMapFragment.getMapAsync(this);
+            mActiveFragment = mMapFragment;
 
             //ensure that the create event tab is visible again
             mCreateEvent.setEnabled(true);
@@ -598,12 +626,52 @@ public class MainActivity extends AuthBaseActivity
     public void onResume() {
         // Temporary fix for going back to list view from event page
         // it actually shows fragment but the action bar goes back to map view
-        if (eventPageClickedFrom == 1) {
+        /*if (eventPageClickedFrom == 1) {
             //set the world tab as being selected
             resetTabColours();
             mList.setBackgroundResource(R.color.currentTabColor);
             eventPageClickedFrom = 0;
-        }
+        }*/
         super.onResume();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        if (requestCode == REQUEST_CODE_EVENTPAGE && resultCode == RESULT_CANCELED) {
+            //Fragment fragment =
+            if (eventPageClickedFrom == 1) {
+                resetTabColours();
+                mList.setBackgroundResource(R.color.currentTabColor);
+                eventPageClickedFrom = 0;
+            }
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.i("SAVE STATE", "YES");
+        //outState.putParcelable("lastFragment", getFragmentManager().saveFragmentInstanceState(mActiveFragment));
+        //getFragmentManager().putFragment(outState, "lastFragment", mActiveFragment);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        //getFragmentManager().getFragment(savedInstanceState, "lastFragment");
+        //savedInstanceState.getParcelable("lastFragment");
+
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i("DESTROYED", "YES");
+        Log.i("BACK STACK COUNT", Integer.toString(getFragmentManager().getBackStackEntryCount()));
+        super.onDestroy();
+        Log.i("FINISHING?", Boolean.toString(this.isFinishing()));
     }
 }
