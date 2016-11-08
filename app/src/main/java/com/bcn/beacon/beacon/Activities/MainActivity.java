@@ -517,7 +517,7 @@ public class MainActivity extends AuthBaseActivity
                         .position(new LatLng(userLat, userLng))
                         .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
                 marker.showInfoWindow();
 
             } else {

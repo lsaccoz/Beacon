@@ -15,6 +15,8 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.location.Address;
+import android.location.Geocoder;
 import android.media.ExifInterface;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
@@ -88,6 +90,7 @@ import com.joanzapata.iconify.widget.IconTextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import static android.support.design.R.styleable.View;
@@ -109,6 +112,10 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     FloatingActionButton myFab;
     ScrollView mScrollView;
     Spinner categorySpinner;
+    EditText eLocationText;
+    Button locationSearch;
+
+
 
     private double userLat, userLng;
 
@@ -142,11 +149,13 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         categorySpinner.setAdapter(adapter);
         categorySpinner.setOnItemSelectedListener(this);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
+        locationSearch = (Button) findViewById(R.id.search_button);
 
         eDate.setOnClickListener(this);
         eTime.setOnClickListener(this);
         eAddImage.setOnClickListener(this);
         myFab.setOnClickListener(this);
+        locationSearch.setOnClickListener(this);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -220,6 +229,26 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     eName.setError( "Your event needs a name!" );
                 }else {
                     upload();
+                }
+                break;
+            }
+            case (R.id.search_button): {
+                EditText locationSearch = (EditText) findViewById(R.id.input_location_search);
+                String inputLocation = locationSearch.getText().toString();
+                List<Address> addressList = null;
+
+                if (inputLocation != null && !inputLocation.equals("")) {
+                    Geocoder geocoder = new Geocoder(this);
+                    try {
+                        addressList = geocoder.getFromLocationName(inputLocation, 1);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    Address address = addressList.get(0);
+                    LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                    mMap.addMarker(new MarkerOptions().position(latLng).title("Marker"));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                 }
                 break;
             }
@@ -431,7 +460,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     .title("Your Event's Location"));
             marker.setDraggable(true);
 
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
             marker.showInfoWindow();
         }
     }

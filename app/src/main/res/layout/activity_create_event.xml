@@ -105,6 +105,37 @@
 
             </android.support.design.widget.TextInputLayout>
 
+        <LinearLayout
+            android:orientation="horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp">
+
+            <android.support.design.widget.TextInputLayout
+                android:id="@+id/input_location"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="4">
+
+                <EditText
+                    android:id="@+id/input_location_search"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Location" />
+
+            </android.support.design.widget.TextInputLayout>
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="search"
+                android:layout_weight="0.5"
+                android:id="@+id/search_button"/>
+
+        </LinearLayout>
+
+
+
             <fragment
                 android:id="@+id/map"
                 android:layout_width="fill_parent"
