@@ -1,9 +1,8 @@
 package com.bcn.beacon.beacon.Activities;
 
-import android.app.AlertDialog;
-import android.content.DialogInterface;
+
 import android.content.Intent;
-import android.net.Uri;
+
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -40,7 +39,6 @@ public class EventPageActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         GetEvent();
-
     }
 
     private void GetEvent() {
@@ -69,9 +67,11 @@ public class EventPageActivity extends AppCompatActivity {
     private void populate() {
         setTitle(event.getName());
         TextView description = (TextView) findViewById(R.id.description);
+        assert description != null;
         description.setText(event.getDescription());
 
     }
+}
 
    /* private void on_directions_click(Button Directions) {
 
@@ -102,12 +102,11 @@ public class EventPageActivity extends AppCompatActivity {
     }*/
 
     /*@Override
+=======
+    @Override
+>>>>>>> Staging
     public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() > 0) {
-            Log.i("NEW:", Integer.toString(getFragmentManager().getBackStackEntryCount()));
-        }
-        else {
-            super.onBackPressed();
-        }
-    }*/
-}
+        MainActivity.setEventPageClickedFrom(from);
+        super.onBackPressed();
+    }
+}*/

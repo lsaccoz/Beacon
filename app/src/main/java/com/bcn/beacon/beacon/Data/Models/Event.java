@@ -1,6 +1,9 @@
 package com.bcn.beacon.beacon.Data.Models;
 
 
+import com.google.firebase.database.FirebaseDatabase;
+
+import com.bcn.beacon.beacon.Data.Models.Date;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -14,7 +17,12 @@ import java.io.Serializable;
 /**
  * Created by neema on 2016-10-16.
  */
-public class Event{
+
+
+
+
+public class Event {
+
 
     //    private Long _id;
     private String eventId;
@@ -45,6 +53,7 @@ public class Event{
         this.setLocation(latitude, longitude);
         this.setTimeStart_Id(timeStart_Id);
         this.setDescription(description);
+
     }
 
     public void upload() {
@@ -74,6 +83,7 @@ public class Event{
         return hostId;
     }
 
+
     public String getDescription() {
         return description;
     }
@@ -98,25 +108,16 @@ public class Event{
 //        return attendee_Ids;
 //    }
 
-    public String getTimeStart_Id(){
+
+    public String getTimeStart_Id() {
         return timeStart_Id;
     }
 
-//    public String getTimeEnd_Id(){
-//        return timeEnd_Id;
-//    }
-
-///    public String[] getPostIds(){
-//        return postIds;
-//    }
-
-//    public String[] getTags(){
-//        return tags;
-//    }
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
+
 
     public double getDistance() { return distance; }
 
@@ -128,13 +129,17 @@ public class Event{
         this.hostId = hostId;
     }
 
+
     public void setDescription(String description) {
         this.description = description;
+
     }
+
 
     public void setDate(Date date) {
         this.date = date;
     }
+
 
     public void setLocation(Location location) {
         this.location = location;
@@ -152,17 +157,12 @@ public class Event{
 //        this.attendee_Ids = attendee_Ids;
 //    }
 
+
     public void setTimeStart_Id(String timeStart_Id){
         this.timeStart_Id = timeStart_Id;
     }
 
-//    public void setTimeEnd_Id(String timeEnd_Id){
-//        this.timeEnd_Id = timeEnd_Id;
-//    }
 
-//    public void setPosts(String[] postIds){
-//        this.postIds = postIds;
-//    }
     public void setDistance(double distance) { this.distance = distance; }
 
     public void setLocation(double latitude, double longitude) {
@@ -170,11 +170,14 @@ public class Event{
         location = new Location();
         location.setLatitude(latitude);
         location.setLongitude(longitude);
+
     }
+
 
 //    public void setTags(String[] tags){
 //        this.tags = tags;
 //    }
+
 
 
 }
