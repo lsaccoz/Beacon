@@ -11,19 +11,21 @@
     <LinearLayout
         android:id="@+id/tabs"
         android:layout_width="match_parent"
-        android:layout_height="45dp"
-        android:orientation="horizontal"
-        android:layout_alignParentTop="true">
+        android:layout_height="55dp"
+        android:elevation="10dp"
+        android:background="@color/otherTabColor"
+        android:layout_alignParentTop="true"
+        android:orientation="horizontal">
 
         <com.joanzapata.iconify.widget.IconTextView
             android:id="@+id/world"
             android:layout_width="0dp"
             android:layout_height="match_parent"
-            android:gravity="center"
-            android:layout_weight="1"
             android:layout_gravity="center"
-            android:text="{fa-globe}"
+            android:layout_weight="1"
             android:background="@color/currentTabColor"
+            android:gravity="center"
+            android:text="{fa-globe}"
             android:textColor="@color/custom_white"
             android:textSize="30sp" />
 
@@ -32,9 +34,9 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/otherTabColor"
             android:gravity="center"
             android:text="{fa-list-ul}"
-            android:background="@color/otherTabColor"
             android:textColor="@color/custom_white"
             android:textSize="30sp" />
 
@@ -43,13 +45,26 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
+            android:background="@color/otherTabColor"
             android:gravity="center"
             android:text="{fa-star}"
-            android:background="@color/otherTabColor"
             android:textColor="@color/yellow"
             android:textSize="30sp" />
 
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/settings"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@color/otherTabColor"
+            android:gravity="center"
+            android:text="{fa-gear}"
+            android:textColor="@color/custom_white"
+            android:textSize="30sp" />
+
+
     </LinearLayout>
+
 
     <FrameLayout
         android:id="@+id/events_view"
@@ -66,7 +81,10 @@
         android:layout_alignParentRight="true"
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
+        android:tint="@android:color/white"
         android:src="@android:drawable/ic_input_add"
         app:backgroundTint="@color/colorPrimary" />
+
+
 
 </RelativeLayout>

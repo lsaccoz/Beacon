@@ -17,6 +17,13 @@ import java.util.ArrayList;
  * Implemented by epekel starting from 2016-10-28.
  */
 public class EventListAdapter extends ArrayAdapter<Event> {
+    // view lookup cache for faster item loading
+    private static class ViewHolder {
+        TextView title;
+        TextView host;
+        TextView distance;
+        TextView start;
+    }
 
     public EventListAdapter(Context context, int resourceId,  ArrayList<Event> events){
         super(context, resourceId, events);
@@ -28,10 +35,28 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         // Get the event for this position
         Event event = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
+        ViewHolder viewHolder; // view lookup cache stored in tag
         if (convertView == null) {
+            viewHolder = new ViewHolder();
             convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_event, parent, false);
+            viewHolder.title = (TextView) convertView.findViewById(R.id.title);
+            viewHolder.host = (TextView) convertView.findViewById(R.id.host);
+            viewHolder.distance = (TextView) convertView.findViewById(R.id.distance);
+            viewHolder.start = (TextView) convertView.findViewById(R.id.start);
+            // Cache the viewHolder object inside the fresh view
+            convertView.setTag(viewHolder);
         }
-        // Lookup view for data population
+        else {
+            // view recycled, retrieve view holder object
+            viewHolder = (ViewHolder) convertView.getTag();
+        }
+        // Populate data via viewHolder
+        viewHolder.title.setText(event.getName());
+        viewHolder.host.setText(event.getHostId());
+        viewHolder.distance.setText(Double.toString(Math.floor(event.getDistance())));
+        viewHolder.start.setText(event.getTimeStart_Id());
+
+        /*// Lookup view for data population (commented out for now)
         TextView title = (TextView) convertView.findViewById(R.id.title);
         TextView host = (TextView) convertView.findViewById(R.id.host);
         TextView distance = (TextView) convertView.findViewById(R.id.distance);
@@ -40,7 +65,7 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         title.setText(event.getName());
         host.setText(event.getHostId());
         distance.setText(Double.toString(Math.floor(event.getDistance())));
-        start.setText(event.getTimeStart_Id());
+        start.setText(event.getTimeStart_Id());*/
 
         // Return the completed view
         return convertView;

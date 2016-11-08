@@ -1,5 +1,6 @@
 package com.bcn.beacon.beacon.Activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
@@ -12,12 +13,17 @@ import com.bcn.beacon.beacon.R;
 
 public class EventPageActivity extends AppCompatActivity {
 
+    private int from;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_page);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        Intent intent = getIntent();
+        from = intent.getIntExtra("from", 0);
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -29,13 +35,9 @@ public class EventPageActivity extends AppCompatActivity {
         });
     }
 
-    /*@Override
+    @Override
     public void onBackPressed() {
-        if (getFragmentManager().getBackStackEntryCount() > 0) {
-            Log.i("NEW:", Integer.toString(getFragmentManager().getBackStackEntryCount()));
-        }
-        else {
-            super.onBackPressed();
-        }
-    }*/
+        MainActivity.setEventPageClickedFrom(from);
+        super.onBackPressed();
+    }
 }
