@@ -35,6 +35,7 @@ import android.widget.Toast;
 
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
@@ -86,7 +87,7 @@ public class MainActivity extends AuthBaseActivity
     private TextView mTitle;
     private Fragment mActiveFragment;
 
-    private static HashMap<String, Event> eventsMap = new HashMap<String, Event>();
+    private static HashMap<String, ListEvent> eventsMap = new HashMap<String, ListEvent>();
 
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
@@ -107,7 +108,7 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-    private ArrayList<Event> events = new ArrayList<Event>();
+    private ArrayList<ListEvent> events = new ArrayList<ListEvent>();
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
@@ -408,42 +409,22 @@ public class MainActivity extends AuthBaseActivity
             events.clear();
         }*/
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
+        mDatabase.child("ListEvents").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
                     events.clear();
                 }
                 double distance;
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
-                    eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
+                for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
+                    ListEvent event = event_snapshot.getValue(ListEvent.class);
+
+                    double eventLat = event.getLocation().getLatitude();
+                    double eventLng = event.getLocation().getLongitude();
                     distance = distFrom(userLat, userLng, eventLat, eventLng);
+
                     if (distance <= maxRadius) {
-                        String minute = child.child("date").child("minute").getValue().toString();
-                        if (minute.length() == 1) {
-                            minute = "0" + minute;
-                        }
-                        Event event = new Event(child.getValue().toString(),
-                                child.child("name").getValue().toString(),
-                                child.child("hostId").getValue().toString(),
-                                eventLat, eventLng,
-                                child.child("date").child("hour").getValue().toString() + ':' + minute,
-                                child.child("description").getValue().toString());
-
-                        // The arraylist "events" is specific to each user, and will be different for each Android phone.
-                        // The distance field for events would not be on the Firebase database, but it is required to keep track
-                        // of it here in order to do the comparisons (for distance sorting) and list view (for showing distance).
-                        event.setDistance(distance);
-
-                        // for gathering host information
-                        event.setHost(event.getHostId());
-
-                        // set info needed for event pages (might change the constructor for this later)
-                        // comments, tags, event photo needs to be set
-
-                        //Log.i("NAME:", event.getName());
-                        //Log.i("DISTANCE:", Double.toString(distance));
+                        event.distance = distance;
                         events.add(event);
                         eventsMap.put(event.getEventId(), event);
                     }
@@ -489,16 +470,16 @@ public class MainActivity extends AuthBaseActivity
      *
      * @return list of nearby events
      */
-    public ArrayList<Event> getEventList() {
+    public ArrayList<ListEvent> getEventList() {
         return events;
     }
 
-    public ArrayList<Event> getRefreshedEventList() {
+    public ArrayList<ListEvent> getRefreshedEventList() {
         getNearbyEvents();
         return events;
     }
 
-    public static HashMap<String, Event> getEventsMap() {
+    public static HashMap<String, ListEvent> getEventsMap() {
         return eventsMap;
     }
 

@@ -8,6 +8,7 @@ import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.ArrayList;
  * Created by neema on 2016-10-16.
  * Implemented by epekel starting from 2016-10-28.
  */
-public class EventListAdapter extends ArrayAdapter<Event> {
+public class EventListAdapter extends ArrayAdapter<ListEvent> {
     // view lookup cache for faster item loading
     private static class ViewHolder {
         TextView title;
@@ -25,7 +26,7 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         TextView start;
     }
 
-    public EventListAdapter(Context context, int resourceId,  ArrayList<Event> events){
+    public EventListAdapter(Context context, int resourceId,  ArrayList<ListEvent> events){
         super(context, resourceId, events);
     }
 
@@ -33,7 +34,7 @@ public class EventListAdapter extends ArrayAdapter<Event> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent){
         // Get the event for this position
-        Event event = getItem(position);
+        ListEvent event = getItem(position);
         // Check if an existing view is being reused, otherwise inflate the view
         ViewHolder viewHolder; // view lookup cache stored in tag
         if (convertView == null) {
@@ -52,9 +53,9 @@ public class EventListAdapter extends ArrayAdapter<Event> {
         }
         // Populate data via viewHolder
         viewHolder.title.setText(event.getName());
-        viewHolder.host.setText(event.getUserName());
-        viewHolder.distance.setText(Double.toString(event.getDistance()));
-        viewHolder.start.setText(event.getTimeStart_Id());
+        viewHolder.host.setText(event.getHost());
+        viewHolder.distance.setText(Double.toString(event.distance));
+        viewHolder.start.setText(event.getDate().getFormatted());
 
         /*// Lookup view for data population (commented out for now)
         TextView title = (TextView) convertView.findViewById(R.id.title);

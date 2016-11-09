@@ -19,6 +19,7 @@ import com.bcn.beacon.beacon.Activities.EventPageActivity;
 import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.Adapters.EventListAdapter;
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import static android.provider.AlarmClock.EXTRA_MESSAGE;
 public class ListFragment extends Fragment {
 
     private ListView listView;
-    private ArrayList<Event> events;
+    private ArrayList<ListEvent> events;
     private Context appContext;
     private SwipeRefreshLayout swipeContainer;
     EventListAdapter adapter;
@@ -86,7 +87,7 @@ public class ListFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Event event = (Event) parent.getAdapter().getItem(position);
+                ListEvent event = (ListEvent) parent.getAdapter().getItem(position);
                 Intent intent = new Intent(getActivity(), EventPageActivity.class);
 
                 // pass the event id to the new activity
