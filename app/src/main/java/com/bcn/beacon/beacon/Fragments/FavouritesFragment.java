@@ -34,7 +34,6 @@ import java.util.HashMap;
 
 /**
  * The fragment for favourites page
- * TODO: Get favourites without the map, so we can get it independent of getNearbyEvents()
  * TODO: Implementing adding to favourites inside Event or User
  * TODO: Adding empty views to lists
  * TODO: Implement the temporary fix to every fragment / or better: fix the bug :)

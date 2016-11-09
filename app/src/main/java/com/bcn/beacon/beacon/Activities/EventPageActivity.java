@@ -14,6 +14,7 @@ import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
 import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -26,6 +27,7 @@ public class EventPageActivity extends AppCompatActivity {
 
     private int from;
     private String eventId;
+    private String userId;
     private Event event;
 
     @Override
@@ -59,8 +61,9 @@ public class EventPageActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, getEvent().getName().toString(), Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                /*Snackbar.make(view, getEvent().getName().toString(), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
+                addFavourite();
             }
         });
     }
@@ -77,5 +80,20 @@ public class EventPageActivity extends AppCompatActivity {
     public void onBackPressed() {
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
+    }
+
+    /**
+     * Function for adding the event to user's favourites
+     * @return true
+     */
+    public boolean addFavourite() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        // TODO: We should add a "true" check for if an event is favourited, so the button can remove the event from favourites on click
+        users.child(userId).child("favourites").child(eventId).setValue(true);
+        Toast.makeText(EventPageActivity.this, "Event added to favourites!", Toast.LENGTH_SHORT).show();
+
+        return true;
     }
 }
