@@ -1,5 +1,6 @@
 package com.bcn.beacon.beacon.Activities;
 
+import android.Manifest;
 import android.app.Fragment;
 import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
@@ -36,6 +37,7 @@ import android.widget.Toast;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
+import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
@@ -75,7 +77,7 @@ public class MainActivity extends AuthBaseActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        View.OnClickListener{
+        View.OnClickListener {
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -83,6 +85,7 @@ public class MainActivity extends AuthBaseActivity
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
     private SettingsFragment mSettingsFragment;
+    private FavouritesFragment mFavouritesFragment;
     private List<IconTextView> mTabs;
     private TextView mTitle;
     private Fragment mActiveFragment;
@@ -171,6 +174,7 @@ public class MainActivity extends AuthBaseActivity
             }
         };
 
+        // get events from firebase
         getNearbyEvents();
     }
 
@@ -178,9 +182,6 @@ public class MainActivity extends AuthBaseActivity
         super.onStart();
 
         mAuth.addAuthStateListener(mAuthListener);
-
-        // get events from firebase
-        //getNearbyEvents();
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
@@ -299,7 +300,30 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
 
-                signOut();
+                //get List fragment if exists
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
+                if (fragment == null || !fragment.isVisible()) {
+                    if (fragment == null) {
+                        //if fragment hasn't been created, get a new one
+                        mFavouritesFragment = FavouritesFragment.newInstance();
+                    } else {
+                        //if fragment already exists, use it
+                        mFavouritesFragment = (FavouritesFragment) fragment;
+                    }
+
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                    //attach this fragment to the screen
+                    transaction.replace(R.id.events_view, mFavouritesFragment, getString(R.string.favourites_fragment));
+                    transaction.addToBackStack(null);
+                    mActiveFragment = mFavouritesFragment;
+
+                    //allows for smoother transitions between screens
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                    transaction.commit();
+                }
+
                 break;
             }
             case (R.id.settings): {
@@ -369,13 +393,24 @@ public class MainActivity extends AuthBaseActivity
      * Gets the location of the user
      */
     public void getUserLocation() {
-        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+       LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
         if (checkGPSPermission()) {
-            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (location != null) {
-                userLat = location.getLatitude();
-                userLng = location.getLongitude();
+            List<String> providers = lm.getProviders(true);
+            Location bestLocation = null;
+            for (String provider : providers) {
+                Location l = lm.getLastKnownLocation(provider);
+                if (l == null) {
+                    continue;
+                }
+                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                    // Found best last known location: %s", l);
+                    bestLocation = l;
+                }
+            }
+            if (bestLocation != null) {
+                userLat = bestLocation.getLatitude();
+                userLng = bestLocation.getLongitude();
                 //Log.i("PERMISSION:", "ALLOWED");
             }
         }
@@ -524,7 +559,7 @@ public class MainActivity extends AuthBaseActivity
                         .position(new LatLng(userLat, userLng))
                         .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
                 marker.showInfoWindow();
 
             } else {
