@@ -15,6 +15,8 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.location.Address;
+import android.location.Geocoder;
 import android.media.ExifInterface;
 import android.provider.OpenableColumns;
 import android.support.annotation.NonNull;
@@ -88,6 +90,7 @@ import com.joanzapata.iconify.widget.IconTextView;
 import org.json.JSONException;
 import org.json.JSONObject;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import static android.support.design.R.styleable.View;
@@ -109,6 +112,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     FloatingActionButton myFab;
     ScrollView mScrollView;
     Spinner categorySpinner;
+    ImageButton locationSearch;
+    ImageButton returnUserLocation;
+    EditText eLocationSearch;
+
+
 
     private double userLat, userLng;
 
@@ -124,6 +132,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
+
 
 
         ActionBar actionBar = getSupportActionBar();
@@ -142,11 +151,16 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         categorySpinner.setAdapter(adapter);
         categorySpinner.setOnItemSelectedListener(this);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
+        locationSearch = (ImageButton) findViewById(R.id.search_button);
+        eLocationSearch = (EditText) findViewById(R.id.input_location_search);
+        returnUserLocation = (ImageButton) findViewById(R.id.return_location_button);
 
         eDate.setOnClickListener(this);
         eTime.setOnClickListener(this);
         eAddImage.setOnClickListener(this);
         myFab.setOnClickListener(this);
+        locationSearch.setOnClickListener(this);
+        returnUserLocation.setOnClickListener(this);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -222,6 +236,47 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     upload();
                 }
                 break;
+            }
+            case (R.id.search_button): {
+                String inputLocation = eLocationSearch.getText().toString();
+                List<Address> addressList = null;
+
+                if (inputLocation != null && !inputLocation.equals("")) {
+                    Geocoder geocoder = new Geocoder(this);
+                    try {
+                        addressList = geocoder.getFromLocationName(inputLocation, 1);
+
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    if(!addressList.isEmpty()) {
+                        Address address = addressList.get(0);
+                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
+                        mMap.clear();
+                        Marker marker = mMap.addMarker(new MarkerOptions()
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                                .position(latLng)
+                                .title(address.getAddressLine(0)));
+                        marker.setDraggable(true);
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
+                        location.setLongitude(address.getLongitude());
+                        location.setLatitude(address.getLatitude());
+                    }else{
+                        eLocationSearch.setError( "No results" );
+                    }
+                }
+                break;
+            }
+            case(R.id.return_location_button):{
+                mMap.clear();
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .position(new LatLng(userLat, userLng))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin)));
+                marker.setDraggable(true);
+
+                setLocationAndPin(userLat, userLng, marker, false);
+
+                return;
             }
         }
 
@@ -412,9 +467,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     // TODO Auto-generated method stub
                     Log.d("System out", "onMarkerDragEnd..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
 
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(arg0.getPosition()));
-                    location.setLongitude(arg0.getPosition().longitude);
-                    location.setLatitude(arg0.getPosition().latitude);
+                    setLocationAndPin(arg0.getPosition().latitude, arg0.getPosition().longitude, arg0, false);
                 }
 
                 @Override
@@ -427,13 +480,41 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
             Marker marker = mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                    .position(new LatLng(userLat, userLng))
-                    .title("Your Event's Location"));
+                    .position(new LatLng(userLat, userLng)));
+
             marker.setDraggable(true);
 
-            mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 15));
-            marker.showInfoWindow();
+            setLocationAndPin(userLat, userLng, marker, true);
         }
+    }
+
+    void setLocationAndPin(double lat, double lng, Marker arg, boolean zoom){
+        List<Address> addresses = null;
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+        try {
+            addresses = geocoder.getFromLocation(lat,lng, 1);
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        location.setLongitude(lng);
+        location.setLatitude(lat);
+        arg.hideInfoWindow();
+
+        if(!addresses.isEmpty()) {
+            arg.setTitle(addresses.get(0).getAddressLine(0));
+            eLocationSearch.setText(addresses.get(0).getAddressLine(0));
+        }else{
+            arg.setTitle("");
+            eLocationSearch.setText("");
+        }
+        if(zoom) {
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom((new LatLng(lat, lng)), 15));
+        }else{
+            mMap.animateCamera(CameraUpdateFactory.newLatLng((new LatLng(lat, lng))));
+        }
+        arg.showInfoWindow();
     }
 
     @Override
