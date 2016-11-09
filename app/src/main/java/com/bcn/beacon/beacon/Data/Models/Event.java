@@ -20,8 +20,6 @@ import com.google.firebase.database.ValueEventListener;
  */
 
 public class Event {
-
-    //    private Long _id;
     private String eventId;
     private String name;
     private String hostId;
@@ -29,15 +27,31 @@ public class Event {
     private Date date;
     private Location location;
     private String timeStart_Id;
-    private User host;
     private String userName;
     private String email;
+    private User host;
 //    private int num_attendees;
 //    private String locationId;
 //    private String[] attendee_Ids;
-//    private String timeEnd_Id;
 //    private String[] postIds;
 //    private String[] tags;
+
+    // temporary distance variable addition
+    private double distance;
+
+    public Event() {
+        // Default constructor required for calls to DataSnapshot.getValue(Event.class)
+    }
+
+    public Event(String eventId, String name, String hostId, double latitude, double longitude, String timeStart_Id, String description) {
+        this.setEventId(eventId);
+        this.setName(name);
+        this.setHostId(hostId);
+        this.setLocation(latitude, longitude);
+        this.setTimeStart_Id(timeStart_Id);
+        this.setDescription(description);
+
+    }
 
     public void upload() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -58,12 +72,26 @@ public class Event {
         String email = FirebaseAuth.getInstance().getCurrentUser().getEmail();
         users.child(userId).child("name").setValue(name);
         users.child(userId).child("email").setValue(email);*/
+
+        new ListEvent(this);
     }
 
-    public void setUserName(String userName) { this.userName = userName; }
-    public void setEmail(String email) { this.email = email; }
-    public String getUserName() { return userName; }
-    public String getEmail() { return email; }
+
+    public void setUserName(String userName) {
+        this.userName = userName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
 
     public void setHost(String uuid) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -87,22 +115,6 @@ public class Event {
         return host;
     }
 
-    // temporary distance variable addition
-    private double distance;
-
-    public Event() {
-        // Default constructor required for calls to DataSnapshot.getValue(Event.class)
-    }
-
-    public Event(String eventId, String name, String hostId, double latitude, double longitude, String timeStart_Id, String description) {
-        this.setEventId(eventId);
-        this.setName(name);
-        this.setHostId(hostId);
-        this.setLocation(latitude, longitude);
-        this.setTimeStart_Id(timeStart_Id);
-        this.setDescription(description);
-
-    }
 
     public String getEventId() {
         return eventId;
@@ -115,7 +127,6 @@ public class Event {
     public String getHostId() {
         return hostId;
     }
-
 
     public String getDescription() {
         return description;
@@ -141,18 +152,18 @@ public class Event {
 //        return attendee_Ids;
 //    }
 
-
     public String getTimeStart_Id() {
         return timeStart_Id;
+    }
+
+    public double getDistance() {
+        return distance;
     }
 
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
     }
-
-
-    public double getDistance() { return distance; }
 
     public void setName(String name) {
         this.name = name;
@@ -162,21 +173,37 @@ public class Event {
         this.hostId = hostId;
     }
 
-
     public void setDescription(String description) {
         this.description = description;
-
     }
-
 
     public void setDate(Date date) {
         this.date = date;
     }
 
-
     public void setLocation(Location location) {
         this.location = location;
     }
+
+    public void setTimeStart_Id(String timeStart_Id) {
+        this.timeStart_Id = timeStart_Id;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
+    public void setLocation(double latitude, double longitude) {
+        // convention = {ycoord, xcoord}
+        location = new Location();
+        location.setLatitude(latitude);
+        location.setLongitude(longitude);
+
+    }
+
+//    public void setTags(String[] tags){
+//        this.tags = tags;
+//    }
 
 //    public void setNumAttendees(int num_attendees){
 //        this.num_attendees = num_attendees;
@@ -189,28 +216,4 @@ public class Event {
 //    public void setAttendee_Ids(String[] attendee_Ids){
 //        this.attendee_Ids = attendee_Ids;
 //    }
-
-
-    public void setTimeStart_Id(String timeStart_Id){
-        this.timeStart_Id = timeStart_Id;
-    }
-
-
-    public void setDistance(double distance) { this.distance = distance; }
-
-    public void setLocation(double latitude, double longitude) {
-        // convention = {ycoord, xcoord}
-        location = new Location();
-        location.setLatitude(latitude);
-        location.setLongitude(longitude);
-
-    }
-
-
-//    public void setTags(String[] tags){
-//        this.tags = tags;
-//    }
-
-
-
 }
