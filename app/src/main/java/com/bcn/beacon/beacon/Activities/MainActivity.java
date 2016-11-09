@@ -90,8 +90,6 @@ public class MainActivity extends AuthBaseActivity
     private TextView mTitle;
     private Fragment mActiveFragment;
 
-    private static HashMap<String, ListEvent> eventsMap = new HashMap<String, ListEvent>();
-
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
 
@@ -111,9 +109,13 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-    private ArrayList<ListEvent> events = new ArrayList<ListEvent>();
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+
+    private ArrayList<ListEvent> events = new ArrayList<>();
+    private HashMap<String, ListEvent> eventsMap = new HashMap<>();
+    private ArrayList<String> favouriteIds = new ArrayList<>();
+    private ArrayList<ListEvent> favourites = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +130,7 @@ public class MainActivity extends AuthBaseActivity
 
         //get the users location using location services
         getUserLocation();
-        Log.i("CREATE", "BRUV");
+        Log.i("MAIN CREATED", "YES");
 
         //retrieve all the Views that we would want to modify here
         mList = (IconTextView) findViewById(R.id.list);
@@ -176,6 +178,8 @@ public class MainActivity extends AuthBaseActivity
 
         // get events from firebase
         getNearbyEvents();
+        // get user favourite ids from firebase
+        getFavouriteIds();
     }
 
     protected void onStart() {
@@ -193,7 +197,7 @@ public class MainActivity extends AuthBaseActivity
             // obtainable from the fragment manager
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
-            Log.i("DUDE", "SUH");
+            Log.i("BACKSTACK COUNT", "0");
         }
 
         mMapFragment.getMapAsync(this);
@@ -292,7 +296,7 @@ public class MainActivity extends AuthBaseActivity
             }
 
             case (R.id.favourites): {
-                //TODO need to attach a fragment for this tab also
+
                 resetTabColours();
                 mFavourites.setBackgroundResource(R.color.currentTabColor);
 
@@ -474,6 +478,34 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
+     * Function to get the event ids of user's favourites
+     */
+    public void getFavouriteIds() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        users.child(userId).child("favourites").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!favouriteIds.isEmpty()) {
+                    favouriteIds.clear();
+                }
+                //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
+                for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
+                    //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
+                    favouriteIds.add(fav_snapshot.getKey());
+                    }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    /**
      * Java implementation of the Haversine formula for calculating the distance between two locations.
      * Taken from http://stackoverflow.com/questions/120283
      * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
@@ -514,7 +546,11 @@ public class MainActivity extends AuthBaseActivity
         return events;
     }
 
-    public static HashMap<String, ListEvent> getEventsMap() {
+    public ArrayList<String> getFavouriteIdsList() {
+        return favouriteIds;
+    }
+
+    public HashMap<String, ListEvent> getEventsMap() {
         return eventsMap;
     }
 
@@ -611,11 +647,12 @@ public class MainActivity extends AuthBaseActivity
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
             transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+            // we need to handle the back stack so it pops
             transaction.addToBackStack(null);
 
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             transaction.commit();
-            Log.i("STATUS", "MAP FRAG ACTIVE, BUT NOT SHOWN");
+            //Log.i("STATUS", "MAP FRAG ACTIVE, BUT NOT SHOWN");
 
             //set the world tab as being selected
             resetTabColours();
@@ -637,6 +674,7 @@ public class MainActivity extends AuthBaseActivity
     public static void setEventPageClickedFrom(int from) {
         eventPageClickedFrom = from;
     }
+
 
     @Override
     public void onResume() {

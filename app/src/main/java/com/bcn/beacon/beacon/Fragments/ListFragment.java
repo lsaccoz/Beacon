@@ -160,7 +160,6 @@ public class ListFragment extends Fragment {
         //adapter.notifyDataSetChanged();
         /*if (state != null) {
             listView.onRestoreInstanceState(state);
-            Log.i("SUP", "MAN");
         }*/
         super.onResume();
     }
