@@ -36,6 +36,7 @@ import android.widget.Toast;
 
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
@@ -83,6 +84,7 @@ public class MainActivity extends AuthBaseActivity
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
     private SettingsFragment mSettingsFragment;
+    private FavouritesFragment mFavouritesFragment;
     private List<IconTextView> mTabs;
     private TextView mTitle;
     private Fragment mActiveFragment;
@@ -297,7 +299,30 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
 
-                signOut();
+                //get List fragment if exists
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
+                if (fragment == null || !fragment.isVisible()) {
+                    if (fragment == null) {
+                        //if fragment hasn't been created, get a new one
+                        mFavouritesFragment = FavouritesFragment.newInstance();
+                    } else {
+                        //if fragment already exists, use it
+                        mFavouritesFragment = (FavouritesFragment) fragment;
+                    }
+
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                    //attach this fragment to the screen
+                    transaction.replace(R.id.events_view, mFavouritesFragment, getString(R.string.favourites_fragment));
+                    transaction.addToBackStack(null);
+                    mActiveFragment = mFavouritesFragment;
+
+                    //allows for smoother transitions between screens
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                    transaction.commit();
+                }
+
                 break;
             }
             case (R.id.settings): {

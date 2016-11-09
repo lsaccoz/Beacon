@@ -12,6 +12,7 @@
     <string name="settings_fragment">Settings</string>
     <string name="map_fragment">Map</string>
     <string name="list_fragment">List</string>
+    <string name="favourites_fragment">Favourites</string>
 
     <!-- Google Maps API Key -->
     <string name="google_maps_key">AIzaSyBq0s_kXLltw-BmRwL4HRQGFA50I4FamKE </string>
