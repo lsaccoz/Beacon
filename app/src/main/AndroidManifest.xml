@@ -47,8 +47,9 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
         </activity>
         <activity
             android:name=".Activities.EventPageActivity"
-            android:label="@string/title_activity_event_page"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:label="@string/title_activity_event_page">
+
+        </activity>
     </application>
 
 </manifest>

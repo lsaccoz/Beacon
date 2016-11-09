@@ -23,7 +23,7 @@
     </string-array>
     <string name="title_activity_alsdfjlk">Alsdfjlk</string>
     <string name="title_activity_list_view">ListView</string>
-    <string name="title_activity_event_page">EventPageActivity</string>
+    <string name="title_activity_event_page">Event Page</string>
 
     <!-- SettingsFragment strings -->
     <string name="pref_range_label">Search Range</string>

@@ -33,6 +33,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -42,6 +43,7 @@ import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -135,6 +137,10 @@ public class MainActivity extends AuthBaseActivity
 
         //hide the action bar
         getSupportActionBar().hide();
+
+        Window window = this.getWindow();
+        //set the status bar color if the API version is high enough
+        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
 
 //set default values for preferences if they haven't been modified yet
         PreferenceManager.setDefaultValues(this, R.xml.settings_fragment, false);
