@@ -65,7 +65,6 @@
 
     </LinearLayout>
 
-
     <FrameLayout
         android:id="@+id/events_view"
         android:layout_width="match_parent"
