@@ -43,9 +43,7 @@ public class EventPageActivity extends AppCompatActivity {
 
     private void GetEvent() {
 
-        String ID = getIntent().getStringExtra("Event");
-
-        String eventId = ID;
+        String eventId = getIntent().getStringExtra("Event");
 
         DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference("Events/" + eventId);
 
@@ -65,6 +63,7 @@ public class EventPageActivity extends AppCompatActivity {
     }
 
     private void populate() {
+
         setTitle(event.getName());
         TextView description = (TextView) findViewById(R.id.description);
         assert description != null;
@@ -101,12 +100,3 @@ public class EventPageActivity extends AppCompatActivity {
                 .show();
     }*/
 
-    /*@Override
-=======
-    @Override
->>>>>>> Staging
-    public void onBackPressed() {
-        MainActivity.setEventPageClickedFrom(from);
-        super.onBackPressed();
-    }
-}*/

@@ -2,6 +2,7 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 
@@ -43,6 +44,7 @@ import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.firebase.client.annotations.Nullable;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -57,7 +59,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -78,9 +82,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//import static com.bcn.beacon.beacon.R.id.container_all;
+//import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.favourites;
 import static com.bcn.beacon.beacon.R.id.list;
 import static com.bcn.beacon.beacon.R.id.map;
+import static com.bcn.beacon.beacon.R.id.range;
+import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;
 
 
@@ -91,11 +99,10 @@ public class MainActivity extends AuthBaseActivity
         GoogleApiClient.OnConnectionFailedListener,
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnInfoWindowClickListener,
-        View.OnClickListener {
+        View.OnClickListener{
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
-
 
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -158,6 +165,7 @@ public class MainActivity extends AuthBaseActivity
 
         //create an initial map fragment
         mMapFragment = MapFragment.newInstance();
+        mMapFragment.getMapAsync(this);
 
         //create our tab array to keep track of the state of each tab
         mTabs = new ArrayList<>();
@@ -171,7 +179,8 @@ public class MainActivity extends AuthBaseActivity
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
-                .addApi(AppIndex.API).build();
+                .build();
+                //.addApi(AppIndex.API).build();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -189,52 +198,6 @@ public class MainActivity extends AuthBaseActivity
         };
 
 
-//        list(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                world.setEnabled(true);
-//                if (list.isEnabled()) {
-//                    resetTabColours();
-//                    list.setBackgroundResource(R.color.currentTabColor);
-//
-//                    if (savedInstanceState == null) {
-//                        // This null check is apparently good to have in order to not have fragments created over and over again
-//                        mListFragment = ListFragment.newInstance();
-//                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-//
-//                        transaction.replace(R.id.events_view, mListFragment);
-//                        transaction.addToBackStack(null);
-//                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-//
-//                        transaction.commit();
-//                    }
-//                }
-//                list.setEnabled(false);
-//            }
-//        });
-//
-//        world.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                list.setEnabled(true);
-//                if (world.isEnabled()) {
-//                    resetTabColours();
-//                    world.setBackgroundResource(R.color.currentTabColor);
-//
-//                    getFragmentManager().popBackStackImmediate();
-//                }
-//                world.setEnabled(false);
-//            }
-//        });
-//
-//        favourites.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                resetTabColours();
-//                favourites.setBackgroundResource(R.color.currentTabColor);
-//            }
-//        });
-
         final Intent intent = new Intent(this, CreateEventActivity.class);
 
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
@@ -245,7 +208,6 @@ public class MainActivity extends AuthBaseActivity
         });
 
     }
-
 
     protected void onStart() {
         super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -472,9 +434,8 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
+    private void getNearbyEvents () {
 
-
-            private void getNearbyEvents () {
                 mDatabase = FirebaseDatabase.getInstance().getReference();
                 mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
                     @Override
@@ -486,7 +447,7 @@ public class MainActivity extends AuthBaseActivity
                             distance = distFrom(userLat, userLng, eventLat, eventLng);
 
                             if (distance <= maxRadius) {
-                                Event event = new Event(child.getValue().toString(),
+                                Event event = new Event(child.child("eventId").getValue().toString(),
                                         child.child("name").getValue().toString(),
                                         child.child("hostId").getValue().toString(),
                                         eventLat, eventLng,
@@ -590,81 +551,80 @@ public class MainActivity extends AuthBaseActivity
         }
 
 
-        ArrayList<Event> event_list = new ArrayList<Event>();
-
- public void test() {
-
-      mDatabase = FirebaseDatabase.getInstance().getReference();
-      mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
-          @Override
-          public void onDataChange(DataSnapshot dataSnapshot) {
-
-              for (DataSnapshot child : dataSnapshot.getChildren()) {
-                  eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
-                  eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
-
-                  String Event_ID;
-
-                  if(child.child("eventId").getValue() != null)
-                      Event_ID = child.child("eventId").getValue().toString();
-                  else
-                      Event_ID = child.getValue().toString();
-
-                  Event event = new Event(Event_ID,
-                              child.child("name").getValue().toString(),
-                              child.child("hostId").getValue().toString(),
-                              eventLat, eventLng,
-                              child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
-                              child.child("description").getValue().toString());
-
-                  event_list.add(event);
-              }
-
-          }
-          @Override
-          public void onCancelled(DatabaseError databaseError) { }
-      });
-
-    }
+        //ArrayList<Event> event_list = new ArrayList<Event>();
 
         HashMap<String, String> m = new HashMap<String, String>();
+        HashMap<String, Event> events_list = new HashMap<String, Event>();
 
         private void initMap () {
 
             if(mMap != null) {
                 mMap.clear();
 
+               // SharedPreferences prefs =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                //int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
+
+                /*LatLngBounds Bound = new LatLngBounds(
+                        new LatLng(userLat - pref, userLng - pref), new LatLng(userLat + pref, userLng + pref));
+
+                mMap.setLatLngBoundsForCameraTarget(Bound);*/
+
+                mMap.setMaxZoomPreference(17);
+                //mMap.setMinZoomPreference(11);
+
                 if (mAuth != null && mAuth.getCurrentUser() != null) {
 
-                    if (!event_list.isEmpty()) {
-                        for (int i = 0; i < event_list.size(); i++) {
+                    if (!events.isEmpty()) {
 
-                            Event e = event_list.get(i);
+                        Marker user = mMap.addMarker(new MarkerOptions()
+                                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                                        .position(new LatLng(userLat, userLng))
+                                        .title("You"));
+                        //mMap.setOnMarkerClickListener(this)
+
+                        for (int i = 0; i < events.size(); i++) {
+
+                            Event e = events.get(i);
 
                             double latitude = e.getLocation().getLatitude();
-                            double longitude = e.getLocation().getLatitude();
+                            double longitude = e.getLocation().getLongitude();
+
                             String name = e.getName();
+                            String description = e.getDescription();
 
                             Marker marker = mMap.addMarker(new MarkerOptions()
-                                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                                     .position(new LatLng(latitude, longitude))
-                                    .title(name));
+                                    .title(name)
+                                    .snippet(description));
 
                             m.put(marker.getId(), e.getEventId());
+                            events_list.put(marker.getId(), e);
 
-                            mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
                             mMap.setOnMarkerClickListener(this);
                             mMap.setOnInfoWindowClickListener(this);
+                            mMap.setInfoWindowAdapter(new InfoWindow());
                         }
-                    }
-                } else {
-                    Marker marker = mMap.addMarker(new MarkerOptions()
-                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                            .position(new LatLng(49.2606, -123.2460))
-                            .title("Default"));
 
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
+                    } else {
+                        Marker marker = mMap.addMarker(new MarkerOptions()
+                                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                                .position(new LatLng(userLat, userLng))
+                                .title("Your Location"));
+
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
+                    }
                 }
+
+                LatLng UserLocation = new LatLng(userLat, userLng);
+
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                                                .target(UserLocation)
+                                                .zoom(13)
+                                                .build();
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
+
             }
 
         }
@@ -682,22 +642,18 @@ public class MainActivity extends AuthBaseActivity
 
                 @Override
                 public boolean onMarkerClick (Marker marker){
-                    marker.showInfoWindow();
 
-
+                        marker.showInfoWindow();
                     return true;
-
                 }
 
 
         public void onMapReady (GoogleMap map){
             mMap = map;
-
             initMap();
 
         }
-
-        /**
+    /**
          * resets all the tabs to the unselected color
          */
         private void resetTabColours () {
@@ -769,4 +725,45 @@ public class MainActivity extends AuthBaseActivity
         }
 
 
+   public class InfoWindow implements GoogleMap.InfoWindowAdapter {
+
+        private View v;
+
+        InfoWindow() {
+
+            v = getLayoutInflater().inflate(R.layout.custom_info_window_contents, null);
+
+        }
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+
+            Event e = events_list.get(marker.getId());
+
+            if(e != null) {
+
+                String description = e.getDescription();
+
+                TextView Description = ((TextView) v.findViewById(R.id.description));
+                assert Description != null;
+                Description.setText(description);
+
+                String title = e.getName();
+                TextView Title = ((TextView) v.findViewById(R.id.title));
+                assert Title != null;
+                Title.setText(title);
+
+                return v;
+            }
+
+            return null;
+
+            }
     }
+}
