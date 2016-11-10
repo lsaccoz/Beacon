@@ -100,6 +100,8 @@ public class ListFragment extends Fragment {
             }
         });
 
+
+
         // initialize the swap container variable with the view
         swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
         // refresh listener for loading new data
@@ -107,8 +109,7 @@ public class ListFragment extends Fragment {
             @Override
             public void onRefresh() {
                 //events.clear();
-                events = ((MainActivity) getActivity()).getEventList();
-                adapter.notifyDataSetChanged();
+                updateListAllEvents();
                 swipeContainer.setRefreshing(false);
             }
         });
@@ -128,6 +129,20 @@ public class ListFragment extends Fragment {
         // Populate the list view
         adapter = new EventListAdapter(appContext, 0, events);
 
+    }
+
+    public void updateListForSearch(String queryString){
+        ArrayList<ListEvent> results = ((MainActivity) getActivity()).searchEvents(queryString);
+        events.clear();
+        events.addAll(results);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void updateListAllEvents(){
+        ArrayList<ListEvent> results = ((MainActivity) getActivity()).getEventList();
+        events.clear();
+        events.addAll(results);
+        adapter.notifyDataSetChanged();
     }
 
     @Override

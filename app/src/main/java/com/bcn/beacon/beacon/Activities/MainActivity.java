@@ -24,12 +24,18 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -93,6 +99,9 @@ public class MainActivity extends AuthBaseActivity
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
 
+    private FloatingActionButton searchButton;
+    private SearchView searchBar;
+
     private IconTextView mList;
     private IconTextView mWorld;
     private IconTextView mFavourites;
@@ -104,6 +113,8 @@ public class MainActivity extends AuthBaseActivity
     public static int REQUEST_CODE_CREATEEVENT = 20;
 
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
+    private boolean showBarInMap = false;
 
     /**
      * Copied over from BeaconListView
@@ -138,6 +149,49 @@ public class MainActivity extends AuthBaseActivity
         mFavourites = (IconTextView) findViewById(R.id.favourites);
         mSettings = (IconTextView) findViewById(R.id.settings);
         mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
+        searchButton = (FloatingActionButton) findViewById(R.id.search_test);
+
+//        searchButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                showBarInMap = true;
+//            }
+//        });
+
+
+        searchBar = (SearchView) findViewById(R.id.searchBar);
+        searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //renderList(true);
+                //Toast.makeText(getApplicationContext(), "searched?", Toast.LENGTH_LONG).show();
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+                searchBar.clearFocus();
+                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                fragment.updateListForSearch(query);
+                return false;
+            }
+
+            int counter = 0;
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                //Toast.makeText(getApplicationContext(), "changed!!" + ++counter, Toast.LENGTH_LONG).show();
+                return false;
+            }
+        });
+
+        searchBar.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                //resetEventList();
+                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                fragment.updateListAllEvents();
+                return false;
+            }
+        });
+
 
         //set the onClickListener to this activity
         mList.setOnClickListener(this);
@@ -233,6 +287,11 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
 
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
+
+                searchBar.setVisibility(View.VISIBLE);
+
                 //get List fragment if exists
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
                 if (fragment == null || !fragment.isVisible()) {
@@ -267,6 +326,11 @@ public class MainActivity extends AuthBaseActivity
                 //show create event button on this page
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
+
+                searchButton.setEnabled(true);
+                searchButton.setVisibility(View.VISIBLE);
+
+                searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
 
@@ -304,6 +368,11 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
 
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
+
+                searchBar.setVisibility(View.GONE);
+
                 //get List fragment if exists
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
                 if (fragment == null || !fragment.isVisible()) {
@@ -339,6 +408,11 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
 
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
+
+                searchBar.setVisibility(View.GONE);
+
                 //check if visible fragment is an instance of settings fragment already, if so do nothing
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
 
@@ -367,6 +441,7 @@ public class MainActivity extends AuthBaseActivity
                 intent.putExtra("userlat", userLat);
                 intent.putExtra("userlng", userLng);
                 startActivity(intent);
+                break;
             }
         }
 
@@ -538,7 +613,8 @@ public class MainActivity extends AuthBaseActivity
      * @return list of nearby events
      */
     public ArrayList<ListEvent> getEventList() {
-        return events;
+        ArrayList<ListEvent> allEvents = new ArrayList<>(events);
+        return allEvents;
     }
 
     public ArrayList<ListEvent> getRefreshedEventList() {
@@ -546,12 +622,22 @@ public class MainActivity extends AuthBaseActivity
         return events;
     }
 
-    public ArrayList<String> getFavouriteIdsList() {
-        return favouriteIds;
-    }
-
     public HashMap<String, ListEvent> getEventsMap() {
         return eventsMap;
+    }
+
+    public ArrayList<ListEvent> searchEvents(String query) {
+        ArrayList<ListEvent> queries = new ArrayList<>();
+        for (ListEvent e : events) {
+            if (e.getName().contains(query)) {
+                queries.add(e);
+            }
+        }
+        return queries;
+    }
+
+    public ArrayList<String> getFavouriteIdsList() {
+        return favouriteIds;
     }
 
 
