@@ -12,20 +12,27 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 ##Features
 
 1. Find events and hangouts occurring within a local vicinity
-..* Search events on a map view
-..* Search events on a list view
+
+  * Search events on a map view
+  * Search events on a list view
+
 2. Create events and hangouts and make them private/public 
-..* Make Public events that are visible to anyone nearby
-..* Make Private events that are only visible to friends
-..* Set Location and time
-..* Set tags and related media
+
+  * Make Public events that are visible to anyone nearby
+  * Make Private events that are only visible to friends
+  * Set Location and time
+  * Set tags and related media
+
 3. Search and Sort events
-..* By keyphrase
-..* By Name
-..* By Distance
-..* By Tags
-..* By Relevance
+
+  * By keyphrase
+  * By Name
+  * By Distance
+  * By Tags
+  * By Relevance
+
 4. Post comments and photos on event pages
+
 5. Favourite events and receive notifications for favourited events
 
 
