@@ -44,9 +44,8 @@
 
     </style>
 
-    <style name="myListViewStyle" parent="@android:style/Widget.ListView">
+    <style name="myListViewStyle" parent="@android:style/Widget.Holo.ListView">
         <item name="android:background">@color/custom_white</item>
-        <item name="android:cacheColorHint">@color/custom_white</item>
 
     </style>
 
