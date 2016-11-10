@@ -1,11 +1,13 @@
 package com.bcn.beacon.beacon.Activities;
 
+import android.Manifest;
 import android.app.AlertDialog;
 import android.app.DatePickerDialog;
 import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.app.TimePickerDialog;
 import android.content.DialogInterface;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -15,11 +17,15 @@ import android.graphics.Path;
 import android.graphics.Point;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
+import android.hardware.Camera;
 import android.location.Address;
 import android.location.Geocoder;
 import android.media.ExifInterface;
+import android.os.Environment;
 import android.provider.OpenableColumns;
+import android.provider.Settings;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.ActionBar;
@@ -30,6 +36,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -60,9 +67,13 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
+import com.android.camera.CropImageIntentBuilder;
 import com.bcn.beacon.beacon.CustomViews.WorkaroundMapFragment;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
@@ -70,6 +81,7 @@ import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -84,11 +96,14 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.plus.model.people.Person;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.joanzapata.iconify.widget.IconTextView;
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.io.InputStream;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -116,13 +131,14 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     ImageButton returnUserLocation;
     EditText eLocationSearch;
 
-
+    File tempfile;
 
     private double userLat, userLng;
 
     final int PIC_CROP = 2;
     final int REQUEST_IMAGE_CAPTURE = 1;
     final int PIC_SAVE = 0;
+    final int MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE = 3;
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -137,6 +153,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
         ActionBar actionBar = getSupportActionBar();
         //actionBar.setDisplayHomeAsUpEnabled(true);
+
+        Window window = this.getWindow();
+        //set the status bar color if the API version is high enough
+        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
+
         actionBar.setTitle("Create Event");
 
         eTime = (EditText) findViewById(R.id.event_time);
@@ -289,11 +310,20 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
             @Override
             public void onClick(DialogInterface dialog, int item) {
                 if (items[item].equals("Take Photo")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        checkExternalMemoryPermissions();
+                    }
                     Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                    tempfile = getTempFile();
                     if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
+                        takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, Uri.fromFile(tempfile));
+                        takePictureIntent.putExtra("return-data", true);
                         startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE);
                     }
                 } else if (items[item].equals("Choose from Library")) {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        checkExternalMemoryPermissions();
+                    }
                     Intent saveImageIntent = new Intent(Intent.ACTION_PICK,
                             MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(saveImageIntent, PIC_SAVE);
@@ -305,68 +335,217 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         builder.create().show();
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // TODO Auto-generated method stub
-        super.onActivityResult(requestCode, resultCode, data);
+    private File getTempFile() {
 
-        if (resultCode == RESULT_OK) {
-            if (requestCode == PIC_SAVE) {
-                picUri = data.getData();
-                performCrop(picUri);
+        if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 
-            }
-            else if (requestCode == PIC_CROP) {
-                /*
-                Bitmap pic = null;
-                try {
-                    pic = MediaStore.Images.Media.getBitmap(
-                            getContentResolver(), picUri);
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                eAddImage.setImageBitmap(pic);*/
-                Bundle extras = data.getExtras();
-                Bitmap photo = extras.getParcelable("data");
-                eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                eAddImage.setImageBitmap(photo);
-            }
-            else if(requestCode == REQUEST_IMAGE_CAPTURE){
-                //Bundle extras = data.getExtras();
-                //Bitmap pic = (Bitmap) extras.get("data");
-                picUri = data.getData();
-                performCrop(picUri);
-            }
+            File file = new File(Environment.getExternalStorageDirectory(),"temp.jpg");
+            try {
+                file.createNewFile();
+            } catch (IOException e) {}
+
+            return file;
+        } else {
+
+            return null;
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
+        super.onActivityResult(requestCode, resultCode, data);
+        File croppedImageFile = new File(getFilesDir(), "test.jpg");
 
-    private void performCrop(Uri picUri) {
-        //call the standard crop action intent (the user device may not support it)
-        Intent cropIntent = new Intent("com.android.camera.action.CROP");
+        if (resultCode == RESULT_OK) {
+            if (requestCode == PIC_SAVE) {
 
-        //indicate image type and Uri
-        cropIntent.setDataAndType(picUri, "image/*");
-        //set crop properties
-        cropIntent.putExtra("crop", "true");
-        //indicate aspect of desired crop
-        cropIntent.putExtra("aspectX", 1080);
-        cropIntent.putExtra("aspectY", 1080);
-        //indicate output X and Y
-        cropIntent.putExtra("outputX", 1080);
-        cropIntent.putExtra("outputY", 1080);
-        //retrieve data on return
-        cropIntent.putExtra("scale", true);
-        cropIntent.putExtra("return-data", true);
-        //start the activity - we handle returning in onActivityResult
+                Uri croppedImage = Uri.fromFile(croppedImageFile);
 
-        //cropIntent.putExtra(MediaStore.EXTRA_OUTPUT, picUri);
+                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(300, 300, 1080, 1080, croppedImage);
+                cropImage.setOutlineColor(0xFF03A9F4);
+                cropImage.setSourceImage(data.getData());
 
-        startActivityForResult(cropIntent, PIC_CROP);
+                startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
+            }
+            else if (requestCode == PIC_CROP) {
+                /* ViewGroup.LayoutParams imglayout = eAddImage.getLayoutParams();
+                if(imglayout.height < 300) {
+                    imglayout.height = imglayout.height + 400;
+                }
+                eAddImage.setLayoutParams(imglayout); */
+                eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                eAddImage.setImageBitmap(BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath()));
+            }
+            else if(requestCode == REQUEST_IMAGE_CAPTURE){
+                Uri croppedImage = Uri.fromFile(croppedImageFile);
+                Log.d("System out", "orient " + getImageOrientation());
+
+                try {
+                    handleSamplingAndRotationBitmap(this, Uri.fromFile(croppedImageFile));
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(300, 300, 1080, 1080, croppedImage);
+
+                    cropImage.setOutlineColor(0xFF03A9F4);
+                    cropImage.setSourceImage(Uri.fromFile(tempfile));
+                    startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
+
+            }
+        }
+    }
+    /**
+     * This method is responsible for solving the rotation issue if exist. Also scale the images to
+     * 1024x1024 resolution
+     *
+     * @param context       The current context
+     * @param selectedImage The Image URI
+     * @return Bitmap image results
+     * @throws IOException
+     */
+    public static Bitmap handleSamplingAndRotationBitmap(Context context, Uri selectedImage)
+            throws IOException {
+        int MAX_HEIGHT = 1024;
+        int MAX_WIDTH = 1024;
+
+        // First decode with inJustDecodeBounds=true to check dimensions
+        final BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inJustDecodeBounds = true;
+        InputStream imageStream = context.getContentResolver().openInputStream(selectedImage);
+        BitmapFactory.decodeStream(imageStream, null, options);
+        imageStream.close();
+
+        // Calculate inSampleSize
+        options.inSampleSize = calculateInSampleSize(options, MAX_WIDTH, MAX_HEIGHT);
+
+        // Decode bitmap with inSampleSize set
+        options.inJustDecodeBounds = false;
+        imageStream = context.getContentResolver().openInputStream(selectedImage);
+        Bitmap img = BitmapFactory.decodeStream(imageStream, null, options);
+
+        img = rotateImageIfRequired(img, selectedImage);
+        return img;
     }
 
+    /**
+     * Calculate an inSampleSize for use in a {@link BitmapFactory.Options} object when decoding
+     * bitmaps using the decode* methods from {@link BitmapFactory}. This implementation calculates
+     * the closest inSampleSize that will result in the final decoded bitmap having a width and
+     * height equal to or larger than the requested width and height. This implementation does not
+     * ensure a power of 2 is returned for inSampleSize which can be faster when decoding but
+     * results in a larger bitmap which isn't as useful for caching purposes.
+     *
+     * @param options   An options object with out* params already populated (run through a decode*
+     *                  method with inJustDecodeBounds==true
+     * @param reqWidth  The requested width of the resulting bitmap
+     * @param reqHeight The requested height of the resulting bitmap
+     * @return The value to be used for inSampleSize
+     */
+    private static int calculateInSampleSize(BitmapFactory.Options options,
+                                             int reqWidth, int reqHeight) {
+        // Raw height and width of image
+        final int height = options.outHeight;
+        final int width = options.outWidth;
+        int inSampleSize = 1;
+
+        if (height > reqHeight || width > reqWidth) {
+
+            // Calculate ratios of height and width to requested height and width
+            final int heightRatio = Math.round((float) height / (float) reqHeight);
+            final int widthRatio = Math.round((float) width / (float) reqWidth);
+
+            // Choose the smallest ratio as inSampleSize value, this will guarantee a final image
+            // with both dimensions larger than or equal to the requested height and width.
+            inSampleSize = heightRatio < widthRatio ? heightRatio : widthRatio;
+
+            // This offers some additional logic in case the image has a strange
+            // aspect ratio. For example, a panorama may have a much larger
+            // width than height. In these cases the total pixels might still
+            // end up being too large to fit comfortably in memory, so we should
+            // be more aggressive with sample down the image (=larger inSampleSize).
+
+            final float totalPixels = width * height;
+
+            // Anything more than 2x the requested pixels we'll sample down further
+            final float totalReqPixelsCap = reqWidth * reqHeight * 2;
+
+            while (totalPixels / (inSampleSize * inSampleSize) > totalReqPixelsCap) {
+                inSampleSize++;
+            }
+        }
+        return inSampleSize;
+    }
+
+    /**
+     * Rotate an image if required.
+     *
+     * @param img           The image bitmap
+     * @param selectedImage Image URI
+     * @return The resulted Bitmap after manipulation
+     */
+    private static Bitmap rotateImageIfRequired(Bitmap img, Uri selectedImage) throws IOException {
+
+        ExifInterface ei = new ExifInterface(selectedImage.getPath());
+        int orientation = ei.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                return rotateImage(img, 90);
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                return rotateImage(img, 180);
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                return rotateImage(img, 270);
+            default:
+                return img;
+        }
+    }
+
+    private static Bitmap rotateImage(Bitmap img, int degree) {
+        Matrix matrix = new Matrix();
+        matrix.postRotate(degree);
+        Bitmap rotatedImg = Bitmap.createBitmap(img, 0, 0, img.getWidth(), img.getHeight(), matrix, true);
+        img.recycle();
+        return rotatedImg;
+    }
+
+
+    private int getImageOrientation() {
+        final String[] imageColumns = {MediaStore.Images.Media._ID, MediaStore.Images.ImageColumns.ORIENTATION};
+        final String imageOrderBy = MediaStore.Images.Media._ID + " DESC";
+        Cursor cursor = getContentResolver().query(MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                imageColumns, null, null, imageOrderBy);
+
+        if (cursor.moveToFirst()) {
+            int orientation = cursor.getInt(cursor.getColumnIndex(MediaStore.Images.ImageColumns.ORIENTATION));
+            cursor.close();
+            return orientation;
+        } else {
+            return 0;
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.M)
+    private void checkExternalMemoryPermissions(){
+        if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+
+            // Should we show an explanation?
+            if (shouldShowRequestPermissionRationale(
+                    Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                // Explain to the user why we need to read the contacts
+            }
+
+            requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
+
+            // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
+            // app-defined int constant
+
+            return;
+        }
+    }
 
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {

@@ -7,6 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".Activities.MainActivity">
 
+    <TextView android:id = "@+id/description"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:textSize="20pt"
+        android:text=""
+        android:textColor="@color/colorAccent"/>
+
     <LinearLayout
         android:id="@+id/tabs"
         android:layout_width="match_parent"
@@ -63,59 +70,6 @@
 
     </LinearLayout>
 
-    <!--<LinearLayout-->
-        <!--android:id="@+id/helper_bar"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="35dp"-->
-        <!--android:elevation="10dp"-->
-        <!--android:visibility="visible"-->
-        <!--android:background="@color/black"-->
-        <!--android:orientation="horizontal"-->
-        <!--android:layout_below="@+id/tabs">-->
-
-        <!--&lt;!&ndash;-->
-        <!--<TextView-->
-            <!--android:text="View"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:id="@+id/helper_bar_title"-->
-            <!--android:layout_weight="1"-->
-            <!--tools:text="View"-->
-            <!--android:textAlignment="center"-->
-            <!--android:textColor="@color/colorAccent"-->
-            <!--android:textSize="23sp"-->
-            <!--android:translationY="48dp" />-->
-        <!--&ndash;&gt;-->
-
-        <!--<EditText-->
-            <!--android:id="@+id/searchSpace"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="40dp"-->
-            <!--android:inputType="textPersonName"-->
-            <!--android:text="@android:string/search_go"-->
-            <!--android:ems="10"-->
-            <!--android:layout_marginTop="0dp"-->
-            <!--android:layout_alignParentLeft="true"-->
-            <!--android:layout_alignParentStart="true"-->
-            <!--android:layout_marginLeft="0dp"-->
-            <!--android:layout_marginStart="0dp"-->
-            <!--android:textColor="@color/colorAccent"-->
-            <!--android:allowUndo="true"-->
-            <!--android:foregroundTint="@color/white"-->
-            <!--android:layout_weight="0.15" />-->
-
-        <!--<Button-->
-            <!--android:text="Button"-->
-            <!--android:layout_width="wrap_content"-->
-            <!--android:layout_height="wrap_content"-->
-            <!--android:layout_below="@+id/tabs"-->
-            <!--android:layout_alignRight="@+id/search_button"-->
-            <!--android:layout_alignEnd="@+id/search_button"-->
-            <!--android:id="@+id/button2"-->
-            <!--android:layout_weight="0.15" />-->
-
-    <!--</LinearLayout>-->
-
     <android.support.v7.widget.SearchView
         android:id="@+id/searchBar"
         android:layout_width="match_parent"
@@ -166,4 +120,6 @@
         app:backgroundTint="@color/common_google_signin_btn_text_dark_default" />
 
 
+
 </RelativeLayout>
+

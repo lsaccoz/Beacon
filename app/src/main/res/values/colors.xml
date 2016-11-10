@@ -11,6 +11,7 @@
     <color name="currentTabColor">#FFB3CD</color>
     <color name="otherTabColor">#FF4081</color>
     <color name="custom_white">#f3e5f5</color>
+    <color name="color_cardView">@color/custom_white</color>
 
     <!-- Generic Colors -->
     <color name="black">#000000</color>

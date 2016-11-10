@@ -3,6 +3,8 @@ package com.bcn.beacon.beacon.Activities;
 import android.Manifest;
 import android.app.Fragment;
 import android.os.Parcelable;
+import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -15,7 +17,7 @@ import android.graphics.Typeface;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-
+import android.provider.ContactsContract;
 import android.preference.PreferenceManager;
 
 import android.support.annotation.NonNull;
@@ -36,6 +38,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -47,7 +50,12 @@ import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.annotations.Nullable;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
+import com.google.android.gms.appindexing.Action;
+import com.google.android.gms.appindexing.AppIndex;
+import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.ConnectionResult;
@@ -59,7 +67,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -71,6 +81,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
@@ -79,11 +90,24 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//import static com.bcn.beacon.beacon.R.id.container_all;
+//import static com.bcn.beacon.beacon.R.id.container_current;
+import static com.bcn.beacon.beacon.R.id.favourites;
+import static com.bcn.beacon.beacon.R.id.list;
+import static com.bcn.beacon.beacon.R.id.map;
+import static com.bcn.beacon.beacon.R.id.range;
+import static com.bcn.beacon.beacon.R.id.text;
+import static com.bcn.beacon.beacon.R.id.world;
+
+
 public class MainActivity extends AuthBaseActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
+        GoogleMap.OnMarkerClickListener,
+        GoogleMap.OnInfoWindowClickListener,
         GoogleApiClient.ConnectionCallbacks,
         View.OnClickListener {
+
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -112,7 +136,6 @@ public class MainActivity extends AuthBaseActivity
     public static int REQUEST_CODE_EVENTPAGE = 10;
     public static int REQUEST_CODE_CREATEEVENT = 20;
 
-    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
     private boolean showBarInMap = false;
 
@@ -120,6 +143,10 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
+
+    // constant for permission id
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
 
@@ -136,16 +163,19 @@ public class MainActivity extends AuthBaseActivity
         //hide the action bar
         getSupportActionBar().hide();
 
+        Window window = this.getWindow();
+        //set the status bar color if the API version is high enough
+        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
+
 //set default values for preferences if they haven't been modified yet
         PreferenceManager.setDefaultValues(this, R.xml.settings_fragment, false);
 
-        //get the users location using location services
-        getUserLocation();
         Log.i("MAIN CREATED", "YES");
 
+
         //retrieve all the Views that we would want to modify here
-        mList = (IconTextView) findViewById(R.id.list);
-        mWorld = (IconTextView) findViewById(R.id.world);
+        mList = (IconTextView) findViewById(list);
+        mWorld = (IconTextView) findViewById(world);
         mFavourites = (IconTextView) findViewById(R.id.favourites);
         mSettings = (IconTextView) findViewById(R.id.settings);
         mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
@@ -202,6 +232,7 @@ public class MainActivity extends AuthBaseActivity
 
         //create an initial map fragment
         mMapFragment = MapFragment.newInstance();
+        mMapFragment.getMapAsync(this);
 
         //create our tab array to keep track of the state of each tab
         mTabs = new ArrayList<>();
@@ -210,10 +241,15 @@ public class MainActivity extends AuthBaseActivity
         mTabs.add(mFavourites);
         mTabs.add(mSettings);
 
+        // ATTENTION: This "addApi(AppIndex.API)"was auto-generated to implement the App Indexing API.
+        // See https://g.co/AppIndexing/AndroidStudio for more information.
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
                 .build();
+
+
+        //.addApi(AppIndex.API).build();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -234,10 +270,15 @@ public class MainActivity extends AuthBaseActivity
         getNearbyEvents();
         // get user favourite ids from firebase
         getFavouriteIds();
+        // get the user location
+        getUserLocation();
+
     }
 
     protected void onStart() {
-        super.onStart();
+        super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
+// See https://g.co/AppIndexing/AndroidStudio for more information.
+        mGoogleApiClient.connect();
 
         mAuth.addAuthStateListener(mAuthListener);
 
@@ -278,7 +319,7 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onClick(View v) {
         switch (v.getId()) {
-            case (R.id.list): {
+            case (list): {
                 //change tab colour
                 resetTabColours();
                 mList.setBackgroundResource(R.color.currentTabColor);
@@ -317,7 +358,7 @@ public class MainActivity extends AuthBaseActivity
                 }
                 break;
             }
-            case (R.id.world): {
+            case (world): {
 
                 //change tab colours
                 resetTabColours();
@@ -358,6 +399,7 @@ public class MainActivity extends AuthBaseActivity
                 break;
 
             }
+
 
             case (R.id.favourites): {
 
@@ -472,8 +514,10 @@ public class MainActivity extends AuthBaseActivity
      * Gets the location of the user
      */
     public void getUserLocation() {
-       LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-        ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
+
+        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
+
         if (checkGPSPermission()) {
             List<String> providers = lm.getProviders(true);
             Location bestLocation = null;
@@ -503,7 +547,8 @@ public class MainActivity extends AuthBaseActivity
      * @param grantResults
      */
     @Override
-    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, String permissions[],
+                                           int[] grantResults) {
         if (requestCode == PERMISSION_ACCESS_FINE_LOCATION) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
 
@@ -514,14 +559,9 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-    /**
-     * Gets nearby events according to the user's location
-     */
+
     private void getNearbyEvents() {
-        /* commented this out for now to fix the bug, look into memory leaks! */
-        /*if (!events.isEmpty()) {
-            events.clear();
-        }*/
+
         mDatabase = FirebaseDatabase.getInstance().getReference();
         mDatabase.child("ListEvents").addValueEventListener(new ValueEventListener() {
             @Override
@@ -539,8 +579,10 @@ public class MainActivity extends AuthBaseActivity
 
                     if (distance <= maxRadius) {
                         event.distance = distance;
-                        events.add(event);
+
                         eventsMap.put(event.getEventId(), event);
+                        events.add(event);
+
                     }
                 }
                 Collections.sort(events, new DistanceComparator());
@@ -569,7 +611,7 @@ public class MainActivity extends AuthBaseActivity
                 for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
                     //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
                     favouriteIds.add(fav_snapshot.getKey());
-                    }
+                }
 
             }
 
@@ -591,7 +633,8 @@ public class MainActivity extends AuthBaseActivity
      * @param eventLng - longitude of the event's location
      * @return dist - distance between the two locations
      */
-    private static double distFrom(double userLat, double userLng, double eventLat, double eventLng) {
+    private static double distFrom(double userLat, double userLng, double eventLat,
+                                   double eventLng) {
         double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
         double dLat = Math.toRadians(eventLat - userLat);
         double dLng = Math.toRadians(eventLng - userLng);
@@ -602,7 +645,7 @@ public class MainActivity extends AuthBaseActivity
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double dist = earthRadius * c;
         // for rounding to 3 decimal places
-        dist = Math.floor(1000 * dist + 0.5)/1000;
+        dist = Math.floor(1000 * dist + 0.5) / 1000;
 
         return dist; // in kilometers
     }
@@ -629,7 +672,7 @@ public class MainActivity extends AuthBaseActivity
     public ArrayList<ListEvent> searchEvents(String query) {
         ArrayList<ListEvent> queries = new ArrayList<>();
         for (ListEvent e : events) {
-            if (e.getName().contains(query)) {
+            if (e.getName().toLowerCase().contains(query)) {
                 queries.add(e);
             }
         }
@@ -672,33 +715,109 @@ public class MainActivity extends AuthBaseActivity
                 });
     }
 
+
+    //ArrayList<Event> event_list = new ArrayList<Event>();
+
+    HashMap<String, String> m = new HashMap<String, String>();
+    HashMap<String, ListEvent> events_list = new HashMap<String, ListEvent>();
+
     private void initMap() {
+
         if (mMap != null) {
             mMap.clear();
-            if (mAuth.getInstance().getCurrentUser() != null) {
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+            // SharedPreferences prefs =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            //int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
+
+                /*LatLngBounds Bound = new LatLngBounds(
+                        new LatLng(userLat - pref, userLng - pref), new LatLng(userLat + pref, userLng + pref));
+
+                mMap.setLatLngBoundsForCameraTarget(Bound);*/
+
+            mMap.setMaxZoomPreference(17);
+            //mMap.setMinZoomPreference(11);
+
+            if (mAuth != null && mAuth.getCurrentUser() != null) {
+
+                //add marker for user
+                Marker user = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                         .position(new LatLng(userLat, userLng))
-                        .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
+                        .title("You"));
 
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
-                marker.showInfoWindow();
+                if (!events.isEmpty()) {
 
-            } else {
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                        .position(new LatLng(49.2606, -123.2460))
-                        .title("You ;)"));
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-                marker.showInfoWindow();
+
+                    //mMap.setOnMarkerClickListener(this)
+                    if (!events.isEmpty()) {
+                        for (int i = 0; i < events.size(); i++) {
+
+
+                            ListEvent e = events.get(i);
+
+                            double latitude = e.getLocation().getLatitude();
+                            double longitude = e.getLocation().getLongitude();
+
+                            String name = e.getName();
+//                            String description = e.getDescription();
+
+                            Marker marker = mMap.addMarker(new MarkerOptions()
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                                    .position(new LatLng(latitude, longitude)));
+
+                            m.put(marker.getId(), e.getEventId());
+                            events_list.put(marker.getId(), e);
+
+                            mMap.setOnMarkerClickListener(this);
+                            mMap.setOnInfoWindowClickListener(this);
+                            mMap.setInfoWindowAdapter(new InfoWindow());
+                        }
+
+                    } else {
+                        Marker marker = mMap.addMarker(new MarkerOptions()
+                                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                                .position(new LatLng(userLat, userLng))
+                                .title("Your Location"));
+
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
+                    }
+                }
+
+                LatLng UserLocation = new LatLng(userLat, userLng);
+
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(UserLocation)
+                        .zoom(13)
+                        .build();
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+
             }
+
         }
     }
 
     @Override
+    public void onInfoWindowClick(Marker marker) {
+
+        String event = m.get(marker.getId());
+
+        Intent i = new Intent(this, EventPageActivity.class);
+        i.putExtra("Event", event);
+        startActivity(i);
+
+    }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        marker.showInfoWindow();
+        return true;
+    }
+
+
     public void onMapReady(GoogleMap map) {
         mMap = map;
         initMap();
+
     }
 
     /**
@@ -710,16 +829,17 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
+
     @Override
     public void onMapClick(LatLng latLng) {
 
     }
+
     /**
      * This method overrides the default back button functionality
-     *
+     * <p/>
      * If the user is looking at a different tab the world tab will be loaded,
      * otherwise the activity will end and the user will return to the android home screen
-     *
      */
     @Override
     public void onBackPressed() {
@@ -775,6 +895,7 @@ public class MainActivity extends AuthBaseActivity
         super.onResume();
     }
 
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
@@ -814,4 +935,42 @@ public class MainActivity extends AuthBaseActivity
         super.onDestroy();
         Log.i("FINISHING?", Boolean.toString(this.isFinishing()));
     }
+
+
+    public class InfoWindow implements GoogleMap.InfoWindowAdapter {
+
+        private View v;
+
+        InfoWindow() {
+
+            v = getLayoutInflater().inflate(R.layout.custom_info_window_contents, null);
+
+        }
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+
+            ListEvent e = events_list.get(marker.getId());
+
+            if (e != null) {
+
+                String title = e.getName();
+                TextView Title = ((TextView) v.findViewById(R.id.title));
+                assert Title != null;
+                Title.setText(title);
+
+                return v;
+            }
+
+            return null;
+
+        }
+    }
 }
+
