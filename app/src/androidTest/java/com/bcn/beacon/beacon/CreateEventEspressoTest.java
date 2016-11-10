@@ -7,6 +7,7 @@ import com.bcn.beacon.beacon.Activities.CreateEventActivity;
 import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.R;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,20 +75,18 @@ public class CreateEventEspressoTest {
     @Test
     public void create_valid_event(){
         onView(withId(R.id.input_name)).perform(typeText("espresso test event"), closeSoftKeyboard());
-        perform_search_for_ubc();
+
+        onView(withId(R.id.input_location_search)).perform(typeText("Argentina"), closeSoftKeyboard());
+        onView(withId(R.id.search_button)).perform(click());
 
         onView(withId(R.id.fab)).perform(click());
-
-        perform_search_for_ubc();
-
-        //moved to main activity
-        //onView(withId(R.id.create_event_fab)).check(matches(isDisplayed()));
 
     }
 
     public void perform_search_for_ubc(){
         onView(withId(R.id.input_location_search)).perform(typeText("UBC"), closeSoftKeyboard());
-        onView(withId(R.id.place_autocomplete_search_button)).perform(click());
+        onView(withId(R.id.search_button)).perform(click());
+
     }
 
     public void items_are_viewable(){
