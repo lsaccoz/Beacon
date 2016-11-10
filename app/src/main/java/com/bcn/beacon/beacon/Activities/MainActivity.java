@@ -1,5 +1,6 @@
 package com.bcn.beacon.beacon.Activities;
 
+import android.Manifest;
 import android.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
@@ -73,7 +74,7 @@ public class MainActivity extends AuthBaseActivity
         implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        View.OnClickListener{
+        View.OnClickListener {
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -163,6 +164,9 @@ public class MainActivity extends AuthBaseActivity
                 }
             }
         };
+
+        // get events from firebase
+        getNearbyEvents();
     }
 
     protected void onStart() {
@@ -170,8 +174,7 @@ public class MainActivity extends AuthBaseActivity
 
         mAuth.addAuthStateListener(mAuthListener);
 
-        // get events from firebase
-        getNearbyEvents();
+
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
@@ -357,13 +360,24 @@ public class MainActivity extends AuthBaseActivity
      * Gets the location of the user
      */
     public void getUserLocation() {
-        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+       LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
         ActivityCompat.requestPermissions(this, new String[]{android.Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
         if (checkGPSPermission()) {
-            Location location = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-            if (location != null) {
-                userLat = location.getLatitude();
-                userLng = location.getLongitude();
+            List<String> providers = lm.getProviders(true);
+            Location bestLocation = null;
+            for (String provider : providers) {
+                Location l = lm.getLastKnownLocation(provider);
+                if (l == null) {
+                    continue;
+                }
+                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+                    // Found best last known location: %s", l);
+                    bestLocation = l;
+                }
+            }
+            if (bestLocation != null) {
+                userLat = bestLocation.getLatitude();
+                userLng = bestLocation.getLongitude();
                 //Log.i("PERMISSION:", "ALLOWED");
             }
         }
@@ -517,7 +531,7 @@ public class MainActivity extends AuthBaseActivity
                         .position(new LatLng(userLat, userLng))
                         .title(mAuth.getInstance().getCurrentUser().getDisplayName()));
 
-                mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
+                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(marker.getPosition(), 13));
                 marker.showInfoWindow();
 
             } else {
