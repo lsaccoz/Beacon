@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="10dp"
+    android:longClickable="true">
+
+    <TextView
+        android:id="@+id/title"
+        android:layout_width="200sp"
+        android:layout_height="match_parent"
+        android:layout_alignBaseline="@+id/eventPic"
+        android:layout_toRightOf="@+id/eventPic"
+        android:paddingLeft="20dp"
+        android:paddingRight="6dp"
+        android:text="Halloween Party"
+        android:textAppearance="?android:attr/textAppearanceListItem"
+        android:textStyle="bold" />
+
+
+    <TextView
+        android:id="@+id/host"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/title"
+        android:layout_alignParentRight="true"
+        android:paddingRight="10dp"
+        android:text="The Calendar"
+        android:textAppearance="?android:attr/textAppearanceListItem" />
+
+    <TextView
+        android:id="@+id/start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/title"
+        android:layout_toRightOf="@+id/eventPic"
+        android:paddingLeft="20dp"
+        android:paddingRight="6dp"
+        android:paddingTop="3dp"
+        android:text="17:00"
+        android:textAppearance="?android:attr/textAppearanceListItem" />
+
+    <TextView
+        android:id="@+id/distance"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/start"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/host"
+        android:paddingRight="10dp"
+        android:paddingTop="3dp"
+        android:text="0.8km"
+        android:textAppearance="?android:attr/textAppearanceListItem" />
+
+    <ImageView
+        android:id="@+id/eventPic"
+        android:layout_width="45dp"
+        android:layout_height="45dp"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:src="@drawable/no_pic_icon" />
+
+</RelativeLayout>

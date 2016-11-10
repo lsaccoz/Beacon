@@ -23,9 +23,8 @@
             android:layout_centerHorizontal="true"
             android:text="@string/app_name"
             android:textColor="@color/signInColor"
-            android:textSize="36sp"
-            android:textStyle="normal|bold" />
-
+            android:textStyle="normal|bold"
+            android:textSize="36sp" />
     </LinearLayout>
 
     <LinearLayout
