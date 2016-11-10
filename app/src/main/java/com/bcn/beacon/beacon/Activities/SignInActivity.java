@@ -8,9 +8,11 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.*;
 
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.Firebase;
 import com.google.android.gms.ads.formats.NativeAd;
 import com.google.android.gms.auth.api.Auth;
@@ -46,6 +48,10 @@ public class SignInActivity extends AuthBaseActivity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
+
+        Window window = this.getWindow();
+        //set the status bar color if the API version is high enough
+        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
 
         signInButton = (SignInButton) findViewById(R.id.GoogleSignInButton);
         signInButton.setOnClickListener(this);

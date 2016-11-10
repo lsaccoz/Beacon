@@ -91,7 +91,7 @@ public class ListFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), EventPageActivity.class);
 
                 // pass the event id to the new activity
-                intent.putExtra("eventId", event.getEventId());
+                intent.putExtra("Event", event.getEventId());
                 // to indicate that event page was clicked from list view
                 intent.putExtra("from", 1);
 
