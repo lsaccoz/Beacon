@@ -55,7 +55,7 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
         viewHolder.title.setText(event.getName());
         viewHolder.host.setText(event.getHost());
         viewHolder.distance.setText(String.format("%.1f", event.distance) + " km");
-        viewHolder.start.setText(event.getDate().getFormatted());
+        viewHolder.start.setText(event.getDate().formatted());
 
         /*// Lookup view for data population (commented out for now)
         TextView title = (TextView) convertView.findViewById(R.id.title);
