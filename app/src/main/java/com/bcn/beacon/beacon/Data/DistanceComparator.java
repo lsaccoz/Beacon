@@ -14,10 +14,10 @@ import java.util.Comparator;
 public class DistanceComparator implements Comparator<ListEvent> {
     public int compare(ListEvent left, ListEvent right) {
         if (left.distance < right.distance) {
-            return 1;
+            return -1;
         }
         else {
-            return 0;
+            return 1;
         }
     }
 }

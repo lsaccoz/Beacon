@@ -85,8 +85,6 @@ public class FavouritesFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        populateFav();
-
         adapter = new EventListAdapter(appContext, 0, favourites);
     }
 
@@ -111,7 +109,7 @@ public class FavouritesFragment extends Fragment {
                 Intent intent = new Intent(getActivity(), EventPageActivity.class);
 
                 // pass the event id to the new activity
-                intent.putExtra("eventId", event.getEventId());
+                intent.putExtra("Event", event.getEventId());
                 // to indicate that event page was clicked from favourites view
                 intent.putExtra("from", 2);
 
