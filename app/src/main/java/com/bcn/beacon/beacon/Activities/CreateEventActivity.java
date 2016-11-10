@@ -268,8 +268,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 if (inputLocation != null && !inputLocation.equals("")) {
                     Geocoder geocoder = new Geocoder(this);
                     try {
-                        addressList = geocoder.getFromLocationName(inputLocation, 1);
-
+                        addressList = geocoder.getFromLocationName(inputLocation, 10, userLat - 0.1, userLng - 0.1, userLat + 0.1, userLng + 0.1);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
