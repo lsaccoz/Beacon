@@ -24,7 +24,7 @@
     </string-array>
     <string name="title_activity_alsdfjlk">Alsdfjlk</string>
     <string name="title_activity_list_view">ListView</string>
-    <string name="title_activity_event_page">EventPageActivity</string>
+    <string name="title_activity_event_page">Event Page</string>
 
     <!-- SettingsFragment strings -->
     <string name="pref_range_label">Search Range</string>
@@ -41,6 +41,11 @@
     <!-- SettingsFragment settings categories -->
     <string name="search_settings">Search Settings</string>
     <string name="miscellaneous">Miscellaneous</string>
+
+    <!-- EventPage Strings -->
+    <string name="comments">Comments</string>
+    <string name="favourited">Favourited event</string>
+    <string name="un_favourited">Unfavourited event</string>
 
 
 </resources>
