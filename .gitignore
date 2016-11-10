@@ -1,4 +1,12 @@
-/.idea/libraries
+
+
+# .idea files that are generated with each build
+
+**/.idea/workspace.xml
+**/.idea/libraries
+**/.idea/gradle.xml
+**/.idea/vcs.xml
+
 .DS_Store
 /captures
 .externalNativeBuild
@@ -39,10 +47,6 @@ captures/
 
 # Intellij
 *.iml
-.idea/gradle
-.idea/modules
-.idea/workspace.xml
-.idea/vcs.xml
 .idea/libraries
 
 # Keystore files

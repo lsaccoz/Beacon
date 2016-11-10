@@ -19,6 +19,7 @@ import com.bcn.beacon.beacon.Activities.EventPageActivity;
 import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.Adapters.EventListAdapter;
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
 
 import java.util.ArrayList;
@@ -32,10 +33,11 @@ import static android.provider.AlarmClock.EXTRA_MESSAGE;
 public class ListFragment extends Fragment {
 
     private ListView listView;
-    private ArrayList<Event> events;
+    private ArrayList<ListEvent> events;
     private Context appContext;
     private SwipeRefreshLayout swipeContainer;
     EventListAdapter adapter;
+    public Parcelable state;
 
     public static ListFragment newInstance() {
         return new ListFragment();
@@ -79,12 +81,13 @@ public class ListFragment extends Fragment {
 
         //set adapter for the events list view
         listView.setAdapter(adapter);
+        Log.i("VIEW","CREATED");
 
         //Launch the event details page if the user clicks on an event item
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Event event = (Event) parent.getAdapter().getItem(position);
+                ListEvent event = (ListEvent) parent.getAdapter().getItem(position);
                 Intent intent = new Intent(getActivity(), EventPageActivity.class);
 
                 // pass the event id to the new activity
@@ -92,7 +95,8 @@ public class ListFragment extends Fragment {
                 // to indicate that event page was clicked from list view
                 intent.putExtra("from", 1);
 
-                getActivity().startActivity(intent);
+                getActivity().startActivityForResult(intent, MainActivity.REQUEST_CODE_EVENTPAGE);
+
             }
         });
 
@@ -102,8 +106,8 @@ public class ListFragment extends Fragment {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                events.clear();
-                events = ((MainActivity) getActivity()).getRefreshedEventList();
+                //events.clear();
+                events = ((MainActivity) getActivity()).getEventList();
                 adapter.notifyDataSetChanged();
                 swipeContainer.setRefreshing(false);
             }
@@ -123,23 +127,23 @@ public class ListFragment extends Fragment {
         events = ((MainActivity) getActivity()).getEventList();
         // Populate the list view
         adapter = new EventListAdapter(appContext, 0, events);
+
     }
 
     @Override
     public void onStart() {
         super.onStart();
-
     }
 
 
-    /** Code for future functionality, in case we want to restore scroll position in list view
+    /* Code for future functionality, in case we want to restore scroll position in list view
     @Override
     public void onPause() {
         state = listView.onSaveInstanceState();
         super.onPause();
     }
 
-    @Override
+    /*@Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -149,11 +153,14 @@ public class ListFragment extends Fragment {
             listView.onRestoreInstanceState(state);
         }
 
-    } */
+    }*/
 
     @Override
     public void onResume() {
         //adapter.notifyDataSetChanged();
+        /*if (state != null) {
+            listView.onRestoreInstanceState(state);
+        }*/
         super.onResume();
     }
 
