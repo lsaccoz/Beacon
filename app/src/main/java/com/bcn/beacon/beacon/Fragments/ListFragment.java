@@ -79,6 +79,9 @@ public class ListFragment extends Fragment {
 
         listView = (ListView) view.findViewById(R.id.listView);
 
+        // set empty view if there are no events to show
+        listView.setEmptyView(view.findViewById(R.id.empty));
+
         //set adapter for the events list view
         listView.setAdapter(adapter);
         Log.i("VIEW","CREATED");
@@ -157,7 +160,7 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onResume() {
-        //adapter.notifyDataSetChanged();
+        adapter.notifyDataSetChanged();
         /*if (state != null) {
             listView.onRestoreInstanceState(state);
         }*/

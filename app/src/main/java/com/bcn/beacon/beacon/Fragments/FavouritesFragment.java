@@ -19,6 +19,7 @@ import android.widget.ListView;
 import com.bcn.beacon.beacon.Activities.EventPageActivity;
 import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.Adapters.EventListAdapter;
+import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
@@ -30,14 +31,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 /**
  * The fragment for favourites page
- * TODO: Adding empty views to lists
- * TODO: Distance comparator not working?
  * TODO: Create event button goes to the new event page
- * TODO: Implement the temporary fix to every fragment / or better: fix the bug :)
+ * TODO: Fix the bug in place of temporary fix
  */
 public class FavouritesFragment extends Fragment {
 
@@ -97,6 +97,9 @@ public class FavouritesFragment extends Fragment {
         View view = inflater.inflate(R.layout.favourites_fragment, container, false);
 
         favouritesView = (ListView) view.findViewById(R.id.favouritesView);
+
+        // set empty view if there are no favourites
+        favouritesView.setEmptyView(view.findViewById(R.id.empty));
 
         // set adapter for the events list view
         favouritesView.setAdapter(adapter);
