@@ -38,7 +38,7 @@ public class EventPageActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
 
         Intent intent = getIntent();
-        from = intent.getIntExtra("from", 0);
+        from = intent.getIntExtra("from", -1);
         eventId = intent.getStringExtra("eventId");
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();

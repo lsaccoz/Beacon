@@ -34,8 +34,9 @@ import java.util.HashMap;
 
 /**
  * The fragment for favourites page
- * TODO: Implementing adding to favourites inside Event or User
  * TODO: Adding empty views to lists
+ * TODO: Distance comparator not working?
+ * TODO: Create event button goes to the new event page
  * TODO: Implement the temporary fix to every fragment / or better: fix the bug :)
  */
 public class FavouritesFragment extends Fragment {
@@ -115,7 +116,7 @@ public class FavouritesFragment extends Fragment {
                 // to indicate that event page was clicked from favourites view
                 intent.putExtra("from", 2);
 
-                getActivity().startActivity(intent);
+                getActivity().startActivityForResult(intent, MainActivity.REQUEST_CODE_EVENTPAGE);
             }
         });
 

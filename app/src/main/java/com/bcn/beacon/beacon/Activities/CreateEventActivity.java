@@ -106,6 +106,8 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     EditText eName;
     EditText eDescription;
 
+    private int from;
+
     Location location = new Location();
     ImageButton eAddImage;
     Uri picUri;
@@ -173,6 +175,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         if (extras != null) {
             userLat = extras.getDouble("userlat");
             userLng = extras.getDouble("userlng");
+            from = extras.getInt("from");
             location.setLatitude(userLat);
             location.setLongitude(userLng);
             //The key argument here must match that used in the other activity
@@ -392,6 +395,9 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         toUpload.setLocation(location);
         toUpload.upload();
 
+        // for temporary fix on back pressed
+        MainActivity.setEventPageClickedFrom(from);
+
         kill_activity();
 
     }
@@ -541,5 +547,12 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     @Override
     public void onMapClick(LatLng latLng) {
 
+    }
+
+    @Override
+    public void onBackPressed() {
+        // for temporary fix on back pressed
+        MainActivity.setEventPageClickedFrom(from);
+        super.onBackPressed();
     }
 }

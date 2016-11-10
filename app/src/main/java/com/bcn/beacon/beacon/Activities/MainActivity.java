@@ -99,7 +99,7 @@ public class MainActivity extends AuthBaseActivity
     private IconTextView mSettings;
     private static final String TAG = "MainActivity";
 
-    public static int eventPageClickedFrom = 0;
+    public static int eventPageClickedFrom = -1;
     public static int REQUEST_CODE_EVENTPAGE = 10;
     public static int REQUEST_CODE_CREATEEVENT = 20;
 
@@ -111,6 +111,8 @@ public class MainActivity extends AuthBaseActivity
     private DatabaseReference mDatabase;
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+    // tracker for the temporary fix
+    private static int tracker = -1;
 
     private ArrayList<ListEvent> events = new ArrayList<>();
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
@@ -196,6 +198,7 @@ public class MainActivity extends AuthBaseActivity
             // push to stack so that the fragment transaction is recorded and the fragment will be
             // obtainable from the fragment manager
             fragmentTransaction.addToBackStack(null);
+            mActiveFragment = mMapFragment;
             fragmentTransaction.commit();
             Log.i("BACKSTACK COUNT", "0");
         }
@@ -256,6 +259,7 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
+                tracker = 1;
                 break;
             }
             case (R.id.world): {
@@ -291,8 +295,9 @@ public class MainActivity extends AuthBaseActivity
 
                     mMapFragment.getMapAsync(this);
                 }
-                break;
+                tracker = 0;
 
+                break;
             }
 
             case (R.id.favourites): {
@@ -366,7 +371,23 @@ public class MainActivity extends AuthBaseActivity
                 Intent intent = new Intent(this, CreateEventActivity.class);
                 intent.putExtra("userlat", userLat);
                 intent.putExtra("userlng", userLng);
-                startActivity(intent);
+                // for temporary fix
+                if (mActiveFragment != null && mActiveFragment == mListFragment) {
+                    intent.putExtra("from", 1);
+                }
+                else if (mActiveFragment != null && mActiveFragment == mMapFragment){
+                    // don't really need this, but keep for now
+                    //Log.i("ACTIVE", "MAP");
+                    intent.putExtra("from", 0);
+                }
+                else if (tracker == 1) {
+                    //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
+                    intent.putExtra("from", 1);
+                }
+
+                // startActivity(intent);
+                // start activity for result using same code for now
+                startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
             }
         }
 
@@ -689,18 +710,43 @@ public class MainActivity extends AuthBaseActivity
         super.onResume();
     }
 
+    /**
+     * This is the temporary fix for displaying the current tab correctly
+     * @param requestCode
+     * @param resultCode
+     * @param intent
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
         if (requestCode == REQUEST_CODE_EVENTPAGE && resultCode == RESULT_CANCELED) {
             //Fragment fragment =
-            if (eventPageClickedFrom == 1) {
-                resetTabColours();
-                mList.setBackgroundResource(R.color.currentTabColor);
-                eventPageClickedFrom = 0;
+            //Log.i("ON RESULT", "YES");
+            switch (eventPageClickedFrom) {
+                case (1): {
+                    resetTabColours();
+                    mList.setBackgroundResource(R.color.currentTabColor);
+                    //eventPageClickedFrom = 0;
+                    break;
+                }
+                case (2): {
+                    resetTabColours();
+                    mFavourites.setBackgroundResource(R.color.currentTabColor);
+                    mCreateEvent.setEnabled(false);
+                    mCreateEvent.setVisibility(View.GONE);
+                    //eventPageClickedFrom = 0;
+                    break;
+                }
+                /*default: {
+                    resetTabColours();
+                    mWorld.setBackgroundResource(R.color.currentTabColor);
+                    break;
+                }*/
             }
+
         }
+
     }
 
     @Override
@@ -708,6 +754,7 @@ public class MainActivity extends AuthBaseActivity
         Log.i("SAVE STATE", "YES");
         //outState.putParcelable("lastFragment", getFragmentManager().saveFragmentInstanceState(mActiveFragment));
         //getFragmentManager().putFragment(outState, "lastFragment", mActiveFragment);
+        outState.putInt("tracker", tracker);
 
         super.onSaveInstanceState(outState);
     }
@@ -715,6 +762,8 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+
+        tracker = savedInstanceState.getInt("tracker");
 
         //getFragmentManager().getFragment(savedInstanceState, "lastFragment");
         //savedInstanceState.getParcelable("lastFragment");
