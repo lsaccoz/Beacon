@@ -2,6 +2,7 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.os.Parcelable;
 import android.support.v7.app.AppCompatActivity;
 
 import android.app.Activity;
@@ -35,6 +36,8 @@ import android.widget.Toast;
 
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
+import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
@@ -82,10 +85,10 @@ public class MainActivity extends AuthBaseActivity
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
     private SettingsFragment mSettingsFragment;
+    private FavouritesFragment mFavouritesFragment;
     private List<IconTextView> mTabs;
     private TextView mTitle;
-
-    private Map<String, Event> eventsMap = new HashMap<String, Event>();
+    private Fragment mActiveFragment;
 
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
@@ -95,7 +98,10 @@ public class MainActivity extends AuthBaseActivity
     private IconTextView mFavourites;
     private IconTextView mSettings;
     private static final String TAG = "MainActivity";
+
     public static int eventPageClickedFrom = 0;
+    public static int REQUEST_CODE_EVENTPAGE = 10;
+    public static int REQUEST_CODE_CREATEEVENT = 20;
 
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
@@ -103,9 +109,13 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-    private ArrayList<Event> events = new ArrayList<Event>();
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+
+    private ArrayList<ListEvent> events = new ArrayList<>();
+    private HashMap<String, ListEvent> eventsMap = new HashMap<>();
+    private ArrayList<String> favouriteIds = new ArrayList<>();
+    private ArrayList<ListEvent> favourites = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -120,6 +130,7 @@ public class MainActivity extends AuthBaseActivity
 
         //get the users location using location services
         getUserLocation();
+        Log.i("MAIN CREATED", "YES");
 
         //retrieve all the Views that we would want to modify here
         mList = (IconTextView) findViewById(R.id.list);
@@ -167,14 +178,14 @@ public class MainActivity extends AuthBaseActivity
 
         // get events from firebase
         getNearbyEvents();
+        // get user favourite ids from firebase
+        getFavouriteIds();
     }
 
     protected void onStart() {
         super.onStart();
 
         mAuth.addAuthStateListener(mAuthListener);
-
-
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
@@ -186,6 +197,7 @@ public class MainActivity extends AuthBaseActivity
             // obtainable from the fragment manager
             fragmentTransaction.addToBackStack(null);
             fragmentTransaction.commit();
+            Log.i("BACKSTACK COUNT", "0");
         }
 
         mMapFragment.getMapAsync(this);
@@ -237,6 +249,7 @@ public class MainActivity extends AuthBaseActivity
                     //attach this fragment to the screen
                     transaction.replace(R.id.events_view, mListFragment, getString(R.string.list_fragment));
                     transaction.addToBackStack(null);
+                    mActiveFragment = mListFragment;
 
                     //allows for smoother transitions between screens
                     transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
@@ -266,6 +279,7 @@ public class MainActivity extends AuthBaseActivity
                     } else {
                         mMapFragment = (MapFragment) fragment;
                     }
+                    mActiveFragment = mMapFragment;
 
                     FragmentTransaction fragmentTransaction =
                             getFragmentManager().beginTransaction();
@@ -282,7 +296,7 @@ public class MainActivity extends AuthBaseActivity
             }
 
             case (R.id.favourites): {
-                //TODO need to attach a fragment for this tab also
+
                 resetTabColours();
                 mFavourites.setBackgroundResource(R.color.currentTabColor);
 
@@ -290,7 +304,30 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
 
-                signOut();
+                //get List fragment if exists
+                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
+                if (fragment == null || !fragment.isVisible()) {
+                    if (fragment == null) {
+                        //if fragment hasn't been created, get a new one
+                        mFavouritesFragment = FavouritesFragment.newInstance();
+                    } else {
+                        //if fragment already exists, use it
+                        mFavouritesFragment = (FavouritesFragment) fragment;
+                    }
+
+                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                    //attach this fragment to the screen
+                    transaction.replace(R.id.events_view, mFavouritesFragment, getString(R.string.favourites_fragment));
+                    transaction.addToBackStack(null);
+                    mActiveFragment = mFavouritesFragment;
+
+                    //allows for smoother transitions between screens
+                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                    transaction.commit();
+                }
+
                 break;
             }
             case (R.id.settings): {
@@ -411,29 +448,22 @@ public class MainActivity extends AuthBaseActivity
             events.clear();
         }*/
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
+        mDatabase.child("ListEvents").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!events.isEmpty()) {
+                    events.clear();
+                }
                 double distance;
-                for (DataSnapshot child : dataSnapshot.getChildren()) {
-                    eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
-                    eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
+                for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
+                    ListEvent event = event_snapshot.getValue(ListEvent.class);
+
+                    double eventLat = event.getLocation().getLatitude();
+                    double eventLng = event.getLocation().getLongitude();
                     distance = distFrom(userLat, userLng, eventLat, eventLng);
+
                     if (distance <= maxRadius) {
-                        Event event = new Event(child.getValue().toString(),
-                                child.child("name").getValue().toString(),
-                                child.child("hostId").getValue().toString(),
-                                eventLat, eventLng,
-                                child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
-                                child.child("description").getValue().toString());
-
-                        // The arraylist "events" is specific to each user, and will be different for each Android phone.
-                        // The distance field for events would not be on the Firebase database, but it is required to keep track
-                        // of it here in order to do the comparisons (for distance sorting) and list view (for showing distance).
-                        event.setDistance(distance);
-
-                        //Log.i("NAME:", event.getName());
-                        //Log.i("DISTANCE:", Double.toString(distance));
+                        event.distance = distance;
                         events.add(event);
                         eventsMap.put(event.getEventId(), event);
                     }
@@ -443,6 +473,34 @@ public class MainActivity extends AuthBaseActivity
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
+
+    /**
+     * Function to get the event ids of user's favourites
+     */
+    public void getFavouriteIds() {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        users.child(userId).child("favourites").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                if (!favouriteIds.isEmpty()) {
+                    favouriteIds.clear();
+                }
+                //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
+                for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
+                    //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
+                    favouriteIds.add(fav_snapshot.getKey());
+                    }
+
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
             }
         });
     }
@@ -468,6 +526,8 @@ public class MainActivity extends AuthBaseActivity
                 * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double dist = earthRadius * c;
+        // for rounding to 3 decimal places
+        dist = Math.floor(1000 * dist + 0.5)/1000;
 
         return dist; // in kilometers
     }
@@ -477,16 +537,20 @@ public class MainActivity extends AuthBaseActivity
      *
      * @return list of nearby events
      */
-    public ArrayList<Event> getEventList() {
+    public ArrayList<ListEvent> getEventList() {
         return events;
     }
 
-    public ArrayList<Event> getRefreshedEventList() {
+    public ArrayList<ListEvent> getRefreshedEventList() {
         getNearbyEvents();
         return events;
     }
 
-    public Map<String, Event> getEventsMap() {
+    public ArrayList<String> getFavouriteIdsList() {
+        return favouriteIds;
+    }
+
+    public HashMap<String, ListEvent> getEventsMap() {
         return eventsMap;
     }
 
@@ -583,16 +647,19 @@ public class MainActivity extends AuthBaseActivity
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
             transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+            // we need to handle the back stack so it pops
             transaction.addToBackStack(null);
 
             transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
             transaction.commit();
+            //Log.i("STATUS", "MAP FRAG ACTIVE, BUT NOT SHOWN");
 
             //set the world tab as being selected
             resetTabColours();
             mWorld.setBackgroundResource(R.color.currentTabColor);
 
             mMapFragment.getMapAsync(this);
+            mActiveFragment = mMapFragment;
 
             //ensure that the create event tab is visible again
             mCreateEvent.setEnabled(true);
@@ -608,16 +675,57 @@ public class MainActivity extends AuthBaseActivity
         eventPageClickedFrom = from;
     }
 
+
     @Override
     public void onResume() {
         // Temporary fix for going back to list view from event page
         // it actually shows fragment but the action bar goes back to map view
-        if (eventPageClickedFrom == 1) {
+        /*if (eventPageClickedFrom == 1) {
             //set the world tab as being selected
             resetTabColours();
             mList.setBackgroundResource(R.color.currentTabColor);
             eventPageClickedFrom = 0;
-        }
+        }*/
         super.onResume();
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
+        super.onActivityResult(requestCode, resultCode, intent);
+
+        if (requestCode == REQUEST_CODE_EVENTPAGE && resultCode == RESULT_CANCELED) {
+            //Fragment fragment =
+            if (eventPageClickedFrom == 1) {
+                resetTabColours();
+                mList.setBackgroundResource(R.color.currentTabColor);
+                eventPageClickedFrom = 0;
+            }
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        Log.i("SAVE STATE", "YES");
+        //outState.putParcelable("lastFragment", getFragmentManager().saveFragmentInstanceState(mActiveFragment));
+        //getFragmentManager().putFragment(outState, "lastFragment", mActiveFragment);
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+
+        //getFragmentManager().getFragment(savedInstanceState, "lastFragment");
+        //savedInstanceState.getParcelable("lastFragment");
+
+    }
+
+    @Override
+    public void onDestroy() {
+        Log.i("DESTROYED", "YES");
+        Log.i("BACK STACK COUNT", Integer.toString(getFragmentManager().getBackStackEntryCount()));
+        super.onDestroy();
+        Log.i("FINISHING?", Boolean.toString(this.isFinishing()));
     }
 }

@@ -8,12 +8,27 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.firebase.client.Firebase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
+
+import java.util.HashMap;
 
 public class EventPageActivity extends AppCompatActivity {
 
     private int from;
+    private String eventId;
+    private String userId;
+    private Event event;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -24,20 +39,61 @@ public class EventPageActivity extends AppCompatActivity {
 
         Intent intent = getIntent();
         from = intent.getIntExtra("from", 0);
+        eventId = intent.getStringExtra("eventId");
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference event = database.getReference("Events").child(eventId);
+
+        event.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //TODO this is where you have downloaded the event and function to populate page should be called
+                setEvent(dataSnapshot.getValue(Event.class));
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
 
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                        .setAction("Action", null).show();
+                /*Snackbar.make(view, getEvent().getName().toString(), Snackbar.LENGTH_LONG)
+                        .setAction("Action", null).show();*/
+                addFavourite();
             }
         });
+    }
+
+    private void setEvent(Event event) {
+        this.event = event;
+    }
+
+    private Event getEvent() {
+        return this.event;
     }
 
     @Override
     public void onBackPressed() {
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
+    }
+
+    /**
+     * Function for adding the event to user's favourites
+     * @return true
+     */
+    public boolean addFavourite() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        // TODO: We should add a "true" check for if an event is favourited, so the button can remove the event from favourites on click
+        users.child(userId).child("favourites").child(eventId).setValue(true);
+        Toast.makeText(EventPageActivity.this, "Event added to favourites!", Toast.LENGTH_SHORT).show();
+
+        return true;
     }
 }
