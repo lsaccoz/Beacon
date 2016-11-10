@@ -85,11 +85,16 @@ public class EventPageActivity extends AppCompatActivity {
 
     private boolean favourited = false;
 
+    private int from;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_page);
+
+        Intent intent = getIntent();
+        from = intent.getIntExtra("from", -1);
 
         Window window = this.getWindow();
         //set the status bar color if the API version is high enough
@@ -325,6 +330,13 @@ public class EventPageActivity extends AppCompatActivity {
 
         return true;
     }
+
+    @Override
+    public void onBackPressed() {
+        MainActivity.setEventPageClickedFrom(from);
+        super.onBackPressed();
+    }
+
 
 //    private boolean initFavourite(){
 //        FirebaseDatabase database = FirebaseDatabase.getInstance();
