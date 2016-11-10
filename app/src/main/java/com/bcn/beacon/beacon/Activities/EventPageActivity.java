@@ -2,13 +2,16 @@ package com.bcn.beacon.beacon.Activities;
 
 
 import android.annotation.TargetApi;
+import android.content.Context;
 import android.content.Intent;
 
+import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
@@ -18,7 +21,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.R;
@@ -40,20 +45,24 @@ import com.joanzapata.iconify.widget.IconTextView;
 import java.util.Calendar;
 import java.util.Locale;
 
+import java.util.ArrayList;
+
 public class EventPageActivity extends AppCompatActivity {
 
     private Event mEvent;
     private Date mDate;
+    private Context mContext;
 
+    private ArrayList<Drawable> mImageDrawables;
     private TextView mTitle;
     private TextView mDescription;
     private IconTextView mFavourite;
     private RecyclerView mImageScroller;
-    private ImageView mCoverPhoto;
     private TextView mStartTime;
     private TextView mStartMonth;
     private TextView mStartDay;
     private TextView mAddress;
+    private TextView mTags;
 
     private boolean favourited = false;
 
@@ -67,28 +76,45 @@ public class EventPageActivity extends AppCompatActivity {
         //set the status bar color if the API version is high enough
         UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
 
+        //initialize array of image drawables, we will retrieve this from the event
+        mImageDrawables = new ArrayList<>();
+
+        //set the context for use in callback methods
+        mContext = this;
+
         //retrieve all the views from the view hierarchy
         mTitle = (TextView) findViewById(R.id.event_title);
         mDescription = (TextView) findViewById(R.id.event_description);
         mFavourite = (IconTextView) findViewById(R.id.favourite_button);
         mImageScroller = (RecyclerView) findViewById(R.id.image_scroller);
-        mCoverPhoto = (ImageView) findViewById(R.id.cover_photo);
+//        mCoverPhoto = (ImageView) findViewById(R.id.cover_photo);
         mStartTime = (TextView) findViewById(R.id.start_time);
         mStartDay = (TextView) findViewById(R.id.start_day);
         mStartMonth = (TextView) findViewById(R.id.start_month);
         mAddress = (TextView) findViewById(R.id.address);
+        mTags = (TextView) findViewById(R.id.tags);
 
         //change look of favourite icon when user presses it
         //filled in means favourited, empty means not favourited
-        mFavourite.setOnClickListener(new View.OnClickListener(){
+        mFavourite.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View view){
-                if(!favourited){
+            public void onClick(View view) {
+                int duration = Toast.LENGTH_SHORT;
+
+                if (!favourited) {
                     ((IconTextView) view).setText("{fa-star}");
+                    CharSequence text = getString(R.string.favourited);
+
+                    Toast toast = Toast.makeText(mContext, text, duration);
+                    toast.show();
                     favourited = true;
 //                    ((IconTextView) view).setBackgroundColor(getBaseContext()
 //                            .getResources().getColor(R.color.colorPrimary));
-                }else{
+                } else {
+                    CharSequence text = getString(R.string.un_favourited);
+
+                    Toast toast = Toast.makeText(mContext, text, duration);
+                    toast.show();
                     favourited = false;
                     ((IconTextView) view).setText("{fa-star-o}");
 //                    ((IconTextView) view).setBackgroundColor(getBaseContext()
@@ -98,6 +124,22 @@ public class EventPageActivity extends AppCompatActivity {
 
         });
 
+        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
+        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
+        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
+
+
+        EventImageAdapter eventImageAdapter = new EventImageAdapter(mImageDrawables);
+
+        LinearLayoutManager horizontalLayoutManagaer
+                = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+
+        mImageScroller.setLayoutManager(horizontalLayoutManagaer);
+
+        mImageScroller.setAdapter(eventImageAdapter);
+
+
+//        mImageScroller.getAdapter().notifyDataSetChanged();
 
         //TODO THE FOLLOWING CODE IS SIMPLY TEST CODE TO CHECK THE XML LAYOUT, NEEDS TO BE REPLACED WITH CODE TO RETRIEVE FIELDS OF REAL EVENT OBJECT
 
@@ -121,10 +163,15 @@ public class EventPageActivity extends AppCompatActivity {
         mEvent = new Event("blabla", "Cool Party", "blabla", 5, 100, null, "Come out for the Donald Trump Election Celebration Party!");
         mEvent.setDate(mDate);
 
+        //display the tags for this event
+        mTags.setText(" #Party\n #Awesome\n #Fun");
+
         //set the event title
         mTitle.setText(mEvent.getName());
 
         //set the description
+
+//        DataUtil.textViewFormatter(mDescription, mEvent.getDescription(), 30);
         mDescription.setText(mEvent.getDescription());
 
         int hour = mDate.getHour();
@@ -134,7 +181,7 @@ public class EventPageActivity extends AppCompatActivity {
         int year = mDate.getYear();
         boolean isPM = false;
 
-        if (hour >= 12){
+        if (hour >= 12) {
             isPM = true;
         }
 
@@ -142,7 +189,7 @@ public class EventPageActivity extends AppCompatActivity {
         mStartMonth.setText("" + DataUtil.convertMonthToString(mEvent.getDate().getMonth()));
         mStartTime.setText(DataUtil.convertDayToString(defaultWeekDay) + " " + String.format(Locale.US, "%02d:%02d %s",
                 (hour == 12 || minute == 0) ? 12 : hour % 12, minute,
-                 isPM ? "PM" : "AM"));
+                isPM ? "PM" : "AM"));
 
         mAddress.setText("666 Trump Ave.");
 
@@ -163,18 +210,17 @@ public class EventPageActivity extends AppCompatActivity {
 //        mEndTime.setText(formattedDateStringEnd );
 
 
-
         //setTitle(mEvent.getName());
 
         //TODO END OF TEST BLOCK
 
 
-
-       // GetEvent();
+        // GetEvent();
     }
+}
 
-    private void GetEvent() {
-
+//    private void GetEvent() {
+//
 //        String ID = getIntent().getStringExtra("Event");
 //
 //        String eventId = ID;
@@ -190,20 +236,20 @@ public class EventPageActivity extends AppCompatActivity {
 //
 //            @Override
 //            public void onCancelled(DatabaseError databaseError) {
-//                //TODO add error catch
+////                //TODO add error catch
 //            }
 //
 //        });
-    }
-
-    private void populate() {
-        setTitle(mEvent.getName());
-        TextView description = (TextView) findViewById(R.id.description);
-        assert description != null;
-        description.setText(mEvent.getDescription());
-
-    }
-}
+//    }
+//
+//    private void populate() {
+//        setTitle(mEvent.getName());
+//        TextView description = (TextView) findViewById(R.id.description);
+//        assert description != null;
+//        description.setText(mEvent.getDescription());
+//
+//    }
+//}
 
    /* private void on_directions_click(Button Directions) {
 

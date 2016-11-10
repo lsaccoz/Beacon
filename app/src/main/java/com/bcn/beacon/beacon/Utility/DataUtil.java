@@ -1,5 +1,7 @@
 package com.bcn.beacon.beacon.Utility;
 
+import android.widget.TextView;
+
 /**
  * Created by neema on 2016-11-09.
  */
@@ -11,7 +13,6 @@ public class DataUtil {
      *
      * @param month
      * @return
-     *
      */
     public static String convertMonthToString(int month) {
         switch (month) {
@@ -47,12 +48,11 @@ public class DataUtil {
     /**
      * Static helper method for converting an int representation of a day to a
      * three character (ALL-CAPS) string representation
-     *
      */
 
-    public static String convertDayToString(int day){
+    public static String convertDayToString(int day) {
         System.out.println(day);
-        switch(day){
+        switch (day) {
             case 0:
                 return "Sat";
             case 1:
@@ -70,4 +70,27 @@ public class DataUtil {
         }
         return "";
     }
+
+    /**
+     * Static help method that formats TextView Length
+     *
+     *
+     */
+
+//    public static void textViewFormatter(TextView textView, String text, int maxLineLength){
+//
+//        String new_text = text;
+//        int length = 0;
+//
+//        for(int i = 0; i < new_text.length(); i++){
+//            if(length >= maxLineLength && new_text.charAt(i) == ' '){
+//                //new_text.(text.charAt(i), '\n');
+//                length = 0;
+//            }else{
+//                length++;
+//            }
+//        }
+//
+//        textView.setText(new_text);
+//    }
 }

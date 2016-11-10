@@ -41,5 +41,10 @@
     <string name="search_settings">Search Settings</string>
     <string name="miscellaneous">Miscellaneous</string>
 
+    <!-- EventPage Strings -->
+    <string name="comments">Comments</string>
+    <string name="favourited">Favourited event</string>
+    <string name="un_favourited">Unfavourited event</string>
+
 
 </resources>

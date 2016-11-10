@@ -15,114 +15,110 @@
 
     </android.support.design.widget.AppBarLayout>
 
-    <!-- place everything in scroll view to enable scrolling if views are larger than screen -->
-    <ScrollView
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:orientation="vertical">
 
+        <!-- Linear layout to order views vertically within card view -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical">
 
-            <!-- Linear layout to order views vertically within card view -->
-            <LinearLayout
+            <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/event_details"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:orientation="vertical">
+                android:layout_height="wrap_content"
+                android:paddingBottom="16dp"
+                android:paddingLeft="16dp"
+                card_view:cardBackgroundColor="@color/custom_white"
+                card_view:cardCornerRadius="8dp"
+                card_view:cardElevation="5dp"
+                card_view:cardUseCompatPadding="true">
 
-                <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/event_details"
+                <RelativeLayout
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="16dp"
-                    card_view:cardBackgroundColor="@color/custom_white"
-                    card_view:cardCornerRadius="8dp"
-                    card_view:cardElevation="5dp"
-                    card_view:cardUseCompatPadding="true">
+                    android:layout_height="wrap_content">
 
-                    <RelativeLayout
+                    <!-- This recycler view will be used to implement horizontal scrolling for event images -->
+                    <android.support.v7.widget.RecyclerView
+                        android:id="@+id/image_scroller"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content">
+                        android:layout_height="150dp">
 
-                        <ImageView
-                            android:id="@+id/cover_photo"
-                            android:layout_width="match_parent"
-                            android:layout_height="150dp"
-                            android:scaleType="fitXY"
-                            android:src="@drawable/splashscreen" />
+                    </android.support.v7.widget.RecyclerView>
 
-                        <!-- Use relative layout to position title and favourites icon -->
-                        <RelativeLayout
-                            android:layout_below="@id/cover_photo"
+
+                    <!-- Use relative layout to position title and favourites icon -->
+                    <RelativeLayout
+                        android:id="@+id/cover"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/image_scroller"
+                        android:padding="16dp">
+
+
+                        <TextView
+                            android:id="@+id/event_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentLeft="true"
+                            android:text=""
+                            android:textColor="@color/dark_gray"
+                            android:textSize="30sp"
+                            android:textStyle="bold" />
+
+                        <com.joanzapata.iconify.widget.IconTextView
+                            android:id="@+id/favourite_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:gravity="center_horizontal"
+                            android:paddingRight="16dp"
+                            android:paddingTop="6dp"
+                            android:text="{fa-star-o}"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="35dp" />
+
+
+                        <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:padding="16dp">
-
+                            android:layout_below="@id/event_title"
+                            android:orientation="horizontal"
+                            android:paddingTop="8dp">
 
                             <TextView
-                                android:id="@+id/event_title"
-                                android:layout_width="wrap_content"
+                                android:id="@+id/event_description"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_alignParentLeft="true"
+                                android:layout_weight="3"
                                 android:text=""
+                                android:maxLength="100"
+                                android:ellipsize="end"
                                 android:textColor="@color/dark_gray"
-                                android:textSize="30sp"
+                                android:textSize="16sp"
                                 android:textStyle="bold" />
 
-                            <com.joanzapata.iconify.widget.IconTextView
-                                android:id="@+id/favourite_button"
-                                android:layout_width="wrap_content"
+                            <TextView
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_alignParentRight="true"
-                                android:gravity="center_horizontal"
-                                android:paddingRight="16dp"
-                                android:paddingTop="6dp"
-                                android:text="{fa-star-o}"
-                                android:textColor="@color/colorPrimary"
-                                android:textSize="35dp" />
+                                android:layout_weight="1"
+                                android:text=""
 
+                                />
 
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_below="@id/event_title"
-                                android:orientation="vertical"
-                                android:paddingRight="16dp"
-                                android:paddingTop="8dp">
+                        </LinearLayout>
 
-                                <TextView
-                                    android:id="@+id/event_description"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text=""
-                                    android:textColor="@color/dark_gray"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold" />
-
-                            </LinearLayout>
-
-                        </RelativeLayout>
                     </RelativeLayout>
 
-                </android.support.v7.widget.CardView>
-
-                <!-- Another card view that contains start date and time as well as address of event -->
-                <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
-                    android:id="@+id/start_date"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:paddingBottom="4dp"
-                    android:paddingLeft="16dp"
-                    card_view:cardBackgroundColor="@color/custom_white"
-                    card_view:cardCornerRadius="8dp"
-                    card_view:cardElevation="5dp"
-                    card_view:cardUseCompatPadding="true">
 
                     <RelativeLayout
                         android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
+                        android:layout_marginTop="16dp"
+                        android:layout_height="wrap_content"
+                        android:layout_below="@id/cover">
 
                         <RelativeLayout
                             android:id="@+id/day_month"
@@ -150,9 +146,11 @@
                         </RelativeLayout>
 
                         <LinearLayout
-                            android:layout_width="match_parent"
+                            android:id="@+id/time_address"
+                            android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginLeft="40dp"
+                            android:layout_marginRight="40dp"
                             android:layout_toRightOf="@id/day_month"
                             android:orientation="vertical">
 
@@ -173,37 +171,74 @@
 
                         </LinearLayout>
 
+                        <TextView
+                            android:id="@+id/tags"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_toRightOf="@id/time_address"
+                            android:textColor="@color/colorPrimary" />
+
                     </RelativeLayout>
 
-                </android.support.v7.widget.CardView>
+                </RelativeLayout>
 
+            </android.support.v7.widget.CardView>
 
-                <!--
-                <TextView
-                    android:id="@+id/end_date"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:paddingLeft="16dp"
-                    android:textColor="@color/dark_gray"
-                    android:textSize="16sp" />
-                   -->
-
-            </LinearLayout>
-
-            <!-- This recycler view will be used to implement horizontal scrolling for event images -->
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/image_scroller"
+            <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+                android:id="@+id/card_view_comments"
                 android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp"
+                card_view:cardBackgroundColor="@color/custom_white"
+                card_view:cardCornerRadius="8dp"
+                card_view:cardElevation="5dp"
+                card_view:cardUseCompatPadding="true">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/comments_title"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/comments"
+                        android:paddingLeft="16dp"
+                        android:paddingTop="8dp"
+                        android:textColor="@color/dark_gray"
+                        android:textSize="26sp"
+                        android:textStyle="bold" />
+
+                    <ListView
+                        android:id="@+id/comments_list"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                    </ListView>
+
+                </LinearLayout>
+
+
+            </android.support.v7.widget.CardView>
+
+
+            <!--
+            <TextView
+                android:id="@+id/end_date"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-            </android.support.v7.widget.RecyclerView>
-
-            />
+                android:paddingLeft="16dp"
+                android:textColor="@color/dark_gray"
+                android:textSize="16sp" />
+               -->
 
         </LinearLayout>
 
-    </ScrollView>
+        />
+
+    </LinearLayout>
+
 
 </LinearLayout>
 
