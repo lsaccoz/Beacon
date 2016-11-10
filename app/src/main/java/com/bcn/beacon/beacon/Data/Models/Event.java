@@ -29,7 +29,7 @@ public class Event {
 //    private String[] attendee_Ids;
 //    private String timeEnd_Id;
 //    private String[] postIds;
-//    private String[] tags;
+    private String[] tags;
 
     public void upload() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
