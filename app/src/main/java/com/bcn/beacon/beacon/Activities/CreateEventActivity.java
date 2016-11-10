@@ -94,6 +94,7 @@ import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.plus.model.people.Person;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.joanzapata.iconify.widget.IconTextView;
@@ -361,7 +362,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
             }
             else if (requestCode == PIC_CROP) {
-
+                /* ViewGroup.LayoutParams imglayout = eAddImage.getLayoutParams();
+                if(imglayout.height < 300) {
+                    imglayout.height = imglayout.height + 400;
+                }
+                eAddImage.setLayoutParams(imglayout); */
                 eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 eAddImage.setImageBitmap(BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath()));
             }
