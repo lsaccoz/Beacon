@@ -7,14 +7,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 public class ListEvent {
-    //uploaded
     private String eventId;
     private String name;
     private String host;
     private Date date;
     private Location location;
+    private String description;
 
-    //not uploaded
     public double distance;
 
     public ListEvent() {
@@ -71,6 +70,10 @@ public class ListEvent {
         return location;
     }
 
+    public String getDescription() {
+        return description;
+    }
+
 
     public void setEventId(String eventId) {
         this.eventId = eventId;
@@ -90,5 +93,9 @@ public class ListEvent {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 }
