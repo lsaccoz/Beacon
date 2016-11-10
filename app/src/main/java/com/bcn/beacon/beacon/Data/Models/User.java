@@ -1,11 +1,11 @@
 package com.bcn.beacon.beacon.Data.Models;
 
-/**
- * Created by neema on 2016-10-16.
- */
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+
 public class User {
 
-    private Long _id;
     private String uuid;
     private String name;
     private String email;
@@ -21,6 +21,18 @@ public class User {
         setId(uuid);
         setName(name);
         setEmail(email);
+    }
+
+    public void upload(){
+
+        DatabaseReference users = FirebaseDatabase.getInstance().getReference("Users");
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            setName(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
+            setEmail(FirebaseAuth.getInstance().getCurrentUser().getEmail());
+
+            users.child(uid).setValue(this);
+        }
     }
 
     public String getId(){

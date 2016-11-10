@@ -1,11 +1,6 @@
 package com.bcn.beacon.beacon.Data.Models;
 
-
 import java.util.Locale;
-
-/**
- * Created by neema on 2016-10-16.
- */
 
 public class Date {
 
@@ -15,7 +10,7 @@ public class Date {
     private int hour;
     private int minute;
 
-    public String getFormatted() {
+    public String formatted() {
         boolean isPM = 12 <= hour && hour < 24;
 
         return String.format(Locale.US, "%02d:%02d %s",
