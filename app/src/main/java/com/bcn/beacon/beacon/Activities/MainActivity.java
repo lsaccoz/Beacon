@@ -2,6 +2,7 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.Manifest;
 import android.app.Fragment;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 
@@ -45,6 +46,7 @@ import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.annotations.Nullable;
+import com.google.android.gms.ads.identifier.AdvertisingIdClient;
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
@@ -59,7 +61,9 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -80,9 +84,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+//import static com.bcn.beacon.beacon.R.id.container_all;
+//import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.favourites;
 import static com.bcn.beacon.beacon.R.id.list;
 import static com.bcn.beacon.beacon.R.id.map;
+import static com.bcn.beacon.beacon.R.id.range;
+import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;
 
 
@@ -97,7 +105,6 @@ public class MainActivity extends AuthBaseActivity
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
-
 
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -167,6 +174,7 @@ public class MainActivity extends AuthBaseActivity
 
         //create an initial map fragment
         mMapFragment = MapFragment.newInstance();
+        mMapFragment.getMapAsync(this);
 
         //create our tab array to keep track of the state of each tab
         mTabs = new ArrayList<>();
@@ -181,7 +189,9 @@ public class MainActivity extends AuthBaseActivity
                 .enableAutoManage(this, this)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, mGso)
                 .build();
-          //      .addApi(AppIndex.API).build();
+
+
+        //.addApi(AppIndex.API).build();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
@@ -199,52 +209,6 @@ public class MainActivity extends AuthBaseActivity
         };
 
 
-//        list(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                world.setEnabled(true);
-//                if (list.isEnabled()) {
-//                    resetTabColours();
-//                    list.setBackgroundResource(R.color.currentTabColor);
-//
-//                    if (savedInstanceState == null) {
-//                        // This null check is apparently good to have in order to not have fragments created over and over again
-//                        mListFragment = ListFragment.newInstance();
-//                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
-//
-//                        transaction.replace(R.id.events_view, mListFragment);
-//                        transaction.addToBackStack(null);
-//                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-//
-//                        transaction.commit();
-//                    }
-//                }
-//                list.setEnabled(false);
-//            }
-//        });
-//
-//        world.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                list.setEnabled(true);
-//                if (world.isEnabled()) {
-//                    resetTabColours();
-//                    world.setBackgroundResource(R.color.currentTabColor);
-//
-//                    getFragmentManager().popBackStackImmediate();
-//                }
-//                world.setEnabled(false);
-//            }
-//        });
-//
-//        favourites.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                resetTabColours();
-//                favourites.setBackgroundResource(R.color.currentTabColor);
-//            }
-//        });
-
         final Intent intent = new Intent(this, CreateEventActivity.class);
 
         mCreateEvent.setOnClickListener(new View.OnClickListener() {
@@ -255,7 +219,6 @@ public class MainActivity extends AuthBaseActivity
         });
 
     }
-
 
     protected void onStart() {
         super.onStart();// ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -479,300 +442,342 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-            private void getNearbyEvents () {
 
-                mDatabase = FirebaseDatabase.getInstance().getReference();
-                mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                        double distance;
-                        for (DataSnapshot child : dataSnapshot.getChildren()) {
-                            eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
-                            eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
-                            distance = distFrom(userLat, userLng, eventLat, eventLng);
+    private void getNearbyEvents() {
 
-                            if (distance <= maxRadius) {
-                                Event event = new Event(child.getValue().toString(),
-                                        child.child("name").getValue().toString(),
-                                        child.child("hostId").getValue().toString(),
-                                        eventLat, eventLng,
-                                        child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
-                                        child.child("description").getValue().toString());
+        mDatabase = FirebaseDatabase.getInstance().getReference();
+        mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                double distance;
+                for (DataSnapshot child : dataSnapshot.getChildren()) {
+                    eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
+                    eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
+                    distance = distFrom(userLat, userLng, eventLat, eventLng);
 
-                                // The arraylist "events" is specific to each user, and will be different for each Android phone.
-                                // The distance field for events would not be on the Firebase database, but it is required to keep track
-                                // of it here in order to do the comparisons (for distance sorting) and list view (for showing distance).
-                                event.setDistance(distance);
+                    if (distance <= maxRadius) {
+                        Event event = new Event(child.child("eventId").getValue().toString(),
+                                child.child("name").getValue().toString(),
+                                child.child("hostId").getValue().toString(),
+                                eventLat, eventLng,
+                                child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
+                                child.child("description").getValue().toString());
 
-                                //Log.i("NAME:", event.getName());
-                                //Log.i("DISTANCE:", Double.toString(distance));
-                                events.add(event);
+                        // The arraylist "events" is specific to each user, and will be different for each Android phone.
+                        // The distance field for events would not be on the Firebase database, but it is required to keep track
+                        // of it here in order to do the comparisons (for distance sorting) and list view (for showing distance).
+                        event.setDistance(distance);
 
-                            }
-                        }
-                        Collections.sort(events, new DistanceComparator());
+                        //Log.i("NAME:", event.getName());
+                        //Log.i("DISTANCE:", Double.toString(distance));
+                        events.add(event);
+
                     }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                    }
-                });
+                }
+                Collections.sort(events, new DistanceComparator());
             }
 
-            /**
-             * Java implementation of the Haversine formula for calculating the distance between two locations.
-             * Taken from http://stackoverflow.com/questions/120283
-             * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
-             *
-             * @param userLat  - latitude of the user's location
-             * @param userLng  - longitude of the user's location
-             * @param eventLat - latitude of the event's location
-             * @param eventLng - longitude of the event's location
-             * @return dist - distance between the two locations
-             */
-        private static double distFrom ( double userLat, double userLng, double eventLat,
-        double eventLng){
-            double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
-            double dLat = Math.toRadians(eventLat - userLat);
-            double dLng = Math.toRadians(eventLng - userLng);
-            double sindLat = Math.sin(dLat / 2);
-            double sindLng = Math.sin(dLng / 2);
-            double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
-                    * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
-            double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-            double dist = earthRadius * c;
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
 
-            return dist; // in kilometers
-        }
+    /**
+     * Java implementation of the Haversine formula for calculating the distance between two locations.
+     * Taken from http://stackoverflow.com/questions/120283
+     * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
+     *
+     * @param userLat  - latitude of the user's location
+     * @param userLng  - longitude of the user's location
+     * @param eventLat - latitude of the event's location
+     * @param eventLng - longitude of the event's location
+     * @return dist - distance between the two locations
+     */
+    private static double distFrom(double userLat, double userLng, double eventLat,
+                                   double eventLng) {
+        double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
+        double dLat = Math.toRadians(eventLat - userLat);
+        double dLng = Math.toRadians(eventLng - userLng);
+        double sindLat = Math.sin(dLat / 2);
+        double sindLng = Math.sin(dLng / 2);
+        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
+                * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double dist = earthRadius * c;
 
-        /**
-         * Getter method for that returns the events list
-         *
-         * @return list of nearby events
-         */
-        public ArrayList<Event> getEventList () {
-            return events;
-        }
+        return dist; // in kilometers
+    }
 
-        public ArrayList<Event> getRefreshedEventList () {
-            getNearbyEvents();
-            return events;
-        }
+    /**
+     * Getter method for that returns the events list
+     *
+     * @return list of nearby events
+     */
+    public ArrayList<Event> getEventList() {
+        return events;
+    }
 
-        public Map<String, Event> getEventsMap () {
-            return eventsMap;
-        }
+    public ArrayList<Event> getRefreshedEventList() {
+        getNearbyEvents();
+        return events;
+    }
 
-
-        @Override
-        public void onConnected (@Nullable Bundle bundle){
-            getUserLocation();
-        }
-
-        @Override
-        public void onConnectionSuspended ( int i){
-            mGoogleApiClient.connect();
-        }
-
-        private void signOut () {
-
-            mAuth.signOut();
-
-            Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                    new ResultCallback<Status>() {
-                        @Override
-                        public void onResult(Status status) {
-                            Toast toast = Toast.makeText(MainActivity.this,
-                                    "Signed Out Successfully",
-                                    Toast.LENGTH_SHORT);
-                            toast.setGravity(Gravity.CENTER, 0, 0);
-                            toast.show();
-
-                            Intent i = new Intent(MainActivity.this, SignInActivity.class);
-                            MainActivity.this.startActivity(i);
-                            MainActivity.this.finish();
-                        }
-                    });
-        }
+    public Map<String, Event> getEventsMap() {
+        return eventsMap;
+    }
 
 
-        ArrayList<Event> event_list = new ArrayList<Event>();
+    @Override
+    public void onConnected(@Nullable Bundle bundle) {
+        getUserLocation();
+    }
 
-// public void test() {
-//
-//      mDatabase = FirebaseDatabase.getInstance().getReference();
-//      mDatabase.child("Events").addValueEventListener(new ValueEventListener() {
-//          @Override
-//          public void onDataChange(DataSnapshot dataSnapshot) {
-//
-//              for (DataSnapshot child : dataSnapshot.getChildren()) {
-//                  eventLat = Double.parseDouble(child.child("location").child("latitude").getValue().toString());
-//                  eventLng = Double.parseDouble(child.child("location").child("longitude").getValue().toString());
-//
-//                  String Event_ID;
-//
-//                  if(child.child("eventId").getValue() != null)
-//                      Event_ID = child.child("eventId").getValue().toString();
-//                  else
-//                      Event_ID = child.getValue().toString();
-//
-//                  Event event = new Event(Event_ID,
-//                              child.child("name").getValue().toString(),
-//                              child.child("hostId").getValue().toString(),
-//                              eventLat, eventLng,
-//                              child.child("date").child("hour").getValue().toString() + ':' + child.child("date").child("minute").getValue().toString(),
-//                              child.child("description").getValue().toString());
-//
-//                  event_list.add(event);
-//              }
-//
-//          }
-//          @Override
-//          public void onCancelled(DatabaseError databaseError) { }
-//      });
-//
-//    }
+    @Override
+    public void onConnectionSuspended(int i) {
+        mGoogleApiClient.connect();
+    }
 
-        HashMap<String, String> m = new HashMap<String, String>();
+    private void signOut() {
 
-        private void initMap () {
+        mAuth.signOut();
 
-            if(mMap != null) {
-                mMap.clear();
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        Toast toast = Toast.makeText(MainActivity.this,
+                                "Signed Out Successfully",
+                                Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
 
-                if (mAuth != null && mAuth.getCurrentUser() != null) {
+                        Intent i = new Intent(MainActivity.this, SignInActivity.class);
+                        MainActivity.this.startActivity(i);
+                        MainActivity.this.finish();
+                    }
+                });
+    }
+
+
+    //ArrayList<Event> event_list = new ArrayList<Event>();
+
+    HashMap<String, String> m = new HashMap<String, String>();
+    HashMap<String, Event> events_list = new HashMap<String, Event>();
+
+    private void initMap() {
+
+        if (mMap != null) {
+            mMap.clear();
+
+            // SharedPreferences prefs =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            //int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
+
+                /*LatLngBounds Bound = new LatLngBounds(
+                        new LatLng(userLat - pref, userLng - pref), new LatLng(userLat + pref, userLng + pref));
+
+                mMap.setLatLngBoundsForCameraTarget(Bound);*/
+
+            mMap.setMaxZoomPreference(17);
+            //mMap.setMinZoomPreference(11);
+
+            if (mAuth != null && mAuth.getCurrentUser() != null) {
+
+                if (!events.isEmpty()) {
+
+                    Marker user = mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .position(new LatLng(userLat, userLng))
+                            .title("You"));
+                    //mMap.setOnMarkerClickListener(this)
+
 
                     if (!events.isEmpty()) {
                         for (int i = 0; i < events.size(); i++) {
 
+
                             Event e = events.get(i);
 
                             double latitude = e.getLocation().getLatitude();
-                            double longitude = e.getLocation().getLatitude();
+                            double longitude = e.getLocation().getLongitude();
+
                             String name = e.getName();
+                            String description = e.getDescription();
 
                             Marker marker = mMap.addMarker(new MarkerOptions()
-                                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                                     .position(new LatLng(latitude, longitude))
-                                    .title(name));
+                                    .title(name)
+                                    .snippet(description));
 
                             m.put(marker.getId(), e.getEventId());
+                            events_list.put(marker.getId(), e);
 
-                            mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
                             mMap.setOnMarkerClickListener(this);
                             mMap.setOnInfoWindowClickListener(this);
+                            mMap.setInfoWindowAdapter(new InfoWindow());
                         }
+
+                    } else {
+                        Marker marker = mMap.addMarker(new MarkerOptions()
+                                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                                .position(new LatLng(userLat, userLng))
+                                .title("Your Location"));
+
+                        mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
                     }
-                } else {
-                    Marker marker = mMap.addMarker(new MarkerOptions()
-                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                            .position(new LatLng(49.2606, -123.2460))
-                            .title("Default"));
-
-                    mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 250, null);
-                }
-            }
-
-        }
-
-                @Override
-                public void onInfoWindowClick (Marker marker){
-
-                    String event = m.get(marker.getId());
-
-                    Intent i = new Intent(this, EventPageActivity.class);
-                    i.putExtra("Event", event);
-                    startActivity(i);
-
                 }
 
-                @Override
-                public boolean onMarkerClick (Marker marker){
-                    marker.showInfoWindow();
+                LatLng UserLocation = new LatLng(userLat, userLng);
+
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(UserLocation)
+                        .zoom(13)
+                        .build();
+                mMap.moveCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
 
 
-                    return true;
-
-                }
-
-
-        public void onMapReady (GoogleMap map){
-            mMap = map;
-
-            initMap();
-
-        }
-
-        /**
-         * resets all the tabs to the unselected color
-         */
-        private void resetTabColours () {
-            for (IconTextView itv : mTabs) {
-                itv.setBackgroundResource(R.color.otherTabColor);
             }
-        }
-
-
-        @Override
-        public void onMapClick (LatLng latLng){
 
         }
-        /**
-         * This method overrides the default back button functionality
-         *
-         * If the user is looking at a different tab the world tab will be loaded,
-         * otherwise the activity will end and the user will return to the android home screen
-         *
-         */
-        @Override
-        public void onBackPressed () {
-            //currently viewing the map
-            if (mMapFragment != null && mMapFragment.isVisible()) {
-                //return to home screen
-                finish();
+    }
 
-                //map fragment is active but not currently shown
-            } else if (mMapFragment != null && !mMapFragment.isVisible()) {
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+    @Override
+    public void onInfoWindowClick(Marker marker) {
 
-                transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
-                transaction.addToBackStack(null);
+        String event = m.get(marker.getId());
 
-                transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                transaction.commit();
-
-                //set the world tab as being selected
-                resetTabColours();
-                mWorld.setBackgroundResource(R.color.currentTabColor);
-
-                mMapFragment.getMapAsync(this);
-
-                //ensure that the create event tab is visible again
-                mCreateEvent.setEnabled(true);
-                mCreateEvent.setVisibility(View.VISIBLE);
-
-            } else {
-                finish();
-            }
-        }
-
-        // To keep track of the view the event page was clicked on
-        public static void setEventPageClickedFrom ( int from){
-            eventPageClickedFrom = from;
-        }
-
-        @Override
-        public void onResume () {
-            // Temporary fix for going back to list view from event page
-            // it actually shows fragment but the action bar goes back to map view
-            if (eventPageClickedFrom == 1) {
-                //set the world tab as being selected
-                resetTabColours();
-                mList.setBackgroundResource(R.color.currentTabColor);
-                eventPageClickedFrom = 0;
-            }
-            super.onResume();
-        }
-
+        Intent i = new Intent(this, EventPageActivity.class);
+        i.putExtra("Event", event);
+        startActivity(i);
 
     }
+
+    @Override
+    public boolean onMarkerClick(Marker marker) {
+
+        marker.showInfoWindow();
+        return true;
+    }
+
+
+    public void onMapReady(GoogleMap map) {
+        mMap = map;
+        initMap();
+
+    }
+
+    /**
+     * resets all the tabs to the unselected color
+     */
+    private void resetTabColours() {
+        for (IconTextView itv : mTabs) {
+            itv.setBackgroundResource(R.color.otherTabColor);
+        }
+    }
+
+
+    @Override
+    public void onMapClick(LatLng latLng) {
+
+    }
+
+    /**
+     * This method overrides the default back button functionality
+     * <p/>
+     * If the user is looking at a different tab the world tab will be loaded,
+     * otherwise the activity will end and the user will return to the android home screen
+     */
+    @Override
+    public void onBackPressed() {
+        //currently viewing the map
+        if (mMapFragment != null && mMapFragment.isVisible()) {
+            //return to home screen
+            finish();
+
+            //map fragment is active but not currently shown
+        } else if (mMapFragment != null && !mMapFragment.isVisible()) {
+            FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+            transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+            transaction.addToBackStack(null);
+
+            transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+            transaction.commit();
+
+            //set the world tab as being selected
+            resetTabColours();
+            mWorld.setBackgroundResource(R.color.currentTabColor);
+
+            mMapFragment.getMapAsync(this);
+
+            //ensure that the create event tab is visible again
+            mCreateEvent.setEnabled(true);
+            mCreateEvent.setVisibility(View.VISIBLE);
+
+        } else {
+            finish();
+        }
+    }
+
+    // To keep track of the view the event page was clicked on
+    public static void setEventPageClickedFrom(int from) {
+        eventPageClickedFrom = from;
+    }
+
+    @Override
+    public void onResume() {
+        // Temporary fix for going back to list view from event page
+        // it actually shows fragment but the action bar goes back to map view
+        if (eventPageClickedFrom == 1) {
+            //set the world tab as being selected
+            resetTabColours();
+            mList.setBackgroundResource(R.color.currentTabColor);
+            eventPageClickedFrom = 0;
+        }
+        super.onResume();
+    }
+
+
+    public class InfoWindow implements GoogleMap.InfoWindowAdapter {
+
+        private View v;
+
+        InfoWindow() {
+
+            v = getLayoutInflater().inflate(R.layout.custom_info_window_contents, null);
+
+        }
+
+        @Override
+        public View getInfoWindow(Marker marker) {
+
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
+
+            Event e = events_list.get(marker.getId());
+
+            if (e != null) {
+
+                String description = e.getDescription();
+
+                TextView Description = ((TextView) v.findViewById(R.id.description));
+                assert Description != null;
+                Description.setText(description);
+
+                String title = e.getName();
+                TextView Title = ((TextView) v.findViewById(R.id.title));
+                assert Title != null;
+                Title.setText(title);
+
+                return v;
+            }
+
+            return null;
+
+        }
+    }
+}

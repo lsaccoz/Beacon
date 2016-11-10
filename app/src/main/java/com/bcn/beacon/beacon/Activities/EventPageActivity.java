@@ -52,7 +52,7 @@ public class EventPageActivity extends AppCompatActivity {
     private Event mEvent;
     private Date mDate;
     private Context mContext;
-
+    
     private ArrayList<Drawable> mImageDrawables;
     private TextView mTitle;
     private TextView mDescription;
@@ -82,12 +82,17 @@ public class EventPageActivity extends AppCompatActivity {
         //set the context for use in callback methods
         mContext = this;
 
+        //get the event id
+        String eventId = getIntent().getStringExtra("Event");
+
+        //fetch the event from the firebase database
+        getEvent(eventId);
+
         //retrieve all the views from the view hierarchy
         mTitle = (TextView) findViewById(R.id.event_title);
         mDescription = (TextView) findViewById(R.id.event_description);
         mFavourite = (IconTextView) findViewById(R.id.favourite_button);
         mImageScroller = (RecyclerView) findViewById(R.id.image_scroller);
-//        mCoverPhoto = (ImageView) findViewById(R.id.cover_photo);
         mStartTime = (TextView) findViewById(R.id.start_time);
         mStartDay = (TextView) findViewById(R.id.start_day);
         mStartMonth = (TextView) findViewById(R.id.start_month);
@@ -124,11 +129,12 @@ public class EventPageActivity extends AppCompatActivity {
 
         });
 
+        //Add fake images to the event page
         mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
         mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
         mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
 
-
+        //create adapter between image list and recycler view
         EventImageAdapter eventImageAdapter = new EventImageAdapter(mImageDrawables);
 
         LinearLayoutManager horizontalLayoutManagaer
@@ -139,117 +145,114 @@ public class EventPageActivity extends AppCompatActivity {
         mImageScroller.setAdapter(eventImageAdapter);
 
 
-//        mImageScroller.getAdapter().notifyDataSetChanged();
-
         //TODO THE FOLLOWING CODE IS SIMPLY TEST CODE TO CHECK THE XML LAYOUT, NEEDS TO BE REPLACED WITH CODE TO RETRIEVE FIELDS OF REAL EVENT OBJECT
 
         //create a fake date object and set all the fields to the current time
-        mDate = new Date();
-        Calendar mcurrentDate = Calendar.getInstance();
-        int defaultWeekDay = mcurrentDate.get(Calendar.DAY_OF_WEEK);
-        int defaultYear = mcurrentDate.get(Calendar.YEAR);
-        int defaultMonth = mcurrentDate.get(Calendar.MONTH);
-        int defaultDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
-        int defaultHour = mcurrentDate.get(Calendar.HOUR_OF_DAY);
-        int defaultMinute = mcurrentDate.get(Calendar.MINUTE);
-
-        mDate.setYear(defaultYear);
-        mDate.setMonth(defaultMonth);
-        mDate.setDay(defaultDay);
-        mDate.setHour(defaultHour);
-        mDate.setMinute(defaultMinute);
-
-        //create dummy event to populate the event page UI
-        mEvent = new Event("blabla", "Cool Party", "blabla", 5, 100, null, "Come out for the Donald Trump Election Celebration Party!");
-        mEvent.setDate(mDate);
-
-        //display the tags for this event
-        mTags.setText(" #Party\n #Awesome\n #Fun");
-
-        //set the event title
-        mTitle.setText(mEvent.getName());
-
-        //set the description
-
-//        DataUtil.textViewFormatter(mDescription, mEvent.getDescription(), 30);
-        mDescription.setText(mEvent.getDescription());
-
-        int hour = mDate.getHour();
-        int minute = mDate.getMinute();
-        int day = mDate.getDay();
-        int month = mDate.getMonth();
-        int year = mDate.getYear();
-        boolean isPM = false;
-
-        if (hour >= 12) {
-            isPM = true;
-        }
-
-        mStartDay.setText("" + mEvent.getDate().getDay());
-        mStartMonth.setText("" + DataUtil.convertMonthToString(mEvent.getDate().getMonth()));
-        mStartTime.setText(DataUtil.convertDayToString(defaultWeekDay) + " " + String.format(Locale.US, "%02d:%02d %s",
-                (hour == 12 || minute == 0) ? 12 : hour % 12, minute,
-                isPM ? "PM" : "AM"));
-
-        mAddress.setText("666 Trump Ave.");
-
-        //TODO move date formatting code into a utility class
-
-//        //create a formatted date string for the start time
-//        String formattedDateStringStart = "Start Time: " + day + "/" + month + "/" + year + " " + String.format(Locale.US, "%02d:%02d %s",
-//                (hour == 12 || minute == 0) ? 12 : hour % 12, minute,
-//                isPM ? "PM" : "AM");
+//        mDate = new Date();
+//        Calendar mcurrentDate = Calendar.getInstance();
+//        int defaultWeekDay = mcurrentDate.get(Calendar.DAY_OF_WEEK);
+//        int defaultYear = mcurrentDate.get(Calendar.YEAR);
+//        int defaultMonth = mcurrentDate.get(Calendar.MONTH);
+//        int defaultDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
+//        int defaultHour = mcurrentDate.get(Calendar.HOUR_OF_DAY);
+//        int defaultMinute = mcurrentDate.get(Calendar.MINUTE);
 //
-//        //create a formatted date string for the end time
-//        String formattedDateStringEnd = "End Time: " + day + "/" + month + "/" + year +  " " + String.format(Locale.US, "%02d:%02d %s",
-//                (hour == 12 || minute == 0) ? 12 : hour % 12, minute,
-//                isPM ? "PM" : "AM");
+//        mDate.setYear(defaultYear);
+//        mDate.setMonth(defaultMonth);
+//        mDate.setDay(defaultDay);
+//        mDate.setHour(defaultHour);
+//        mDate.setMinute(defaultMinute);
 //
-//        // populate the start time and end time with the same date string for now
-//        mStartTime.setText(formattedDateStringStart);
-//        mEndTime.setText(formattedDateStringEnd );
+//        //create dummy event to populate the event page UI
+//        mEvent = new Event("blabla", "Cool Party", "blabla", 5, 100, null, "Come out for the Donald Trump Election Celebration Party!");
+//        mEvent.setDate(mDate);
+//
+//        //set the description
+//
+////        DataUtil.textViewFormatter(mDescription, mEvent.getDescription(), 30);
+//        mDescription.setText(mEvent.getDescription());
+//
+//        int hour = mDate.getHour();
+//        int minute = mDate.getMinute();
+//        int day = mDate.getDay();
+//        int month = mDate.getMonth();
+//        int year = mDate.getYear();
+
+//
 
 
-        //setTitle(mEvent.getName());
 
         //TODO END OF TEST BLOCK
 
 
         // GetEvent();
     }
+
+    /**
+     * This method fetches the Event data from the firebase database
+     *
+     * @param eventId
+     *              The event Id as a string
+     */
+    private void getEvent(String eventId) {
+
+//        String ID = getIntent().getStringExtra("Event");
+
+        DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference("Events/" + eventId);
+
+        eventRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                //get the event
+                mEvent = dataSnapshot.getValue(Event.class);
+                //populate the views in the view hierarchy with actual event data
+                populate();
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+//                //TODO add error catch
+            }
+
+        });
+    }
+
+    /**
+     * This method populates the views in the event page
+     */
+    private void populate() {
+        //setTitle(mEvent.getName());
+//        TextView description = (TextView) findViewById(R.id.description);
+        assert mEvent != null;
+        assert mDescription != null;
+
+        mDescription.setText(mEvent.getDescription());
+        mTitle.setText(mEvent.getName());
+
+        //display the tags for this event
+        mTags.setText(" #Party\n #Awesome\n #Fun");
+
+        boolean isPM = false;
+
+
+        Date date = mEvent.getDate();
+
+        if (date.getHour() >= 12) {
+            isPM = true;
+        }
+        //set the
+        mStartDay.setText("" + date.getDay());
+        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
+        mStartTime.setText(" " + String.format(Locale.US, "%02d:%02d %s",
+                (date.getHour() == 12 || date.getMinute() == 0) ? 12 : date.getHour() % 12, date.getMinute(),
+                isPM ? "PM" : "AM"));
+
+        mAddress.setText("666 Trump Ave.");
+
+    }
 }
 
-//    private void GetEvent() {
-//
-//        String ID = getIntent().getStringExtra("Event");
-//
-//        String eventId = ID;
-//
-//        DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference("Events/" + eventId);
-//
-//        eventRef.addListenerForSingleValueEvent(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(DataSnapshot dataSnapshot) {
-//                event = dataSnapshot.getValue(Event.class);
-//                populate();
-//            }
-//
-//            @Override
-//            public void onCancelled(DatabaseError databaseError) {
-////                //TODO add error catch
-//            }
-//
-//        });
-//    }
-//
-//    private void populate() {
-//        setTitle(mEvent.getName());
-//        TextView description = (TextView) findViewById(R.id.description);
-//        assert description != null;
-//        description.setText(mEvent.getDescription());
-//
-//    }
-//}
+
 
    /* private void on_directions_click(Button Directions) {
 
@@ -279,12 +282,3 @@ public class EventPageActivity extends AppCompatActivity {
                 .show();
     }*/
 
-    /*@Override
-=======
-    @Override
->>>>>>> Staging
-    public void onBackPressed() {
-        MainActivity.setEventPageClickedFrom(from);
-        super.onBackPressed();
-    }
-}*/
