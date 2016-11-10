@@ -193,7 +193,6 @@ public class MainActivity extends AuthBaseActivity
         searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //renderList(true);
                 //Toast.makeText(getApplicationContext(), "searched?", Toast.LENGTH_LONG).show();
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
@@ -207,7 +206,8 @@ public class MainActivity extends AuthBaseActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                //Toast.makeText(getApplicationContext(), "changed!!" + ++counter, Toast.LENGTH_LONG).show();
+                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                fragment.updateListForSearch(newText);
                 return false;
             }
         });
