@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:name=".BeaconApplication"
@@ -47,9 +49,10 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
         </activity>
         <activity
             android:name=".Activities.EventPageActivity"
-            android:label="@string/title_activity_event_page">
 
+            android:label="@string/title_activity_event_page">
         </activity>
+        <activity android:name="com.android.camera.CropImage"/>
     </application>
 
 </manifest>
