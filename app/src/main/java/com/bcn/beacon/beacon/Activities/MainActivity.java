@@ -933,6 +933,11 @@ public class MainActivity extends AuthBaseActivity
                     resetTabColours();
                     mList.setBackgroundResource(R.color.currentTabColor);
                     //eventPageClickedFrom = 0;
+                    searchButton.setEnabled(false);
+                    searchButton.setVisibility(View.GONE);
+                    searchBar.setEnabled(true);
+                    searchBar.setVisibility(View.VISIBLE);
+
                     break;
                 }
                 case (2): {
@@ -940,6 +945,9 @@ public class MainActivity extends AuthBaseActivity
                     mFavourites.setBackgroundResource(R.color.currentTabColor);
                     mCreateEvent.setEnabled(false);
                     mCreateEvent.setVisibility(View.GONE);
+
+                    searchButton.setEnabled(false);
+                    searchButton.setVisibility(View.GONE);
                     //eventPageClickedFrom = 0;
                     break;
                 }

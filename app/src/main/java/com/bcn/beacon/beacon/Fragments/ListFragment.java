@@ -154,14 +154,14 @@ public class ListFragment extends Fragment {
     }
 
 
-    /* Code for future functionality, in case we want to restore scroll position in list view
+    /*//Code for future functionality, in case we want to restore scroll position in list view
     @Override
     public void onPause() {
         state = listView.onSaveInstanceState();
         super.onPause();
     }
 
-    /*@Override
+    @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -175,7 +175,8 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onResume() {
-        adapter.notifyDataSetChanged();
+        updateListAllEvents();
+        //adapter.notifyDataSetChanged();
         /*if (state != null) {
             listView.onRestoreInstanceState(state);
         }*/
