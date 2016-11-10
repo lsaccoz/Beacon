@@ -4,12 +4,8 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
-/**
- * Created by neema on 2016-10-16.
- */
 public class User {
 
-    private Long _id;
     private String uuid;
     private String name;
     private String email;
