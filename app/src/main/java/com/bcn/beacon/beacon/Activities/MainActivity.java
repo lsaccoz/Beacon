@@ -334,8 +334,6 @@ public class MainActivity extends AuthBaseActivity
                 searchButton.setEnabled(false);
                 searchButton.setVisibility(View.GONE);
 
-                searchBar.setVisibility(View.VISIBLE);
-
                 //get List fragment if exists
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
                 if (fragment == null || !fragment.isVisible()) {
@@ -360,6 +358,8 @@ public class MainActivity extends AuthBaseActivity
                     transaction.commit();
                 }
                 tracker = 1;
+                searchBar.setVisibility(View.VISIBLE);
+
                 break;
             }
             case (world): {
@@ -374,8 +374,6 @@ public class MainActivity extends AuthBaseActivity
 
                 searchButton.setEnabled(true);
                 searchButton.setVisibility(View.VISIBLE);
-
-                searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
 
@@ -401,6 +399,7 @@ public class MainActivity extends AuthBaseActivity
                     mMapFragment.getMapAsync(this);
                 }
                 tracker = 0;
+                searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
                 break;
             }
@@ -417,8 +416,6 @@ public class MainActivity extends AuthBaseActivity
 
                 searchButton.setEnabled(false);
                 searchButton.setVisibility(View.GONE);
-
-                searchBar.setVisibility(View.GONE);
 
                 //get List fragment if exists
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
@@ -443,7 +440,7 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
-
+                searchBar.setVisibility(View.VISIBLE);
                 break;
             }
             case (R.id.settings): {
@@ -457,8 +454,6 @@ public class MainActivity extends AuthBaseActivity
 
                 searchButton.setEnabled(false);
                 searchButton.setVisibility(View.GONE);
-
-                searchBar.setVisibility(View.GONE);
 
                 //check if visible fragment is an instance of settings fragment already, if so do nothing
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
@@ -479,6 +474,7 @@ public class MainActivity extends AuthBaseActivity
                     fragmentTransaction.commit();
 
                 }
+                searchBar.setVisibility(View.GONE);
                 break;
             }
 
@@ -948,6 +944,8 @@ public class MainActivity extends AuthBaseActivity
 
                     searchButton.setEnabled(false);
                     searchButton.setVisibility(View.GONE);
+                    searchBar.setEnabled(true);
+                    searchBar.setVisibility(View.VISIBLE);
                     //eventPageClickedFrom = 0;
                     break;
                 }
