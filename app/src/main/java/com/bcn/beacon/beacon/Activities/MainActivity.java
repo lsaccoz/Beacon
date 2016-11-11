@@ -441,6 +441,7 @@ public class MainActivity extends AuthBaseActivity
                     transaction.commit();
                 }
                 searchBar.setVisibility(View.VISIBLE);
+                tracker = 2;
                 break;
             }
             case (R.id.settings): {
@@ -859,6 +860,12 @@ public class MainActivity extends AuthBaseActivity
      */
     @Override
     public void onBackPressed() {
+        // fix for search bar being visible on back pressed in fragments
+        if (tracker == 1 || tracker == 2) {
+            searchBar.setEnabled(false);
+            searchBar.setVisibility(View.GONE);
+        }
+
         //currently viewing the map
         if (mMapFragment != null && mMapFragment.isVisible()) {
             //return to home screen
