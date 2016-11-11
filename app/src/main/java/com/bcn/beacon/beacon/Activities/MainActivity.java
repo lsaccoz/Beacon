@@ -358,7 +358,7 @@ public class MainActivity extends AuthBaseActivity
                     transaction.commit();
                 }
                 tracker = 1;
-                searchBar.setVisibility(View.VISIBLE);
+                //searchBar.setVisibility(View.VISIBLE);
 
                 break;
             }
@@ -399,6 +399,7 @@ public class MainActivity extends AuthBaseActivity
                     mMapFragment.getMapAsync(this);
                 }
                 tracker = 0;
+                searchBar.setEnabled(showBarInMap ? true : false);
                 searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
                 break;
@@ -440,7 +441,7 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
-                searchBar.setVisibility(View.VISIBLE);
+                //searchBar.setVisibility(View.VISIBLE);
                 tracker = 2;
                 break;
             }
@@ -475,7 +476,7 @@ public class MainActivity extends AuthBaseActivity
                     fragmentTransaction.commit();
 
                 }
-                searchBar.setVisibility(View.GONE);
+                //searchBar.setVisibility(View.GONE);
                 break;
             }
 
@@ -903,6 +904,12 @@ public class MainActivity extends AuthBaseActivity
     public static void setEventPageClickedFrom(int from) {
         eventPageClickedFrom = from;
     }
+
+    // To set the visibility of search bar in fragments
+    public SearchView getSearchBar() {
+        return searchBar;
+    }
+
 
 
     @Override

@@ -13,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SeekBar;
 
+import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.CustomViews.SearchRangePreference;
 import com.bcn.beacon.beacon.R;
 
@@ -40,5 +41,12 @@ public class SettingsFragment extends PreferenceFragment {
             settingsFragment = new SettingsFragment();
             return settingsFragment;
         }
+    }
+
+    @Override
+    public void onResume() {
+        ((MainActivity) getActivity()).getSearchBar().setEnabled(false);
+        ((MainActivity) getActivity()).getSearchBar().setVisibility(View.GONE);
+        super.onResume();
     }
 }

@@ -168,6 +168,8 @@ public class FavouritesFragment extends Fragment {
     public void onResume() {
         populateFav();
         adapter.notifyDataSetChanged();
+        ((MainActivity) getActivity()).getSearchBar().setEnabled(true);
+        ((MainActivity) getActivity()).getSearchBar().setVisibility(View.VISIBLE);
         super.onResume();
     }
 

@@ -176,6 +176,8 @@ public class ListFragment extends Fragment {
     @Override
     public void onResume() {
         updateListAllEvents();
+        ((MainActivity) getActivity()).getSearchBar().setEnabled(true);
+        ((MainActivity) getActivity()).getSearchBar().setVisibility(View.VISIBLE);
         //adapter.notifyDataSetChanged();
         /*if (state != null) {
             listView.onRestoreInstanceState(state);
