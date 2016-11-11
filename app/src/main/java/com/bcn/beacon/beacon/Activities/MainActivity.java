@@ -209,7 +209,9 @@ public class MainActivity extends AuthBaseActivity
             @Override
             public boolean onQueryTextChange(String newText) {
                 ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                fragment.updateListForSearch(newText);
+                if (fragment != null) {
+                    fragment.updateListForSearch(newText);
+                }
                 return false;
             }
         });
@@ -488,6 +490,7 @@ public class MainActivity extends AuthBaseActivity
                 // for temporary fix
                 if (mActiveFragment != null && mActiveFragment == mListFragment) {
                     intent.putExtra("from", 1);
+                    Log.i("BURAYA", "GEL");
                 }
                 else if (mActiveFragment != null && mActiveFragment == mMapFragment){
                     // don't really need this, but keep for now
@@ -863,6 +866,7 @@ public class MainActivity extends AuthBaseActivity
     public void onBackPressed() {
         // fix for search bar being visible on back pressed in fragments
         if (tracker == 1 || tracker == 2) {
+            tracker = 0;
             searchBar.setEnabled(false);
             searchBar.setVisibility(View.GONE);
         }
