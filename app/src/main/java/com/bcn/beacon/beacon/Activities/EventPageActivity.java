@@ -111,6 +111,9 @@ public class EventPageActivity extends AppCompatActivity {
 
         System.out.println(mEventId);
 
+        // check if event is favourited and set favourited accordingly
+        setFavourited();
+
         //fetch the event from the firebase database
         getEvent(mEventId);
 
@@ -245,6 +248,32 @@ public class EventPageActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Function to check if the event is favourited, and changes icon fill accordingly
+     */
+    public void setFavourited() {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users/"
+                                        + FirebaseAuth.getInstance().getCurrentUser().getUid()
+                                        + "/favourites/" + mEventId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // since we only set the value to false, this check is alright
+                if (dataSnapshot.getValue() != null) {
+                    favourited = true;
+                    mFavourite.setText("{fa-star}");
+                }
+                else {
+                    favourited = false;
+                    mFavourite.setText("{fa-star-o}");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
 
     /**
      * This method populates the views in the event page
@@ -309,7 +338,6 @@ public class EventPageActivity extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference users = database.getReference("Users");
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        // TODO: We should add a "true" check for if an event is favourited, so the button can remove the event from favourites on click
         users.child(userId).child("favourites").child(mEventId).setValue(true);
 //        Toast.makeText(EventPageActivity.this, "Event added to favourites!", Toast.LENGTH_SHORT).show();
 
@@ -335,6 +363,24 @@ public class EventPageActivity extends AppCompatActivity {
     public void onBackPressed() {
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
+        //finish();
+    }
+
+    // for fixing the clicking favourites twice bug
+    // TODO: this is another way of fixing the clicking favourite button twice bug, by finish()ing activity on back press
+    // is it better to finish() activity everytime for less work done by the activity, I don't know...
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean("favourited", favourited);
+        //Log.i("SAVE PAGE", "YES");
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        this.favourited = savedInstanceState.getBoolean("favourited");
     }
 
 

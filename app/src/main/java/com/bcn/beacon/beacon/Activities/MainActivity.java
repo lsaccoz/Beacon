@@ -490,7 +490,6 @@ public class MainActivity extends AuthBaseActivity
                 // for temporary fix
                 if (mActiveFragment != null && mActiveFragment == mListFragment) {
                     intent.putExtra("from", 1);
-                    Log.i("BURAYA", "GEL");
                 }
                 else if (mActiveFragment != null && mActiveFragment == mMapFragment){
                     // don't really need this, but keep for now
