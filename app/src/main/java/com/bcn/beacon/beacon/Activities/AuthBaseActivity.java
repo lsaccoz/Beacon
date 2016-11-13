@@ -7,6 +7,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.bcn.beacon.beacon.Data.Models.User;
 import com.bcn.beacon.beacon.R;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -18,6 +19,7 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * Created by andytertzakian on 2016-11-03.
@@ -28,12 +30,12 @@ public class AuthBaseActivity extends AppCompatActivity implements
 
     private static final String TAG = "AuthBaseActivity";
 
+    //Sign in Class Variables
     protected static final int RC_SIGN_IN = 9001;
     protected  FirebaseUser mFirebaseUser;
     protected FirebaseAuth mAuth;
     protected FirebaseAuth.AuthStateListener mAuthListener;
     protected GoogleSignInOptions mGso;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState){
@@ -49,12 +51,12 @@ public class AuthBaseActivity extends AppCompatActivity implements
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+                FirebaseUser firebaseUser = firebaseAuth.getCurrentUser();
+                if (firebaseUser != null) {
                     // User is signed in
-
-                    mFirebaseUser = user;
-                    Log.d(TAG, "onAuthStateChanged_SignIn:signed_in:" + user.getUid());
+                    mFirebaseUser = firebaseUser;
+                    updloadUser();
+                    Log.d(TAG, "onAuthStateChanged_SignIn:signed_in:" + firebaseUser.getUid());
                 } else {
                     // User is signed out
                     Log.d(TAG, "onAuthStateChanged_SignIn:signed_out");
@@ -85,16 +87,21 @@ public class AuthBaseActivity extends AppCompatActivity implements
         });
     }
 
-    protected void handleSignInResult(GoogleSignInResult result, Intent intent){
+    protected void handleSignInResult(GoogleSignInResult result, Intent intent) {
         Log.d(TAG, "handledSignResult:" + result.isSuccess());
-        if(result.isSuccess()){
+        if (result.isSuccess()) {
             GoogleSignInAccount acct = result.getSignInAccount();
-            if(acct != null){
+            if (acct != null) {
                 startActivity(intent);
             }
-        }else{
+        } else {
             //what to do if the sign in was not a success
         }
+    }
+
+    protected void updloadUser(){
+        User user = new User();
+        user.upload();
     }
 
     @Override

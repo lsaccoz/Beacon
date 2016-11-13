@@ -79,6 +79,9 @@ public class ListFragment extends Fragment {
 
         listView = (ListView) view.findViewById(R.id.listView);
 
+        // set empty view if there are no events to show
+        listView.setEmptyView(view.findViewById(R.id.empty));
+
         //set adapter for the events list view
         listView.setAdapter(adapter);
         Log.i("VIEW","CREATED");
@@ -100,6 +103,8 @@ public class ListFragment extends Fragment {
             }
         });
 
+
+
         // initialize the swap container variable with the view
         swipeContainer = (SwipeRefreshLayout) view.findViewById(R.id.swipeContainer);
         // refresh listener for loading new data
@@ -107,8 +112,7 @@ public class ListFragment extends Fragment {
             @Override
             public void onRefresh() {
                 //events.clear();
-                events = ((MainActivity) getActivity()).getEventList();
-                adapter.notifyDataSetChanged();
+                updateListAllEvents();
                 swipeContainer.setRefreshing(false);
             }
         });
@@ -130,20 +134,34 @@ public class ListFragment extends Fragment {
 
     }
 
+    public void updateListForSearch(String queryString){
+        ArrayList<ListEvent> results = ((MainActivity) getActivity()).searchEvents(queryString);
+        events.clear();
+        events.addAll(results);
+        adapter.notifyDataSetChanged();
+    }
+
+    public void updateListAllEvents(){
+        ArrayList<ListEvent> results = ((MainActivity) getActivity()).getEventList();
+        events.clear();
+        events.addAll(results);
+        adapter.notifyDataSetChanged();
+    }
+
     @Override
     public void onStart() {
         super.onStart();
     }
 
 
-    /* Code for future functionality, in case we want to restore scroll position in list view
+    /*//Code for future functionality, in case we want to restore scroll position in list view
     @Override
     public void onPause() {
         state = listView.onSaveInstanceState();
         super.onPause();
     }
 
-    /*@Override
+    @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -157,6 +175,7 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onResume() {
+        updateListAllEvents();
         //adapter.notifyDataSetChanged();
         /*if (state != null) {
             listView.onRestoreInstanceState(state);

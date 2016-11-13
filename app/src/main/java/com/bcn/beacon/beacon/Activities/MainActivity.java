@@ -26,12 +26,18 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.widget.SearchView;
 import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.view.Window;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -117,16 +123,21 @@ public class MainActivity extends AuthBaseActivity
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
 
+    private FloatingActionButton searchButton;
+    private SearchView searchBar;
+
     private IconTextView mList;
     private IconTextView mWorld;
     private IconTextView mFavourites;
     private IconTextView mSettings;
     private static final String TAG = "MainActivity";
 
-    public static int eventPageClickedFrom = 0;
+    public static int eventPageClickedFrom = -1;
     public static int REQUEST_CODE_EVENTPAGE = 10;
     public static int REQUEST_CODE_CREATEEVENT = 20;
 
+
+    private boolean showBarInMap = false;
 
     /**
      * Copied over from BeaconListView
@@ -138,6 +149,8 @@ public class MainActivity extends AuthBaseActivity
 
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+    // tracker for the temporary fix
+    private static int tracker = -1;
 
     private ArrayList<ListEvent> events = new ArrayList<>();
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
@@ -168,6 +181,49 @@ public class MainActivity extends AuthBaseActivity
         mFavourites = (IconTextView) findViewById(R.id.favourites);
         mSettings = (IconTextView) findViewById(R.id.settings);
         mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
+        searchButton = (FloatingActionButton) findViewById(R.id.search_test);
+
+//        searchButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                showBarInMap = true;
+//            }
+//        });
+
+
+        searchBar = (SearchView) findViewById(R.id.searchBar);
+        searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                //Toast.makeText(getApplicationContext(), "searched?", Toast.LENGTH_LONG).show();
+                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
+                searchBar.clearFocus();
+                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                fragment.updateListForSearch(query);
+                return false;
+            }
+
+            int counter = 0;
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                fragment.updateListForSearch(newText);
+                return false;
+            }
+        });
+
+        searchBar.setOnCloseListener(new SearchView.OnCloseListener() {
+            @Override
+            public boolean onClose() {
+                //resetEventList();
+                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                fragment.updateListAllEvents();
+                return false;
+            }
+        });
+
 
         //set the onClickListener to this activity
         mList.setOnClickListener(this);
@@ -237,6 +293,7 @@ public class MainActivity extends AuthBaseActivity
             // push to stack so that the fragment transaction is recorded and the fragment will be
             // obtainable from the fragment manager
             fragmentTransaction.addToBackStack(null);
+            mActiveFragment = mMapFragment;
             fragmentTransaction.commit();
             Log.i("BACKSTACK COUNT", "0");
         }
@@ -274,6 +331,9 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
 
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
+
                 //get List fragment if exists
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
                 if (fragment == null || !fragment.isVisible()) {
@@ -297,6 +357,9 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
+                tracker = 1;
+                searchBar.setVisibility(View.VISIBLE);
+
                 break;
             }
             case (world): {
@@ -308,6 +371,9 @@ public class MainActivity extends AuthBaseActivity
                 //show create event button on this page
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
+
+                searchButton.setEnabled(true);
+                searchButton.setVisibility(View.VISIBLE);
 
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
 
@@ -332,8 +398,10 @@ public class MainActivity extends AuthBaseActivity
 
                     mMapFragment.getMapAsync(this);
                 }
-                break;
+                tracker = 0;
+                searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
+                break;
             }
 
 
@@ -345,6 +413,9 @@ public class MainActivity extends AuthBaseActivity
                 //hide create event button on this page
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
+
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
 
                 //get List fragment if exists
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
@@ -369,7 +440,7 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
-
+                searchBar.setVisibility(View.VISIBLE);
                 break;
             }
             case (R.id.settings): {
@@ -380,6 +451,9 @@ public class MainActivity extends AuthBaseActivity
                 //hide create event button on this page
                 mCreateEvent.setEnabled(false);
                 mCreateEvent.setVisibility(View.GONE);
+
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
 
                 //check if visible fragment is an instance of settings fragment already, if so do nothing
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
@@ -400,6 +474,7 @@ public class MainActivity extends AuthBaseActivity
                     fragmentTransaction.commit();
 
                 }
+                searchBar.setVisibility(View.GONE);
                 break;
             }
 
@@ -408,7 +483,23 @@ public class MainActivity extends AuthBaseActivity
                 Intent intent = new Intent(this, CreateEventActivity.class);
                 intent.putExtra("userlat", userLat);
                 intent.putExtra("userlng", userLng);
-                startActivity(intent);
+                // for temporary fix
+                if (mActiveFragment != null && mActiveFragment == mListFragment) {
+                    intent.putExtra("from", 1);
+                }
+                else if (mActiveFragment != null && mActiveFragment == mMapFragment){
+                    // don't really need this, but keep for now
+                    //Log.i("ACTIVE", "MAP");
+                    intent.putExtra("from", 0);
+                }
+                else if (tracker == 1) {
+                    //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
+                    intent.putExtra("from", 1);
+                }
+
+                // startActivity(intent);
+                // start activity for result using same code for now
+                startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
             }
         }
 
@@ -581,7 +672,8 @@ public class MainActivity extends AuthBaseActivity
      * @return list of nearby events
      */
     public ArrayList<ListEvent> getEventList() {
-        return events;
+        ArrayList<ListEvent> allEvents = new ArrayList<>(events);
+        return allEvents;
     }
 
     public ArrayList<ListEvent> getRefreshedEventList() {
@@ -589,12 +681,22 @@ public class MainActivity extends AuthBaseActivity
         return events;
     }
 
-    public ArrayList<String> getFavouriteIdsList() {
-        return favouriteIds;
-    }
-
     public HashMap<String, ListEvent> getEventsMap() {
         return eventsMap;
+    }
+
+    public ArrayList<ListEvent> searchEvents(String query) {
+        ArrayList<ListEvent> queries = new ArrayList<>();
+        for (ListEvent e : events) {
+            if (e.getName().toLowerCase().contains(query)) {
+                queries.add(e);
+            }
+        }
+        return queries;
+    }
+
+    public ArrayList<String> getFavouriteIdsList() {
+        return favouriteIds;
     }
 
 
@@ -809,19 +911,53 @@ public class MainActivity extends AuthBaseActivity
         super.onResume();
     }
 
-
+    /**
+     * This is the temporary fix for displaying the current tab correctly
+     * @param requestCode
+     * @param resultCode
+     * @param intent
+     */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent intent) {
         super.onActivityResult(requestCode, resultCode, intent);
 
         if (requestCode == REQUEST_CODE_EVENTPAGE && resultCode == RESULT_CANCELED) {
             //Fragment fragment =
-            if (eventPageClickedFrom == 1) {
-                resetTabColours();
-                mList.setBackgroundResource(R.color.currentTabColor);
-                eventPageClickedFrom = 0;
+            //Log.i("ON RESULT", "YES");
+            switch (eventPageClickedFrom) {
+                case (1): {
+                    resetTabColours();
+                    mList.setBackgroundResource(R.color.currentTabColor);
+                    //eventPageClickedFrom = 0;
+                    searchButton.setEnabled(false);
+                    searchButton.setVisibility(View.GONE);
+                    searchBar.setEnabled(true);
+                    searchBar.setVisibility(View.VISIBLE);
+
+                    break;
+                }
+                case (2): {
+                    resetTabColours();
+                    mFavourites.setBackgroundResource(R.color.currentTabColor);
+                    mCreateEvent.setEnabled(false);
+                    mCreateEvent.setVisibility(View.GONE);
+
+                    searchButton.setEnabled(false);
+                    searchButton.setVisibility(View.GONE);
+                    searchBar.setEnabled(true);
+                    searchBar.setVisibility(View.VISIBLE);
+                    //eventPageClickedFrom = 0;
+                    break;
+                }
+                /*default: {
+                    resetTabColours();
+                    mWorld.setBackgroundResource(R.color.currentTabColor);
+                    break;
+                }*/
             }
+
         }
+
     }
 
     @Override
@@ -829,6 +965,7 @@ public class MainActivity extends AuthBaseActivity
         Log.i("SAVE STATE", "YES");
         //outState.putParcelable("lastFragment", getFragmentManager().saveFragmentInstanceState(mActiveFragment));
         //getFragmentManager().putFragment(outState, "lastFragment", mActiveFragment);
+        outState.putInt("tracker", tracker);
 
         super.onSaveInstanceState(outState);
     }
@@ -836,6 +973,8 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
+
+        tracker = savedInstanceState.getInt("tracker");
 
         //getFragmentManager().getFragment(savedInstanceState, "lastFragment");
         //savedInstanceState.getParcelable("lastFragment");

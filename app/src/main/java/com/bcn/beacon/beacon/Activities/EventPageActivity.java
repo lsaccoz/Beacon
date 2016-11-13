@@ -6,6 +6,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.graphics.drawable.Drawable;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -29,6 +31,7 @@ import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
 import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
@@ -38,6 +41,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 import com.bcn.beacon.beacon.Utility.DataUtil;
@@ -56,6 +60,7 @@ import com.joanzapata.iconify.widget.IconButton;
 import com.joanzapata.iconify.widget.IconTextView;
 
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 
 import java.util.ArrayList;
@@ -80,11 +85,16 @@ public class EventPageActivity extends AppCompatActivity {
 
     private boolean favourited = false;
 
+    private int from;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_page);
+
+        Intent intent = getIntent();
+        from = intent.getIntExtra("from", -1);
 
         Window window = this.getWindow();
         //set the status bar color if the API version is high enough
@@ -253,6 +263,25 @@ public class EventPageActivity extends AppCompatActivity {
 
         boolean isPM = false;
 
+        //get Location
+        Location location = mEvent.getLocation();
+        Geocoder coder = new Geocoder(this);
+        List<Address> addresses;
+        Address address;
+
+        //convert address to a readable string if possible
+        try{
+            addresses = coder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+            if(!addresses.isEmpty()) {
+                address = addresses.get(0);
+
+                //set the address text to the retrieved address
+                mAddress.setText(address.getAddressLine(0));
+            }
+
+        }catch(IOException e){
+            e.printStackTrace();
+        }
 
         Date date = mEvent.getDate();
 
@@ -266,7 +295,7 @@ public class EventPageActivity extends AppCompatActivity {
                 (date.getHour() == 12 || date.getMinute() == 0) ? 12 : date.getHour() % 12, date.getMinute(),
                 isPM ? "PM" : "AM"));
 
-        mAddress.setText("666 Trump Ave.");
+//        mAddress.setText("666 Trump Ave.");
 
     }
 
@@ -301,6 +330,13 @@ public class EventPageActivity extends AppCompatActivity {
 
         return true;
     }
+
+    @Override
+    public void onBackPressed() {
+        MainActivity.setEventPageClickedFrom(from);
+        super.onBackPressed();
+    }
+
 
 //    private boolean initFavourite(){
 //        FirebaseDatabase database = FirebaseDatabase.getInstance();
