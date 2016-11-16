@@ -88,6 +88,10 @@ import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.Place;
+import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
+import com.google.android.gms.location.places.ui.PlaceSelectionListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -129,14 +133,12 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     FloatingActionButton myFab;
     ScrollView mScrollView;
     Spinner categorySpinner;
-    ImageButton locationSearch;
-    ImageButton returnUserLocation;
-    EditText eLocationSearch;
 
     File tempfile;
 
     private double userLat, userLng;
 
+    final int LOCATION_SELECTED = 3;
     final int PIC_CROP = 2;
     final int REQUEST_IMAGE_CAPTURE = 1;
     final int PIC_SAVE = 0;
@@ -174,16 +176,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         categorySpinner.setAdapter(adapter);
         categorySpinner.setOnItemSelectedListener(this);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
-        locationSearch = (ImageButton) findViewById(R.id.search_button);
-        eLocationSearch = (EditText) findViewById(R.id.input_location_search);
-        returnUserLocation = (ImageButton) findViewById(R.id.return_location_button);
 
         eDate.setOnClickListener(this);
         eTime.setOnClickListener(this);
         eAddImage.setOnClickListener(this);
         myFab.setOnClickListener(this);
-        locationSearch.setOnClickListener(this);
-        returnUserLocation.setOnClickListener(this);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -254,52 +251,17 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 break;
             }
             case (R.id.fab): {
-                if( eName.getText().toString().trim().equals("")){
+                /*if( eName.getText().toString().trim().equals("")){
                     eName.setError( "Your event needs a name!" );
                 }else {
                     upload();
-                }
+                }*/
+                Intent intent = new Intent(this, SelectLocationActivity.class);
+                intent.putExtra("userlat", userLat);
+                intent.putExtra("userlng", userLng);
+                startActivityForResult(intent, LOCATION_SELECTED);
+
                 break;
-            }
-            case (R.id.search_button): {
-                String inputLocation = eLocationSearch.getText().toString();
-                List<Address> addressList = null;
-
-                if (inputLocation != null && !inputLocation.equals("")) {
-                    Geocoder geocoder = new Geocoder(this);
-                    try {
-                        addressList = geocoder.getFromLocationName(inputLocation, 10, userLat - 0.1, userLng - 0.1, userLat + 0.1, userLng + 0.1);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                    if(!addressList.isEmpty()) {
-                        Address address = addressList.get(0);
-                        LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
-                        mMap.clear();
-                        Marker marker = mMap.addMarker(new MarkerOptions()
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                                .position(latLng)
-                                .title(address.getAddressLine(0)));
-                        marker.setDraggable(true);
-                        mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-                        location.setLongitude(address.getLongitude());
-                        location.setLatitude(address.getLatitude());
-                    }else{
-                        eLocationSearch.setError( "No results" );
-                    }
-                }
-                break;
-            }
-            case(R.id.return_location_button):{
-                mMap.clear();
-                Marker marker = mMap.addMarker(new MarkerOptions()
-                        .position(new LatLng(userLat, userLng))
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin)));
-                marker.setDraggable(true);
-
-                setLocationAndPin(userLat, userLng, marker, false);
-
-                return;
             }
         }
 
@@ -395,6 +357,16 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     cropImage.setSourceImage(Uri.fromFile(tempfile));
                     startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
 
+            }
+            else if(requestCode == LOCATION_SELECTED){
+                if (data.getExtras() != null) {
+                    userLat = data.getExtras().getDouble("lat");
+                    userLng = data.getExtras().getDouble("lng");
+                    String name = data.getExtras().getString("name");
+                    //location.setLatitude(userLat);
+                   // location.setLongitude(userLng);
+                    //The key argument here must match that used in the other activity
+                }
             }
         }
     }
@@ -688,10 +660,8 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
         if(!addresses.isEmpty()) {
             arg.setTitle(addresses.get(0).getAddressLine(0));
-            eLocationSearch.setText(addresses.get(0).getAddressLine(0));
         }else{
             arg.setTitle("");
-            eLocationSearch.setText("");
         }
         if(zoom) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom((new LatLng(lat, lng)), 15));
