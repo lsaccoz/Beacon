@@ -2,49 +2,34 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.Manifest;
 import android.app.Fragment;
-import android.os.Parcelable;
-import android.content.SharedPreferences;
-import android.net.Uri;
-import android.support.v7.app.AppCompatActivity;
 
-import android.app.Activity;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Typeface;
 
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationListener;
 import android.location.LocationManager;
-import android.provider.ContactsContract;
 import android.preference.PreferenceManager;
 
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
-import android.support.v7.widget.Toolbar;
-import android.text.Editable;
-import android.text.TextUtils;
-import android.text.TextWatcher;
 import android.util.Log;
 import android.view.Gravity;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
 import android.view.Window;
-import android.widget.LinearLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bcn.beacon.beacon.Data.DistanceComparator;
-import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
@@ -52,13 +37,7 @@ import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.annotations.Nullable;
-import com.google.android.gms.ads.identifier.AdvertisingIdClient;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.auth.api.Auth;
-import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
-import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -69,7 +48,6 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -81,22 +59,16 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
-import java.io.Serializable;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Locale;
 
 //import static com.bcn.beacon.beacon.R.id.container_all;
 //import static com.bcn.beacon.beacon.R.id.container_current;
-import static com.bcn.beacon.beacon.R.id.favourites;
 import static com.bcn.beacon.beacon.R.id.list;
-import static com.bcn.beacon.beacon.R.id.map;
-import static com.bcn.beacon.beacon.R.id.range;
-import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;
 
 
@@ -106,7 +78,7 @@ public class MainActivity extends AuthBaseActivity
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        View.OnClickListener {
+        View.OnClickListener{
 
 
     private GoogleApiClient mGoogleApiClient;
@@ -762,19 +734,13 @@ public class MainActivity extends AuthBaseActivity
 
                 if (!events.isEmpty()) {
 
-
-                    //mMap.setOnMarkerClickListener(this)
                     if (!events.isEmpty()) {
                         for (int i = 0; i < events.size(); i++) {
-
 
                             ListEvent e = events.get(i);
 
                             double latitude = e.getLocation().getLatitude();
                             double longitude = e.getLocation().getLongitude();
-
-                            String name = e.getName();
-//                            String description = e.getDescription();
 
                             Marker marker = mMap.addMarker(new MarkerOptions()
                                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
@@ -786,6 +752,7 @@ public class MainActivity extends AuthBaseActivity
                             mMap.setOnMarkerClickListener(this);
                             mMap.setOnInfoWindowClickListener(this);
                             mMap.setInfoWindowAdapter(new InfoWindow());
+
                         }
 
                     } else {
@@ -813,17 +780,47 @@ public class MainActivity extends AuthBaseActivity
 
     @Override
     public void onInfoWindowClick(Marker marker) {
+        if (m.get(marker.getId()) != null) {
+            String event = m.get(marker.getId());
 
-        String event = m.get(marker.getId());
-
-        Intent i = new Intent(this, EventPageActivity.class);
-        i.putExtra("Event", event);
-        startActivity(i);
-
+            Intent i = new Intent(this, EventPageActivity.class);
+            i.putExtra("Event", event);
+            startActivity(i);
+        }
     }
+
+    List<Address> addresses = null;
 
     @Override
     public boolean onMarkerClick(Marker marker) {
+
+
+        ListEvent event = events_list.get(marker.getId());
+
+        if(event != null) {
+            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
+
+            try {
+                addresses = geocoder.getFromLocation(event.getLocation().getLatitude(), event.getLocation().getLongitude(), 1);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            float zoom = mMap.getCameraPosition().zoom;
+
+            if(zoom < 14.00) {
+                CameraPosition cameraPosition = new CameraPosition.Builder()
+                        .target(marker.getPosition())
+                        .zoom(14)
+                        .build();
+
+                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+            }
+            else
+                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+
+        }
 
         marker.showInfoWindow();
         return true;
@@ -989,25 +986,16 @@ public class MainActivity extends AuthBaseActivity
         Log.i("FINISHING?", Boolean.toString(this.isFinishing()));
     }
 
-
     public class InfoWindow implements GoogleMap.InfoWindowAdapter {
 
         private View v;
 
         InfoWindow() {
-
-            v = getLayoutInflater().inflate(R.layout.custom_info_window_contents, null);
-
+            v = getLayoutInflater().inflate(R.layout.custom_info_window, null);
         }
 
         @Override
         public View getInfoWindow(Marker marker) {
-
-            return null;
-        }
-
-        @Override
-        public View getInfoContents(Marker marker) {
 
             ListEvent e = events_list.get(marker.getId());
 
@@ -1018,8 +1006,36 @@ public class MainActivity extends AuthBaseActivity
                 assert Title != null;
                 Title.setText(title);
 
+                /*String description = e.getDescription();
+                TextView Description = ((TextView) v.findViewById(R.id.description));
+                assert Description != null;
+                Description.setText(description);*/
+
+                if(!addresses.isEmpty()) {
+
+                    String address = addresses.get(0).getAddressLine(0).toString();
+                    TextView Address = ((TextView) v.findViewById(R.id.address));
+                    assert Address != null;
+                    Address.setText(address);
+
+                }
+
+                ArrayList favs = getFavouriteIdsList();
+                IconTextView fav = ((IconTextView) v.findViewById(R.id.map_fav));
+
+                if(favs.contains(e.getEventId()))
+                    fav.setText("{fa-star}");
+                else
+                    fav.setText("{fa-star-o}");
+
                 return v;
             }
+
+            return null;
+        }
+
+        @Override
+        public View getInfoContents(Marker marker) {
 
             return null;
 

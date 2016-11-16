@@ -1,26 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
 
+    android:orientation="horizontal"
+
+    android:layout_width="wrap_content"
+
+    android:layout_height="wrap_content"
+
+    android:background="@drawable/infowindow_oval"
+
+    android:padding="15dp">
+
+     <!--<ImageView
+        android:id="@+id/InfoWindowImage"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_marginRight="5dp"
+        android:layout_marginEnd="5dp"
+        android:adjustViewBounds="true"
+         android:text="{fa-star-o}"
+         android:src="@drawable/favourite_icon">
+     </ImageView>-->
+
+       <com.joanzapata.iconify.widget.IconTextView
+        android:id="@+id/map_fav"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginRight="5dp"
+        android:layout_marginEnd="5dp"
+        android:text="{fa-star-o}"
+        android:textColor="#f9ef0e"
+        android:textSize="30dp"
+        />
+
+    <LinearLayout
+
+    android:layout_width="wrap_content"
+
+    android:layout_height="wrap_content"
+
+    android:orientation="vertical">
 
     <TextView
         android:id="@+id/title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="17dp"
-        android:textColor="@color/dark_gray"
-        android:textStyle="bold"
-        android:text= ""/>
+        android:textColor="@color/black"
+        android:textStyle="bold"/>
 
     <TextView
-        android:id="@+id/description"
+        android:id="@+id/address"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textSize="12dp"
-        android:textColor="@color/dark_gray"
-        android:text= ""/>
+        android:textColor="@color/dark_gray"/>
 
 
-
+    </LinearLayout>
 </LinearLayout>
