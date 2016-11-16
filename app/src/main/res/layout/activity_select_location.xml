@@ -7,18 +7,25 @@
     android:layout_height="match_parent"
     tools:context="com.bcn.beacon.beacon.Activities.SelectLocationActivity">
 
-    <fragment
-        android:id="@+id/place_autocomplete_fragment"
+    <android.support.v7.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
-        />
+        android:id="@+id/auto_complete_cardView"
+        app:cardCornerRadius="4dp">
+
+        <fragment
+            android:id="@+id/place_autocomplete_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+            />
+    </android.support.v7.widget.CardView>
 
     <fragment
         class="com.google.android.gms.maps.MapFragment"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/place_autocomplete_fragment"
+        android:layout_below="@+id/auto_complete_cardView"
         android:layout_centerHorizontal="true"
         android:id="@+id/locale_select_map"
          />
@@ -45,6 +52,8 @@
         android:layout_alignLeft="@+id/set_location_fab"
         android:layout_alignStart="@+id/set_location_fab"
         app:srcCompat="@android:drawable/ic_menu_mylocation" />
+
+
 
 
 </RelativeLayout>
