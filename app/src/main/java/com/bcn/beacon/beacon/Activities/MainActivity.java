@@ -94,7 +94,6 @@ import java.util.Map;
 //import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.favourites;
 import static com.bcn.beacon.beacon.R.id.list;
-import static com.bcn.beacon.beacon.R.id.map;
 import static com.bcn.beacon.beacon.R.id.range;
 import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;

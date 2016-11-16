@@ -77,6 +77,8 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
         if (extras != null) {
             userLat = extras.getDouble("userlat");
             userLng = extras.getDouble("userlng");
+            currentLng = extras.getDouble("curlng");
+            currentLat = extras.getDouble("curlat");
             //location.setLatitude(userLat);
             //location.setLongitude(userLng);
             //The key argument here must match that used in the other activity
@@ -132,8 +134,7 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
                 currentLat = userLat;
                 currentLng = userLng;
 
-                marker.setPosition(new LatLng(userLat, userLng));
-                setLocationAndPin(userLat, currentLng, marker, true);
+                setLocationAndPin(userLat, userLng, marker, true);
                 break;
             }
             case(R.id.set_location_fab) :{
@@ -206,10 +207,10 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
 
             marker = mMap.addMarker(new MarkerOptions()
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                    .position(new LatLng(userLat, userLng)));
+                    .position(new LatLng(currentLat, currentLng)));
 
             marker.setDraggable(true);
-            setLocationAndPin(userLat, userLng, marker, true);
+            setLocationAndPin(currentLat, currentLng, marker, true);
 
         }
     }
@@ -233,10 +234,12 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
             currentName = "";
             arg.setTitle("");
         }
+
+        arg.setPosition(new LatLng(lat,lng));
         if(zoom) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom((new LatLng(lat, lng)), 15));
         }else{
-            mMap.animateCamera(CameraUpdateFactory.newLatLng((new LatLng(lat, lng))));
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
         }
         currentLat = lat;
         currentLng = lng;
