@@ -7,7 +7,7 @@
         <item name="colorPrimary">#9C27B0</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
-        <item name="android:listViewStyle">@style/myListViewStyle</item>
+        <item name="android:listViewStyle">@style/PreferencesListViewStyle</item>
         <!--
         <item name="android:actionBarStyle">@style/AppTheme.ActionBar2</item>
         <item name="actionBarStyle">@style/AppTheme.ActionBar2</item>
@@ -33,7 +33,7 @@
         <item name="android:height">@dimen/small_action_bar_height</item>
         <item name="height">@dimen/small_action_bar_height</item>
     </style>
-
+    
     <style name="myPreferenceStyle">
         <item name="android:background">@color/custom_white</item>
         <!--
@@ -44,7 +44,7 @@
 
     </style>
 
-    <style name="myListViewStyle" parent="@android:style/Widget.Holo.ListView">
+    <style name="PreferencesListViewStyle" parent="@android:style/Widget.Holo.ListView">
         <item name="android:background">@color/custom_white</item>
 
     </style>

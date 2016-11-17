@@ -33,7 +33,6 @@
                 android:paddingBottom="16dp"
                 android:paddingLeft="16dp"
                 card_view:cardBackgroundColor="@color/custom_white"
-                card_view:cardCornerRadius="8dp"
                 card_view:cardElevation="5dp"
                 card_view:cardUseCompatPadding="true">
 
@@ -51,36 +50,81 @@
 
 
                     <!-- Use relative layout to position title and favourites icon -->
-                    <RelativeLayout
+                    <LinearLayout
                         android:id="@+id/cover"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_below="@id/image_scroller"
+                        android:orientation="vertical"
                         android:padding="16dp">
 
-
-                        <TextView
-                            android:id="@+id/event_title"
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_alignParentLeft="true"
-                            android:text=""
-                            android:textColor="@color/dark_gray"
-                            android:textSize="30sp"
-                            android:textStyle="bold" />
+                            android:orientation="horizontal">
 
-                        <com.joanzapata.iconify.widget.IconTextView
-                            android:id="@+id/favourite_button"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_alignParentRight="true"
-                            android:gravity="center_horizontal"
-                            android:paddingRight="16dp"
-                            android:paddingTop="6dp"
-                            android:text="{fa-star-o}"
-                            android:textColor="@color/colorPrimary"
-                            android:textSize="35dp" />
+                            <TextView
+                                android:id="@+id/event_title"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="3"
+                                android:text="Dope"
+                                android:textColor="@color/dark_gray"
+                                android:textSize="30sp" />
 
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:paddingTop="6dp"
+                                android:orientation="vertical">
+
+                                <com.joanzapata.iconify.widget.IconTextView
+                                    android:id="@+id/favourite_button"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_horizontal"
+                                    android:text="{fa-star-o}"
+                                    android:textColor="@color/colorPrimary"
+                                    android:textSize="25dp" />
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="12sp"
+                                    android:text="Favourite"
+                                    android:textColor="@color/dark_gray"
+                                    android:gravity="center"/>
+
+                            </LinearLayout>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:paddingTop="6dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <com.joanzapata.iconify.widget.IconTextView
+                                    android:id="@+id/going_button"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center_horizontal"
+                                    android:textSize="25dp"
+                                    android:text="{fa-calendar-plus-o}"
+                                    android:textColor="@color/colorPrimary"/>
+
+                                <TextView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:textSize="12sp"
+                                    android:text="Going"
+                                    android:textColor="@color/dark_gray"
+                                    android:gravity="center"/>
+
+                            </LinearLayout>
+
+                        </LinearLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -93,10 +137,10 @@
                                 android:id="@+id/event_description"
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:layout_weight="3"
-                                android:text=""
-                                android:maxLength="100"
+                                android:layout_weight="4"
                                 android:ellipsize="end"
+                                android:maxLength="100"
+                                android:text="cool party I'm hosting"
                                 android:textColor="@color/dark_gray"
                                 android:textSize="16sp"
                                 android:textStyle="bold" />
@@ -111,61 +155,65 @@
 
                         </LinearLayout>
 
-                    </RelativeLayout>
+                    </LinearLayout>
 
 
-                    <RelativeLayout
-                        android:layout_width="wrap_content"
-                        android:layout_marginTop="16dp"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_below="@id/cover">
+                        android:layout_below="@id/cover"
+                        android:layout_margin="8dp">
 
-                        <RelativeLayout
+                        <LinearLayout
                             android:id="@+id/day_month"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content">
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
 
                             <TextView
                                 android:id="@+id/start_month"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:paddingLeft="16dp"
+                                android:gravity="center"
+                                android:text="Nov"
                                 android:textColor="@color/colorPrimary"
                                 android:textSize="24sp" />
 
                             <TextView
                                 android:id="@+id/start_day"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:layout_below="@id/start_month"
                                 android:gravity="center"
-                                android:paddingLeft="32dp"
+                                android:text="13"
                                 android:textColor="@color/dark_gray"
                                 android:textSize="24sp" />
 
-                        </RelativeLayout>
+                        </LinearLayout>
 
                         <LinearLayout
                             android:id="@+id/time_address"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:layout_marginLeft="40dp"
-                            android:layout_marginRight="40dp"
-                            android:layout_toRightOf="@id/day_month"
+                            android:layout_weight="3"
                             android:orientation="vertical">
 
                             <TextView
                                 android:id="@+id/start_time"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:gravity="center"
                                 android:paddingTop="8dp"
+                                android:text="Wed 4:30pm"
                                 android:textColor="@color/dark_gray"
                                 android:textSize="16sp" />
 
                             <TextView
                                 android:id="@+id/address"
-                                android:layout_width="wrap_content"
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:text="4738 Rodger rd"
                                 android:textColor="@color/dark_gray"
                                 android:textSize="16sp" />
 
@@ -173,12 +221,14 @@
 
                         <TextView
                             android:id="@+id/tags"
-                            android:layout_width="wrap_content"
+                            android:layout_width="0dp"
+                            android:layout_marginRight="16dp"
                             android:layout_height="wrap_content"
-                            android:layout_toRightOf="@id/time_address"
+                            android:layout_weight="1"
+                            android:gravity="center"
                             android:textColor="@color/colorPrimary" />
 
-                    </RelativeLayout>
+                    </LinearLayout>
 
                 </RelativeLayout>
 
@@ -190,7 +240,6 @@
                 android:layout_height="match_parent"
                 android:padding="16dp"
                 card_view:cardBackgroundColor="@color/custom_white"
-                card_view:cardCornerRadius="8dp"
                 card_view:cardElevation="5dp"
                 card_view:cardUseCompatPadding="true">
 
@@ -203,12 +252,11 @@
                         android:id="@+id/comments_title"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/comments"
                         android:paddingLeft="16dp"
                         android:paddingTop="8dp"
+                        android:text="@string/comments"
                         android:textColor="@color/dark_gray"
-                        android:textSize="24sp"
-                        android:textStyle="bold" />
+                        android:textSize="24sp" />
 
                     <ListView
                         android:id="@+id/comments_list"
