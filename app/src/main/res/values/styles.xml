@@ -47,6 +47,9 @@
     <!-- list view style for the preferences page -->
     <style name="PreferencesListViewStyle" parent="@android:style/Widget.Holo.ListView">
         <item name="android:background">@color/custom_white</item>
+        <item name="android:cacheColorHint">@android:color/transparent</item>
+        <item name="android:divider">@color/dark_gray</item>
+        <item name="android:dividerHeight">1dp</item>
 
     </style>
 

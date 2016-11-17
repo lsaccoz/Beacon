@@ -9,6 +9,7 @@
         android:id="@+id/favouritesView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:drawSelectorOnTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:elevation="1dp"

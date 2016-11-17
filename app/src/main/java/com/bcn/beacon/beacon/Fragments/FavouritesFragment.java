@@ -22,6 +22,7 @@ import com.bcn.beacon.beacon.Adapters.EventListAdapter;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -96,7 +97,7 @@ public class FavouritesFragment extends Fragment {
         favouritesView = (ListView) view.findViewById(R.id.favouritesView);
 
         //hide the list view divider
-        favouritesView.setDivider(null);
+        UI_Util.hideListViewDivider(favouritesView);
 
         // set adapter for the events list view
         favouritesView.setAdapter(adapter);

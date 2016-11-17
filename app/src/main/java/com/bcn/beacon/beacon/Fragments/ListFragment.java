@@ -21,6 +21,7 @@ import com.bcn.beacon.beacon.Adapters.EventListAdapter;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 
 import java.util.ArrayList;
 
@@ -80,7 +81,7 @@ public class ListFragment extends Fragment {
         listView = (ListView) view.findViewById(R.id.listView);
 
         //hide the divider in the listview
-        listView.setDivider(null);
+        UI_Util.hideListViewDivider(listView);
 
         //set adapter for the events list view
         listView.setAdapter(adapter);

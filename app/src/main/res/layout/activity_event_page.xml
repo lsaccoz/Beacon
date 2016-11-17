@@ -99,32 +99,6 @@
 
                             </LinearLayout>
 
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:paddingTop="6dp">
-
-                                <com.joanzapata.iconify.widget.IconTextView
-                                    android:id="@+id/going_button"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="center_horizontal"
-                                    android:text="{fa-calendar-plus-o}"
-                                    android:textColor="@color/colorPrimary"
-                                    android:textSize="25dp" />
-
-                                <TextView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="center"
-                                    android:text="Going"
-                                    android:textColor="@color/dark_gray"
-                                    android:textSize="12sp" />
-
-                            </LinearLayout>
-
                         </LinearLayout>
 
                         <LinearLayout
