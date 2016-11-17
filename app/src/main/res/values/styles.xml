@@ -33,7 +33,7 @@
         <item name="android:height">@dimen/small_action_bar_height</item>
         <item name="height">@dimen/small_action_bar_height</item>
     </style>
-    
+
     <style name="myPreferenceStyle">
         <item name="android:background">@color/custom_white</item>
         <!--
@@ -44,6 +44,7 @@
 
     </style>
 
+    <!-- list view style for the preferences page -->
     <style name="PreferencesListViewStyle" parent="@android:style/Widget.Holo.ListView">
         <item name="android:background">@color/custom_white</item>
 

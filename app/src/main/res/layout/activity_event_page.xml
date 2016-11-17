@@ -15,6 +15,7 @@
 
     </android.support.design.widget.AppBarLayout>
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -76,8 +77,8 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:paddingTop="6dp"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:paddingTop="6dp">
 
                                 <com.joanzapata.iconify.widget.IconTextView
                                     android:id="@+id/favourite_button"
@@ -91,36 +92,36 @@
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:textSize="12sp"
+                                    android:gravity="center"
                                     android:text="Favourite"
                                     android:textColor="@color/dark_gray"
-                                    android:gravity="center"/>
+                                    android:textSize="12sp" />
 
                             </LinearLayout>
 
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:paddingTop="6dp"
                                 android:layout_weight="1"
-                                android:orientation="vertical">
+                                android:orientation="vertical"
+                                android:paddingTop="6dp">
 
                                 <com.joanzapata.iconify.widget.IconTextView
                                     android:id="@+id/going_button"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
                                     android:gravity="center_horizontal"
-                                    android:textSize="25dp"
                                     android:text="{fa-calendar-plus-o}"
-                                    android:textColor="@color/colorPrimary"/>
+                                    android:textColor="@color/colorPrimary"
+                                    android:textSize="25dp" />
 
                                 <TextView
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:textSize="12sp"
+                                    android:gravity="center"
                                     android:text="Going"
                                     android:textColor="@color/dark_gray"
-                                    android:gravity="center"/>
+                                    android:textSize="12sp" />
 
                             </LinearLayout>
 
@@ -222,8 +223,8 @@
                         <TextView
                             android:id="@+id/tags"
                             android:layout_width="0dp"
-                            android:layout_marginRight="16dp"
                             android:layout_height="wrap_content"
+                            android:layout_marginRight="16dp"
                             android:layout_weight="1"
                             android:gravity="center"
                             android:textColor="@color/colorPrimary" />

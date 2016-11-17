@@ -79,6 +79,9 @@ public class ListFragment extends Fragment {
 
         listView = (ListView) view.findViewById(R.id.listView);
 
+        //hide the divider in the listview
+        listView.setDivider(null);
+
         //set adapter for the events list view
         listView.setAdapter(adapter);
         Log.i("VIEW","CREATED");

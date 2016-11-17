@@ -95,6 +95,9 @@ public class FavouritesFragment extends Fragment {
 
         favouritesView = (ListView) view.findViewById(R.id.favouritesView);
 
+        //hide the list view divider
+        favouritesView.setDivider(null);
+
         // set adapter for the events list view
         favouritesView.setAdapter(adapter);
         favouritesView.setLongClickable(true);
