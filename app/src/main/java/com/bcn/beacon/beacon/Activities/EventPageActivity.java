@@ -6,10 +6,13 @@ import android.content.Context;
 import android.content.Intent;
 
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.Binder;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
@@ -17,7 +20,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.view.Window;
@@ -27,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Data.CommentEditText;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
@@ -84,8 +91,12 @@ public class EventPageActivity extends AppCompatActivity {
     private TextView mAddress;
     private TextView mTags;
     private ListView mCommentsList;
+    private IconTextView mCommentButton;
+    private IconTextView mPostComment;
+    private EditText mWriteComment;
 
     private boolean favourited = false;
+    private boolean commentTab = false;
 
     private int from;
 
@@ -107,6 +118,7 @@ public class EventPageActivity extends AppCompatActivity {
 
         //set the context for use in callback methods
         mContext = this;
+        //this.mWriteComment = new CommentEditText(mContext);
 
         //get the event id
         mEventId = getIntent().getStringExtra("Event");
@@ -130,9 +142,42 @@ public class EventPageActivity extends AppCompatActivity {
         mAddress = (TextView) findViewById(R.id.address);
         mTags = (TextView) findViewById(R.id.tags);
         mCommentsList = (ListView) findViewById(R.id.comments_list);
+        mCommentButton = (IconTextView) findViewById(R.id.comment_button);
+        mPostComment = (IconTextView) findViewById(R.id.post_comment);
+        mWriteComment = (EditText) findViewById(R.id.write_comment);
+
+        // input manager for showing keyboard immediately
+        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
         // set empty view if there are no favourites
         mCommentsList.setEmptyView(findViewById(R.id.empty));
+
+        mCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!commentTab) {
+                    commentTab = true;
+                    mCommentButton.setText("{fa-comment}");
+                    mPostComment.setVisibility(View.VISIBLE);
+                    mPostComment.setEnabled(true);
+                    mWriteComment.setVisibility(View.VISIBLE);
+                    mWriteComment.setEnabled(true);
+                    mWriteComment.requestFocus();
+                    imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                }
+                else {
+                    imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    commentTab = false;
+                    mCommentButton.setText("{fa-comment-o}");
+                    mPostComment.setVisibility(View.GONE);
+                    mPostComment.setEnabled(false);
+                    mWriteComment.setVisibility(View.GONE);
+                    mWriteComment.setEnabled(false);
+                    mWriteComment.clearFocus();
+                }
+
+            }
+        });
 
         //change look of favourite icon when user presses it
         //filled in means favourited, empty means not favourited
@@ -225,6 +270,19 @@ public class EventPageActivity extends AppCompatActivity {
 
 
         // GetEvent();
+    }
+
+    // Method for hiding comment tab on back press from EditText
+    public void hideCommentTab() {
+        if (commentTab) {
+            commentTab = false;
+            mCommentButton.setText("{fa-comment-o}");
+            mPostComment.setVisibility(View.GONE);
+            mPostComment.setEnabled(false);
+            mWriteComment.setVisibility(View.GONE);
+            mWriteComment.setEnabled(false);
+            mWriteComment.clearFocus();
+        }
     }
 
     /**
@@ -367,9 +425,20 @@ public class EventPageActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        MainActivity.setEventPageClickedFrom(from);
-        super.onBackPressed();
-        //finish();
+        if (commentTab) {
+            commentTab = false;
+            mCommentButton.setText("{fa-comment-o}");
+            mPostComment.setVisibility(View.GONE);
+            mPostComment.setEnabled(false);
+            mWriteComment.setVisibility(View.GONE);
+            mWriteComment.setEnabled(false);
+            mWriteComment.clearFocus();
+        }
+        else {
+            MainActivity.setEventPageClickedFrom(from);
+            super.onBackPressed();
+            //finish();
+        }
     }
 
     // for fixing the clicking favourites twice bug

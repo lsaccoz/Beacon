@@ -216,6 +216,20 @@
                             android:textStyle="bold" />
 
                         <com.joanzapata.iconify.widget.IconTextView
+                            android:id="@+id/post_comment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:gravity="center_horizontal"
+                            android:paddingRight="70dp"
+                            android:paddingTop="13dp"
+                            android:text="{fa-send}"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="25dp"
+                            android:visibility="gone"
+                            android:enabled="false"/>
+
+                        <com.joanzapata.iconify.widget.IconTextView
                             android:id="@+id/comment_button"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -228,6 +242,15 @@
                             android:textSize="30dp" />
 
                     </RelativeLayout>
+
+                    <EditText
+                        android:id="@+id/write_comment"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:paddingRight="8dp"
+                        android:visibility="gone"
+                        android:enabled="false"/>
 
                     <ListView
                         android:id="@+id/comments_list"
