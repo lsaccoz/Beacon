@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
@@ -72,6 +73,9 @@ public class EventPageActivity extends AppCompatActivity {
     private Date mDate;
     private Context mContext;
 
+    //the root view of the layout
+    private View mContentView;
+
     private ArrayList<Drawable> mImageDrawables;
     private TextView mTitle;
     private TextView mDescription;
@@ -84,6 +88,7 @@ public class EventPageActivity extends AppCompatActivity {
     private TextView mTags;
 
     private boolean favourited = false;
+    private int mMediumAnimDuration;
 
     private int from;
 
@@ -106,6 +111,11 @@ public class EventPageActivity extends AppCompatActivity {
         //set the context for use in callback methods
         mContext = this;
 
+        // Retrieve and cache the system's default "medium" animation time.
+        mMediumAnimDuration = getResources().getInteger
+                (android.R.integer.config_shortAnimTime);
+
+
         //get the event id
         mEventId = getIntent().getStringExtra("Event");
 
@@ -114,7 +124,10 @@ public class EventPageActivity extends AppCompatActivity {
         //fetch the event from the firebase database
         getEvent(mEventId);
 
+
         //retrieve all the views from the view hierarchy
+        mContentView = findViewById(R.id.event_page_root);
+
         mTitle = (TextView) findViewById(R.id.event_title);
         mDescription = (TextView) findViewById(R.id.event_description);
         mFavourite = (IconTextView) findViewById(R.id.favourite_button);
@@ -124,6 +137,7 @@ public class EventPageActivity extends AppCompatActivity {
         mStartMonth = (TextView) findViewById(R.id.start_month);
         mAddress = (TextView) findViewById(R.id.address);
         mTags = (TextView) findViewById(R.id.tags);
+
 
         //change look of favourite icon when user presses it
         //filled in means favourited, empty means not favourited
@@ -174,48 +188,6 @@ public class EventPageActivity extends AppCompatActivity {
         mImageScroller.setLayoutManager(horizontalLayoutManagaer);
 
         mImageScroller.setAdapter(eventImageAdapter);
-
-
-        //TODO THE FOLLOWING CODE IS SIMPLY TEST CODE TO CHECK THE XML LAYOUT, NEEDS TO BE REPLACED WITH CODE TO RETRIEVE FIELDS OF REAL EVENT OBJECT
-
-        //create a fake date object and set all the fields to the current time
-//        mDate = new Date();
-//        Calendar mcurrentDate = Calendar.getInstance();
-//        int defaultWeekDay = mcurrentDate.get(Calendar.DAY_OF_WEEK);
-//        int defaultYear = mcurrentDate.get(Calendar.YEAR);
-//        int defaultMonth = mcurrentDate.get(Calendar.MONTH);
-//        int defaultDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
-//        int defaultHour = mcurrentDate.get(Calendar.HOUR_OF_DAY);
-//        int defaultMinute = mcurrentDate.get(Calendar.MINUTE);
-//
-//        mDate.setYear(defaultYear);
-//        mDate.setMonth(defaultMonth);
-//        mDate.setDay(defaultDay);
-//        mDate.setHour(defaultHour);
-//        mDate.setMinute(defaultMinute);
-//
-//        //create dummy event to populate the event page UI
-//        mEvent = new Event("blabla", "Cool Party", "blabla", 5, 100, null, "Come out for the Donald Trump Election Celebration Party!");
-//        mEvent.setDate(mDate);
-//
-//        //set the description
-//
-////        DataUtil.textViewFormatter(mDescription, mEvent.getDescription(), 30);
-//        mDescription.setText(mEvent.getDescription());
-//
-//        int hour = mDate.getHour();
-//        int minute = mDate.getMinute();
-//        int day = mDate.getDay();
-//        int month = mDate.getMonth();
-//        int year = mDate.getYear();
-
-//
-
-
-        //TODO END OF TEST BLOCK
-
-
-        // GetEvent();
     }
 
     /**
@@ -234,7 +206,7 @@ public class EventPageActivity extends AppCompatActivity {
                 //get the event
                 mEvent = dataSnapshot.getValue(Event.class);
                 //populate the views in the view hierarchy with actual event data
-                populate();
+                new PopulateUITask().execute();
             }
 
             @Override
@@ -245,62 +217,6 @@ public class EventPageActivity extends AppCompatActivity {
         });
     }
 
-
-    /**
-     * This method populates the views in the event page
-     */
-    private void populate() {
-        //setTitle(mEvent.getName());
-//        TextView description = (TextView) findViewById(R.id.description);
-        assert mEvent != null;
-        assert mDescription != null;
-
-        mDescription.setText(mEvent.getDescription());
-        mTitle.setText(mEvent.getName());
-
-
-
-
-        //display the tags for this event
-        mTags.setText(" #Party\n #Music\n #Fun");
-
-        boolean isPM = false;
-
-        //get Location
-        Location location = mEvent.getLocation();
-        Geocoder coder = new Geocoder(this);
-        List<Address> addresses;
-        Address address;
-
-        //convert address to a readable string if possible
-        try{
-            addresses = coder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-            if(!addresses.isEmpty()) {
-                address = addresses.get(0);
-
-                //set the address text to the retrieved address
-                mAddress.setText(address.getAddressLine(0));
-            }
-
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-
-        Date date = mEvent.getDate();
-
-        if (date.getHour() >= 12) {
-            isPM = true;
-        }
-        //set the
-        mStartDay.setText("" + date.getDay());
-        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
-        mStartTime.setText(" " + String.format(Locale.US, "%02d:%02d %s",
-                (date.getHour() == 12 || date.getMinute() == 0) ? 12 : date.getHour() % 12, date.getMinute(),
-                isPM ? "PM" : "AM"));
-
-//        mAddress.setText("666 Trump Ave.");
-
-    }
 
     /**
      * Function for adding the event to user's favourites
@@ -324,7 +240,7 @@ public class EventPageActivity extends AppCompatActivity {
      *
      * @return true if successful, otherwise return false
      */
-    private boolean removeFavourite(){
+    private boolean removeFavourite() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference users = database.getReference("Users");
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -338,6 +254,95 @@ public class EventPageActivity extends AppCompatActivity {
     public void onBackPressed() {
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
+    }
+
+
+    /**
+     * This class represents a helper task that will initialize the UI
+     * <p>
+     * 1. Set all the text fields to the value returned from the getEvent() method
+     * <p>
+     * 2. Start a background thread to retrieve the address from the location using
+     * an API call
+     * <p>
+     * 3. Blur in the entire view hierarchy after the API call is complete
+     * <p>
+     * //TODO we should store address as a field variable in the event data model so that an API call is unneeded
+     */
+    private class PopulateUITask extends AsyncTask<Void, Void, List<Address>> {
+
+        @Override
+        protected void onPreExecute() {
+
+            //initially hide the layout
+            mContentView.setVisibility(View.GONE);
+
+            mDescription.setText(mEvent.getDescription());
+            mTitle.setText(mEvent.getName());
+
+            //display the tags for this event
+            mTags.setText(" #Party\n #Music\n #Fun");
+
+            //set the time and day fields
+            mStartDay.setText("" + mDate.getDay());
+            mStartMonth.setText("" + DataUtil.convertMonthToString(mDate.getMonth()));
+            mStartTime.setText(mDate.formatted());
+        }
+
+        @Override
+        protected List<Address> doInBackground(Void... params) {
+
+            Geocoder coder = new Geocoder(mContext);
+            List<Address> addresses = new ArrayList<>();
+
+            //get Location
+            Location location = mEvent.getLocation();
+
+            //convert address to a readable string if possible
+            try {
+                addresses = coder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+
+            }
+
+            return addresses;
+
+        }
+
+        @Override
+        protected void onPostExecute(List<Address> addresses) {
+            Address address;
+            if (!addresses.isEmpty()) {
+                address = addresses.get(0);
+                mAddress.setText(address.getAddressLine(0));
+            }
+
+            showUI();
+
+        }
+    }
+
+    /**
+     * Method to blur in the UI layout using an animation
+     *
+     * This is called after any relevant data is fetched from the network/local cache
+     *
+     */
+    private void showUI() {
+
+        // Set the content view to 0% opacity but visible, so that it is visible
+        // (but fully transparent) during the animation.
+        mContentView.setAlpha(0f);
+        mContentView.setVisibility(View.VISIBLE);
+
+        // Animate the content view to 100% opacity, and clear any animation
+        // listener set on the view.
+        mContentView.animate()
+                .alpha(1f)
+                .setDuration(mMediumAnimDuration)
+                .setListener(null);
     }
 
 
