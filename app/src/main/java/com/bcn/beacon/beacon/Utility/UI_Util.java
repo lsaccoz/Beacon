@@ -6,6 +6,7 @@ import android.support.annotation.Nullable;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ListView;
+import android.widget.TextView;
 
 /**
  * Created by neema on 2016-11-08.
@@ -44,6 +45,22 @@ public class UI_Util {
     public static void hideListViewDivider(@Nullable ListView listView){
         if(listView != null) {
             listView.setDivider(null);
+        }
+    }
+
+
+    /**
+     * Utility method to truncate the length of a textview and add ellipsize
+     * to the end
+     *
+     */
+    public static void truncateText(@Nullable TextView textView, int maxLength){
+        if(textView != null){
+            if(textView.length() > maxLength){
+                String text = (String) textView.getText();
+                String newText = text.substring(0, 31) + "...";
+                textView.setText(newText);
+            }
         }
     }
 }
