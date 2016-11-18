@@ -18,6 +18,7 @@ import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ListView;
 import android.widget.Toast;
 import android.view.Window;
 import android.view.WindowManager;
@@ -82,6 +83,7 @@ public class EventPageActivity extends AppCompatActivity {
     private TextView mStartDay;
     private TextView mAddress;
     private TextView mTags;
+    private ListView mCommentsList;
 
     private boolean favourited = false;
 
@@ -127,6 +129,10 @@ public class EventPageActivity extends AppCompatActivity {
         mStartMonth = (TextView) findViewById(R.id.start_month);
         mAddress = (TextView) findViewById(R.id.address);
         mTags = (TextView) findViewById(R.id.tags);
+        mCommentsList = (ListView) findViewById(R.id.comments_list);
+
+        // set empty view if there are no favourites
+        mCommentsList.setEmptyView(findViewById(R.id.empty));
 
         //change look of favourite icon when user presses it
         //filled in means favourited, empty means not favourited
@@ -367,12 +373,13 @@ public class EventPageActivity extends AppCompatActivity {
     }
 
     // for fixing the clicking favourites twice bug
-    // TODO: this is another way of fixing the clicking favourite button twice bug, by finish()ing activity on back press
+    // TODO: this may be another way of fixing the clicking favourite button twice bug, by finish()ing activity on back press
     // is it better to finish() activity everytime for less work done by the activity, I don't know...
-    @Override
+    // also, don't know if it will work, since onSaveInstance is usually called after onStart
+    /*@Override
     public void onSaveInstanceState(Bundle outState) {
         outState.putBoolean("favourited", favourited);
-        //Log.i("SAVE PAGE", "YES");
+        outState.putString("favText", mFavourite.getText().toString());
 
         super.onSaveInstanceState(outState);
     }
@@ -380,8 +387,9 @@ public class EventPageActivity extends AppCompatActivity {
     @Override
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        this.favourited = savedInstanceState.getBoolean("favourited");
-    }
+        favourited = savedInstanceState.getBoolean("favourited");
+        mFavourite.setText(savedInstanceState.getString("favText"));
+    }*/
 
 
 //    private boolean initFavourite(){
