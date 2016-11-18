@@ -49,8 +49,8 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
         </activity>
         <activity
             android:name=".Activities.EventPageActivity"
+            android:label="">
 
-            android:label="@string/title_activity_event_page">
         </activity>
         <activity android:name="com.android.camera.CropImage"/>
     </application>
