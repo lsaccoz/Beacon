@@ -6,30 +6,39 @@
     <!--
     <PreferenceCategory android:title="@string/search_settings">
     -->
-        <com.bcn.beacon.beacon.CustomViews.SearchRangePreference
-            android:defaultValue="@string/pref_range_default"
-            android:key="@string/pref_range_key" />
+    <com.bcn.beacon.beacon.CustomViews.SearchRangePreference
+        android:defaultValue="@string/pref_range_default"
+        android:key="@string/pref_range_key" />
 
-        <com.bcn.beacon.beacon.CustomViews.NotificationsPreference
-            android:defaultValue="true"
-            android:key="@string/pref_notifications_key" />
+    <com.bcn.beacon.beacon.CustomViews.NotificationsPreference
+        android:defaultValue="true"
+        android:key="@string/pref_notifications_key" />
+
+
+    <Preference
+        android:key="@string/sign_out"
+        android:title="@string/sign_out" />
+
+
+
+
 
     <!--
     </PreferenceCategory>
 
     <PreferenceCategory android:title="@string/miscellaneous">
     -->
-        <!--
-        <CheckBoxPreference
-            android:background="@color/colorPrimary"
-            android:defaultValue="@string/pref_notifications_default"
-            android:key="@string/pref_notifications_key"
-            android:summaryOff="@string/pref_notifications_summary_off"
-            android:summaryOn="@string/pref_notifications_summary_on"
-            android:textColor="@color/custom_white"
-            android:textSize="20sp"
-            android:title="@string/pref_notifications_label" />
-          -->
+    <!--
+    <CheckBoxPreference
+        android:background="@color/colorPrimary"
+        android:defaultValue="@string/pref_notifications_default"
+        android:key="@string/pref_notifications_key"
+        android:summaryOff="@string/pref_notifications_summary_off"
+        android:summaryOn="@string/pref_notifications_summary_on"
+        android:textColor="@color/custom_white"
+        android:textSize="20sp"
+        android:title="@string/pref_notifications_label" />
+      -->
     <!--
     </PreferenceCategory>
     -->

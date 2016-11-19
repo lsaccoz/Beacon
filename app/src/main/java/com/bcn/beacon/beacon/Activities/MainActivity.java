@@ -256,6 +256,9 @@ public class MainActivity extends AuthBaseActivity
 
         mAuth.addAuthStateListener(mAuthListener);
 
+        // get user favourite ids from firebase
+        getFavouriteIds();
+
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
             mMapFragment = MapFragment.newInstance();
@@ -586,28 +589,32 @@ public class MainActivity extends AuthBaseActivity
      * Function to get the event ids of user's favourites
      */
     public void getFavouriteIds() {
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference users = database.getReference("Users");
-        users.child(userId).child("favourites").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                if (!favouriteIds.isEmpty()) {
-                    favouriteIds.clear();
+        try {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference users = database.getReference("Users");
+            users.child(userId).child("favourites").addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!favouriteIds.isEmpty()) {
+                        favouriteIds.clear();
+                    }
+                    //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
+                    for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
+                        //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
+                        favouriteIds.add(fav_snapshot.getKey());
+                    }
+
                 }
-                //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
-                for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
-                    //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
-                    favouriteIds.add(fav_snapshot.getKey());
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
                 }
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+            });
+        }catch(NullPointerException e){
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -680,27 +687,6 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onConnectionSuspended(int i) {
         mGoogleApiClient.connect();
-    }
-
-    private void signOut() {
-
-        mAuth.signOut();
-
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        Toast toast = Toast.makeText(MainActivity.this,
-                                "Signed Out Successfully",
-                                Toast.LENGTH_SHORT);
-                        toast.setGravity(Gravity.CENTER, 0, 0);
-                        toast.show();
-
-                        Intent i = new Intent(MainActivity.this, SignInActivity.class);
-                        MainActivity.this.startActivity(i);
-                        MainActivity.this.finish();
-                    }
-                });
     }
 
 
@@ -1040,6 +1026,29 @@ public class MainActivity extends AuthBaseActivity
             return null;
 
         }
+
+
+    }
+
+    public void signOut() {
+
+        mAuth.signOut();
+
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        Toast toast = Toast.makeText(MainActivity.this,
+                                "Signed Out Successfully",
+                                Toast.LENGTH_SHORT);
+                        toast.setGravity(Gravity.CENTER, 0, 0);
+                        toast.show();
+
+                        Intent i = new Intent(MainActivity.this, SignInActivity.class);
+                        MainActivity.this.startActivity(i);
+                        MainActivity.this.finish();
+                    }
+                });
     }
 }
 

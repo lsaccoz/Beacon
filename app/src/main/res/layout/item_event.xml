@@ -1,62 +1,99 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:padding="10dp">
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="200sp"
-        android:layout_height="match_parent"
-        android:layout_alignBaseline="@+id/eventPic"
-        android:layout_toRightOf="@+id/eventPic"
-        android:paddingLeft="20dp"
-        android:paddingRight="6dp"
-        android:text="Halloween Party"
-        android:textAppearance="?android:attr/textAppearanceListItem"
-        android:textStyle="bold" />
-
-
-    <TextView
-        android:id="@+id/host"
-        android:layout_width="wrap_content"
+    <android.support.v7.widget.CardView xmlns:card_view="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignBaseline="@+id/title"
-        android:layout_alignParentRight="true"
-        android:paddingRight="10dp"
-        android:text="The Calendar"
-        android:textAppearance="?android:attr/textAppearanceListItem" />
+        card_view:cardBackgroundColor="@color/custom_white"
+        card_view:cardElevation="5dp"
+        card_view:cardUseCompatPadding="true">
 
-    <TextView
-        android:id="@+id/start"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/title"
-        android:layout_toRightOf="@+id/eventPic"
-        android:paddingLeft="20dp"
-        android:paddingRight="6dp"
-        android:paddingTop="3dp"
-        android:text="17:00"
-        android:textAppearance="?android:attr/textAppearanceListItem" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
 
-    <TextView
-        android:id="@+id/distance"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_alignBottom="@+id/start"
-        android:layout_alignParentRight="true"
-        android:layout_below="@+id/host"
-        android:paddingRight="10dp"
-        android:paddingTop="3dp"
-        android:text="0.8km"
-        android:textAppearance="?android:attr/textAppearanceListItem" />
+            <ImageView
+                android:id="@+id/eventPic"
+                android:layout_width="90dp"
+                android:layout_height="90dp"
+                android:scaleType="fitXY"
+                android:src="@drawable/no_pic_icon" />
 
-    <ImageView
-        android:id="@+id/eventPic"
-        android:layout_width="45dp"
-        android:layout_height="45dp"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentTop="true"
-        android:src="@drawable/no_pic_icon" />
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="90dp"
+                android:layout_weight="3"
+                android:orientation="vertical"
+                android:paddingLeft="20dp"
+                android:paddingRight="10dp">
+
+                <TextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Halloween Party"
+                    android:textAppearance="?android:attr/textAppearanceListItem"
+                    android:textStyle="bold" />
+
+
+                <TextView
+                    android:id="@+id/start"
+                    android:layout_width="wrap_content"
+                    android:layout_height="match_parent"
+                    android:gravity="bottom"
+                    android:text="17:00"
+                    android:textAppearance="?android:attr/textAppearanceListItem" />
+
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="90dp"
+                android:layout_weight="2"
+                android:orientation="vertical"
+                android:paddingRight="10dp">
+
+                <TextView
+                    android:id="@+id/host"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:text="The Calendar"
+                    android:textAppearance="?android:attr/textAppearanceListItem" />
+
+                <com.joanzapata.iconify.widget.IconTextView
+                    android:id="@+id/favourite"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="right"
+                    android:paddingTop="8dp"
+                    android:text="{fa-star-o}"
+                    android:textColor="@color/colorPrimary"
+                    android:textSize="20sp" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:id="@+id/distance"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentRight="true"
+                        android:layout_alignParentBottom="true"
+                        android:text="0.8km"
+                        android:textAppearance="?android:attr/textAppearanceListItem" />
+
+                </RelativeLayout>
+            </LinearLayout>
+
+
+        </LinearLayout>
+
+    </android.support.v7.widget.CardView>
 
 </RelativeLayout>

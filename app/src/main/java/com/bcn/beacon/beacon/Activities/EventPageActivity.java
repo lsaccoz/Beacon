@@ -258,8 +258,11 @@ public class EventPageActivity extends AppCompatActivity {
         mDescription.setText(mEvent.getDescription());
         mTitle.setText(mEvent.getName());
 
+
+
+
         //display the tags for this event
-        mTags.setText(" #Party\n #Awesome\n #Fun");
+        mTags.setText(" #Party\n #Music\n #Fun");
 
         boolean isPM = false;
 
