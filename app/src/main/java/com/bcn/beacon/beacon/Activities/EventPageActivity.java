@@ -76,6 +76,7 @@ import java.util.ArrayList;
 
 public class EventPageActivity extends AppCompatActivity {
 
+    private static final int COMMENT_CHARACTER_LIMIT = 2;
     private Event mEvent;
     private String mEventId;
     private Date mDate;
@@ -184,15 +185,22 @@ public class EventPageActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 Comment comment = new Comment();
-
-                comment.setText(mWriteComment.getText().toString());
-                comment.setEventId(mEventId);
-                comment.writeComment();
-                mWriteComment.setText("");
-                hideCommentTab();
-                imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                Toast toast = Toast.makeText(mContext, "Comment posted", Toast.LENGTH_SHORT);
-                toast.show();
+                String text = mWriteComment.getText().toString();
+                if (text.length() >= COMMENT_CHARACTER_LIMIT) {
+                    comment.setText(text);
+                    comment.setEventId(mEventId);
+                    comment.writeComment();
+                    mWriteComment.setText("");
+                    hideCommentTab();
+                    imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    Toast toast = Toast.makeText(mContext, "Comment posted", Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+                else {
+                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT + " characters";
+                    Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
+                    toast.show();
+                }
             }
         });
 
