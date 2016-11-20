@@ -6,6 +6,7 @@ import android.app.Fragment;
 import android.app.FragmentTransaction;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
 import android.location.Address;
@@ -15,6 +16,7 @@ import android.location.LocationManager;
 import android.preference.PreferenceManager;
 
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
@@ -22,19 +24,23 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.view.Window;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bcn.beacon.beacon.Data.DistanceComparator;
+import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.DataUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
@@ -48,6 +54,7 @@ import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.CameraPosition;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.firebase.auth.FirebaseAuth;
@@ -69,7 +76,9 @@ import java.util.Locale;
 //import static com.bcn.beacon.beacon.R.id.container_all;
 //import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.list;
+import static com.bcn.beacon.beacon.R.id.time;
 import static com.bcn.beacon.beacon.R.id.world;
+import static java.lang.Math.cos;
 
 
 public class MainActivity extends AuthBaseActivity
@@ -274,6 +283,7 @@ public class MainActivity extends AuthBaseActivity
         }
 
         mMapFragment.getMapAsync(this);
+
 
     }
 
@@ -636,7 +646,7 @@ public class MainActivity extends AuthBaseActivity
         double sindLat = Math.sin(dLat / 2);
         double sindLng = Math.sin(dLng / 2);
         double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
-                * Math.cos(Math.toRadians(userLat)) * Math.cos(Math.toRadians(eventLat));
+                * cos(Math.toRadians(userLat)) * cos(Math.toRadians(eventLat));
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double dist = earthRadius * c;
         // for rounding to 3 decimal places
@@ -699,28 +709,31 @@ public class MainActivity extends AuthBaseActivity
 
         if (mMap != null) {
             mMap.clear();
-            // SharedPreferences prefs =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            //int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
 
-                /*LatLngBounds Bound = new LatLngBounds(
-                        new LatLng(userLat - pref, userLng - pref), new LatLng(userLat + pref, userLng + pref));
+            SharedPreferences prefs =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
 
-                mMap.setLatLngBoundsForCameraTarget(Bound);*/
+            LatLngBounds Bound = new LatLngBounds(
+                        new LatLng(userLat - (pref/110.574), userLng - (pref/111.320*cos(pref/110.574))),
+                        new LatLng(userLat + (pref/110.575), userLng + (pref/111.320*cos(pref/110.574))));
+
+                mMap.setLatLngBoundsForCameraTarget(Bound);
 
             mMap.setMaxZoomPreference(17);
-            //mMap.setMinZoomPreference(11);
+            mMap.setMinZoomPreference(12);
 
             if (mAuth != null && mAuth.getCurrentUser() != null) {
 
                 //add marker for user
-                Marker user = mMap.addMarker(new MarkerOptions()
+                mMap.addMarker(new MarkerOptions()
                         .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                        .position(new LatLng(userLat, userLng))
-                        .title("You"));
+                        .position(new LatLng(userLat, userLng)));
+
+                mMap.setInfoWindowAdapter(new InfoWindow());
+                mMap.setOnMarkerClickListener(this);
+                mMap.setOnInfoWindowClickListener(this);
 
                 if (!events.isEmpty()) {
-
-                    if (!events.isEmpty()) {
                         for (int i = 0; i < events.size(); i++) {
 
                             ListEvent e = events.get(i);
@@ -735,10 +748,6 @@ public class MainActivity extends AuthBaseActivity
                             m.put(marker.getId(), e.getEventId());
                             events_list.put(marker.getId(), e);
 
-                            mMap.setOnMarkerClickListener(this);
-                            mMap.setOnInfoWindowClickListener(this);
-                            mMap.setInfoWindowAdapter(new InfoWindow());
-
                         }
 
                     } else {
@@ -749,9 +758,9 @@ public class MainActivity extends AuthBaseActivity
 
                         mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
                     }
-                }
 
-                LatLng UserLocation = new LatLng(userLat, userLng);
+
+               LatLng UserLocation = new LatLng(userLat, userLng);
 
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(UserLocation)
@@ -780,11 +789,10 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public boolean onMarkerClick(Marker marker) {
 
-
         ListEvent event = events_list.get(marker.getId());
+        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
         if(event != null) {
-            Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
             try {
                 addresses = geocoder.getFromLocation(event.getLocation().getLatitude(), event.getLocation().getLongitude(), 1);
@@ -793,7 +801,19 @@ public class MainActivity extends AuthBaseActivity
                 e.printStackTrace();
             }
 
-            float zoom = mMap.getCameraPosition().zoom;
+        }
+
+        else {
+
+            try {
+                addresses = geocoder.getFromLocation(userLat, userLng, 1);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+
+        float zoom = mMap.getCameraPosition().zoom;
 
             if(zoom < 14.00) {
                 CameraPosition cameraPosition = new CameraPosition.Builder()
@@ -806,7 +826,6 @@ public class MainActivity extends AuthBaseActivity
             else
                 mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
 
-        }
 
         marker.showInfoWindow();
         return true;
@@ -815,6 +834,7 @@ public class MainActivity extends AuthBaseActivity
 
     public void onMapReady(GoogleMap map) {
         mMap = map;
+
         initMap();
 
     }
@@ -977,7 +997,7 @@ public class MainActivity extends AuthBaseActivity
         private View v;
 
         InfoWindow() {
-            v = getLayoutInflater().inflate(R.layout.custom_info_window, null);
+            v = getLayoutInflater().inflate(R.layout.custom_info_window, null, true);
         }
 
         @Override
@@ -985,31 +1005,40 @@ public class MainActivity extends AuthBaseActivity
 
             ListEvent e = events_list.get(marker.getId());
 
+            TextView Title = ((TextView) v.findViewById(R.id.title));
+            TextView Time = ((TextView) v.findViewById(time));
+            TextView Address = ((TextView) v.findViewById(R.id.address));
+            IconTextView fav = ((IconTextView) v.findViewById(R.id.map_fav));
+
+            String address = addresses.get(0).getAddressLine(0).toString();
+
+            LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
+                    LinearLayout.LayoutParams.FILL_PARENT);
+
             if (e != null) {
 
+                lp.gravity = Gravity.LEFT;
+
+                Title.setLayoutParams(lp);
+
                 String title = e.getName();
-                TextView Title = ((TextView) v.findViewById(R.id.title));
-                assert Title != null;
                 Title.setText(title);
 
-                /*String description = e.getDescription();
-                TextView Description = ((TextView) v.findViewById(R.id.description));
-                assert Description != null;
-                Description.setText(description);*/
+                String time = getTime(e);
+                assert Time != null;
+                Time.setText(time);
+                Time.setTextSize(12);
 
-                if(!addresses.isEmpty()) {
+                if (!addresses.isEmpty()) {
 
-                    String address = addresses.get(0).getAddressLine(0).toString();
-                    TextView Address = ((TextView) v.findViewById(R.id.address));
                     assert Address != null;
                     Address.setText(address);
 
                 }
 
                 ArrayList favs = getFavouriteIdsList();
-                IconTextView fav = ((IconTextView) v.findViewById(R.id.map_fav));
 
-                if(favs.contains(e.getEventId()))
+                if (favs.contains(e.getEventId()))
                     fav.setText("{fa-star}");
                 else
                     fav.setText("{fa-star-o}");
@@ -1017,7 +1046,19 @@ public class MainActivity extends AuthBaseActivity
                 return v;
             }
 
-            return null;
+            else {
+
+                lp.gravity = Gravity.CENTER;
+
+                Title.setLayoutParams(lp);
+                Title.setText("You!");
+                Address.setText(address);
+                fav.setText("");
+                Time.setTextSize(0);
+
+                return v;
+            }
+
         }
 
         @Override
@@ -1027,8 +1068,35 @@ public class MainActivity extends AuthBaseActivity
 
         }
 
-
     }
+
+    public String getTime(ListEvent e){
+
+        boolean time_of_day = false;
+
+        if(e.getDate().getHour() >= 12)
+            time_of_day = true;
+
+        Date d = e.getDate();
+
+        String s = String.format(Locale.US, "%02d:%02d %s",
+                (d.getHour() == 12 || d.getMinute() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
+                time_of_day ? "PM" : "AM");
+
+        StringBuilder sb = new StringBuilder(s);
+
+        if(s.charAt(0) == '0')
+          sb.deleteCharAt(0);
+
+        s = sb.toString();
+
+        String date = DataUtil.convertMonthToString(d.getMonth())+ " " + d.getDay();
+
+        date = date + ","+ " " + s;
+
+        return date;
+    }
+
 
     public void signOut() {
 
