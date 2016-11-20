@@ -34,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bcn.beacon.beacon.Data.CommentEditText;
+import com.bcn.beacon.beacon.Data.Models.Comment;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
@@ -176,6 +177,22 @@ public class EventPageActivity extends AppCompatActivity {
                     mWriteComment.clearFocus();
                 }
 
+            }
+        });
+
+        mPostComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Comment comment = new Comment();
+
+                comment.setText(mWriteComment.getText().toString());
+                comment.setEventId(mEventId);
+                comment.writeComment();
+                mWriteComment.setText("");
+                hideCommentTab();
+                imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                Toast toast = Toast.makeText(mContext, "Comment posted", Toast.LENGTH_SHORT);
+                toast.show();
             }
         });
 
@@ -425,20 +442,10 @@ public class EventPageActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        if (commentTab) {
-            commentTab = false;
-            mCommentButton.setText("{fa-comment-o}");
-            mPostComment.setVisibility(View.GONE);
-            mPostComment.setEnabled(false);
-            mWriteComment.setVisibility(View.GONE);
-            mWriteComment.setEnabled(false);
-            mWriteComment.clearFocus();
-        }
-        else {
-            MainActivity.setEventPageClickedFrom(from);
-            super.onBackPressed();
-            //finish();
-        }
+        hideCommentTab();
+        MainActivity.setEventPageClickedFrom(from);
+        super.onBackPressed();
+        //finish();
     }
 
     // for fixing the clicking favourites twice bug
