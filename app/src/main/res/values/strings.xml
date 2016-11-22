@@ -47,5 +47,8 @@
     <string name="favourited">Favourited event</string>
     <string name="un_favourited">Unfavourited event</string>
 
+    <!-- Settings Strings -->
+    <string name="sign_out">Sign Out</string>
+
 
 </resources>
