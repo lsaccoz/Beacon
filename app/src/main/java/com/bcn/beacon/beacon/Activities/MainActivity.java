@@ -992,6 +992,7 @@ public class MainActivity extends AuthBaseActivity
         Log.i("FINISHING?", Boolean.toString(this.isFinishing()));
     }
 
+
     public class InfoWindow implements GoogleMap.InfoWindowAdapter {
 
         private View v;
@@ -1069,6 +1070,14 @@ public class MainActivity extends AuthBaseActivity
         }
 
     }
+
+    /** Function that converts the ListEvent time/ date fields to a
+     *  formatted string containing information relating to the
+     *  ListEvent's starting time, the day it starts, and the month it
+     *  starts in.
+     * @param e must have time/ date fields
+     * @return String s
+     */
 
     public String getTime(ListEvent e){
 
