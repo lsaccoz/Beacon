@@ -1023,7 +1023,11 @@ public class MainActivity extends AuthBaseActivity
                 Title.setLayoutParams(lp);
 
                 String title = e.getName();
-                Title.setText(title);
+                if(title.length() < 30)
+                    Title.setText(title);
+
+                else
+                    Title.setText(title.substring(0,30) + "...");
 
                 String time = getTime(e);
                 assert Time != null;
