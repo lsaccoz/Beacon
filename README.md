@@ -33,7 +33,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
 4. Post comments and photos on event pages
 
-5. Favourite events and receive notifications for favourited events
+5. Favourite events and receive notifications for favoyrited events
 
 
 
