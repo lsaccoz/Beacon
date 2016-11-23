@@ -13,8 +13,15 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
 1. Find events and hangouts occurring within a local vicinity
 
-  * Search events on a map view
+  * Search events on a map view 
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Map_View.jpg" width="200">
+   </div>
+   
   * Search events on a list view
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/List_View.jpg" width="200">
+   </div>
 
 2. Create events and hangouts and make them private/public 
 
@@ -22,6 +29,10 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
   * Make Private events that are only visible to friends
   * Set Location and time
   * Set tags and related media
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Create_Event_View.jpg" width="200">
+   </div>
+  
 
 3. Search and Sort events
 
