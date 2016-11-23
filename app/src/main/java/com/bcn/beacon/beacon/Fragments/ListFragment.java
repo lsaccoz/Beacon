@@ -101,6 +101,13 @@ public class ListFragment extends Fragment {
 
                 // pass the event id to the new activity
                 intent.putExtra("Event", event.getEventId());
+
+                //pass intent extra to indicate if event is already favourited
+                if(favouritedEventIds.contains(event.getEventId())) {
+                    intent.putExtra("Favourited", true);
+                }else{
+                    intent.putExtra("Favourited", false);
+                }
                 // to indicate that event page was clicked from list view
                 intent.putExtra("from", 1);
 

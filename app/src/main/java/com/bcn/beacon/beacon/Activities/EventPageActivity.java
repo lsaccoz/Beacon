@@ -86,7 +86,7 @@ public class EventPageActivity extends AppCompatActivity {
     private TextView mAddress;
     private TextView mTags;
 
-    private boolean favourited = false;
+    private boolean mFavourited = false;
     private int mAnimDuration;
 
     private int from;
@@ -118,6 +118,9 @@ public class EventPageActivity extends AppCompatActivity {
         //get the event id
         mEventId = getIntent().getStringExtra("Event");
 
+        //get boolean value for whether event is favourited or not
+        mFavourited = getIntent().getBooleanExtra("Favourited", false);
+
         System.out.println(mEventId);
 
         //fetch the event from the firebase database
@@ -137,41 +140,9 @@ public class EventPageActivity extends AppCompatActivity {
         mAddress = (TextView) findViewById(R.id.address);
         mTags = (TextView) findViewById(R.id.tags);
 
+        initFavourite();
 
-        //change look of favourite icon when user presses it
-        //filled in means favourited, empty means not favourited
-        mFavourite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
 
-                int duration = Toast.LENGTH_SHORT;
-
-                if (!favourited) {
-                    ((IconTextView) view).setText("{fa-star}");
-                    CharSequence text = getString(R.string.favourited);
-
-                    addFavourite();
-
-                    Toast toast = Toast.makeText(mContext, text, duration);
-                    toast.show();
-                    favourited = true;
-//                    ((IconTextView) view).setBackgroundColor(getBaseContext()
-//                            .getResources().getColor(R.color.colorPrimary));
-                } else {
-                    CharSequence text = getString(R.string.un_favourited);
-
-                    removeFavourite();
-
-                    Toast toast = Toast.makeText(mContext, text, duration);
-                    toast.show();
-                    favourited = false;
-                    ((IconTextView) view).setText("{fa-star-o}");
-//                    ((IconTextView) view).setBackgroundColor(getBaseContext()
-//                            .getResources().getColor(R.color.colorPrimary));
-                }
-            }
-
-        });
 
         //Add fake images to the event page
         mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
@@ -345,6 +316,50 @@ public class EventPageActivity extends AppCompatActivity {
                 .alpha(1f)
                 .setDuration(mAnimDuration)
                 .setListener(null);
+    }
+
+    private void initFavourite(){
+
+        if(mFavourited){
+            mFavourite.setText("{fa-star}");
+        }else{
+            mFavourite.setText("{fa-star-o}");
+        }
+
+        //change look of favourite icon when user presses it
+        //filled in means favourited, empty means not favourited
+        mFavourite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                int duration = Toast.LENGTH_SHORT;
+
+                if (!mFavourited) {
+                    ((IconTextView) view).setText("{fa-star}");
+                    CharSequence text = getString(R.string.favourited);
+
+                    addFavourite();
+
+                    Toast toast = Toast.makeText(mContext, text, duration);
+                    toast.show();
+                    mFavourited = true;
+//                    ((IconTextView) view).setBackgroundColor(getBaseContext()
+//                            .getResources().getColor(R.color.colorPrimary));
+                } else {
+                    CharSequence text = getString(R.string.un_favourited);
+
+                    removeFavourite();
+
+                    Toast toast = Toast.makeText(mContext, text, duration);
+                    toast.show();
+                    mFavourited = false;
+                    ((IconTextView) view).setText("{fa-star-o}");
+//                    ((IconTextView) view).setBackgroundColor(getBaseContext()
+//                            .getResources().getColor(R.color.colorPrimary));
+                }
+            }
+
+        });
     }
 
 
