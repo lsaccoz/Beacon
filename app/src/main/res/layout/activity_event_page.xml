@@ -17,6 +17,7 @@
 
 
     <LinearLayout
+        android:id="@+id/event_page_root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
@@ -117,8 +118,7 @@
                                 android:maxLength="100"
                                 android:text="cool party I'm hosting"
                                 android:textColor="@color/dark_gray"
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
+                                android:textSize="16sp" />
 
                             <TextView
                                 android:layout_width="0dp"
