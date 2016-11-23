@@ -15,6 +15,12 @@
 
     </style>
 
+    <style name="DialogTheme" parent="android:Theme.Holo.Light">
+
+        <item name="android:textColor">@color/colorPrimary</item>
+        <item name="android:colorBackground">@color/custom_white</item>
+    </style>
+
     <!-- Theme for TimePicker and DatePicker dialogs -->
     <style name="PickerDialogTheme" parent="Theme.AppCompat.Light.Dialog">
         <item name="colorAccent">@color/colorPrimary</item>

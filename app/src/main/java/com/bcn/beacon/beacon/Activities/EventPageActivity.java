@@ -70,7 +70,6 @@ public class EventPageActivity extends AppCompatActivity {
 
     private Event mEvent;
     private String mEventId;
-    private Date mDate;
     private Context mContext;
 
     //the root view of the layout
@@ -88,7 +87,7 @@ public class EventPageActivity extends AppCompatActivity {
     private TextView mTags;
 
     private boolean favourited = false;
-    private int mMediumAnimDuration;
+    private int mAnimDuration;
 
     private int from;
 
@@ -112,8 +111,8 @@ public class EventPageActivity extends AppCompatActivity {
         mContext = this;
 
         // Retrieve and cache the system's default "medium" animation time.
-        mMediumAnimDuration = getResources().getInteger
-                (android.R.integer.config_shortAnimTime);
+        mAnimDuration = getResources().getInteger
+                (android.R.integer.config_longAnimTime);
 
 
         //get the event id
@@ -280,13 +279,16 @@ public class EventPageActivity extends AppCompatActivity {
             mDescription.setText(mEvent.getDescription());
             mTitle.setText(mEvent.getName());
 
+            //fetch the date
+            Date date = mEvent.getDate();
+
             //display the tags for this event
             mTags.setText(" #Party\n #Music\n #Fun");
 
             //set the time and day fields
-            mStartDay.setText("" + mDate.getDay());
-            mStartMonth.setText("" + DataUtil.convertMonthToString(mDate.getMonth()));
-            mStartTime.setText(mDate.formatted());
+            mStartDay.setText("" + date.getDay());
+            mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
+            mStartTime.setText(date.formatted());
         }
 
         @Override
@@ -341,7 +343,7 @@ public class EventPageActivity extends AppCompatActivity {
         // listener set on the view.
         mContentView.animate()
                 .alpha(1f)
-                .setDuration(mMediumAnimDuration)
+                .setDuration(mAnimDuration)
                 .setListener(null);
     }
 
