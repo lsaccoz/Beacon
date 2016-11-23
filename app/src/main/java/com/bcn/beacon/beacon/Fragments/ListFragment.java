@@ -21,6 +21,7 @@ import com.bcn.beacon.beacon.Adapters.EventListAdapter;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 
 import java.util.ArrayList;
 
@@ -81,6 +82,10 @@ public class ListFragment extends Fragment {
 
         // set empty view if there are no events to show
         listView.setEmptyView(view.findViewById(R.id.empty));
+
+        //hide the divider in the listview
+        UI_Util.hideListViewDivider(listView);
+
 
         //set adapter for the events list view
         listView.setAdapter(adapter);
@@ -154,14 +159,14 @@ public class ListFragment extends Fragment {
     }
 
 
-    /* Code for future functionality, in case we want to restore scroll position in list view
+    /*//Code for future functionality, in case we want to restore scroll position in list view
     @Override
     public void onPause() {
         state = listView.onSaveInstanceState();
         super.onPause();
     }
 
-    /*@Override
+    @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
@@ -175,7 +180,8 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onResume() {
-        adapter.notifyDataSetChanged();
+        updateListAllEvents();
+        //adapter.notifyDataSetChanged();
         /*if (state != null) {
             listView.onRestoreInstanceState(state);
         }*/

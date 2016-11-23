@@ -17,29 +17,29 @@ public class DataUtil {
     public static String convertMonthToString(int month) {
         switch (month) {
 
-            case 0:
-                return "JAN";
             case 1:
-                return "FEB";
+                return "JAN";
             case 2:
-                return "MAR";
+                return "FEB";
             case 3:
-                return "APR";
+                return "MAR";
             case 4:
-                return "MAY";
+                return "APR";
             case 5:
-                return "JUN";
+                return "MAY";
             case 6:
-                return "JUL";
+                return "JUN";
             case 7:
-                return "AUG";
+                return "JUL";
             case 8:
-                return "SEP";
+                return "AUG";
             case 9:
-                return "OCT";
+                return "SEP";
             case 10:
-                return "NOV";
+                return "OCT";
             case 11:
+                return "NOV";
+            case 12:
                 return "DEC";
         }
         return "";

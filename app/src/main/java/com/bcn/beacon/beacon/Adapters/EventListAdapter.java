@@ -10,6 +10,7 @@ import android.widget.TextView;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 
 import java.util.ArrayList;
 
@@ -54,8 +55,12 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
         // Populate data via viewHolder
         viewHolder.title.setText(event.getName());
         viewHolder.host.setText(event.getHost());
+
+        //check if title too long, if so truncate it
+        UI_Util.truncateText(viewHolder.title, 30);
+
         viewHolder.distance.setText(String.format("%.1f", event.distance) + " km");
-        viewHolder.start.setText(event.getDate().getFormatted());
+        viewHolder.start.setText(event.getDate().formatted());
 
         /*// Lookup view for data population (commented out for now)
         TextView title = (TextView) convertView.findViewById(R.id.title);
