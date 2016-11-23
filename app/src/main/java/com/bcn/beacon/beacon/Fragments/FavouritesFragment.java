@@ -86,8 +86,9 @@ public class FavouritesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        populateFav();
 
-        adapter = new EventListAdapter(appContext, 0, favourites);
+        adapter = new EventListAdapter(appContext, 0, favourites, favouriteIds);
     }
 
     @Override

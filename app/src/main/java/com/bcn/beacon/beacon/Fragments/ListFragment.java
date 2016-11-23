@@ -35,6 +35,7 @@ public class ListFragment extends Fragment {
 
     private ListView listView;
     private ArrayList<ListEvent> events;
+    private ArrayList<String> favouritedEventIds;
     private Context appContext;
     private SwipeRefreshLayout swipeContainer;
     EventListAdapter adapter;
@@ -134,8 +135,11 @@ public class ListFragment extends Fragment {
         //get the events from the parent activity
         //TODO ensure this gets an updated version of the events list
         events = ((MainActivity) getActivity()).getEventList();
+        favouritedEventIds = ((MainActivity) getActivity()).getFavouriteIdsList();
+
+
         // Populate the list view
-        adapter = new EventListAdapter(appContext, 0, events);
+        adapter = new EventListAdapter(appContext, 0, events, favouritedEventIds);
 
     }
 
@@ -151,6 +155,14 @@ public class ListFragment extends Fragment {
         events.clear();
         events.addAll(results);
         adapter.notifyDataSetChanged();
+    }
+
+    private void updateListFavourites(){
+        ArrayList<String> results = ((MainActivity) getActivity()).getFavouriteIdsList();
+        favouritedEventIds.clear();
+        favouritedEventIds.addAll(results);
+        adapter.notifyDataSetChanged();
+
     }
 
     @Override

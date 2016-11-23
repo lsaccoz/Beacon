@@ -112,7 +112,7 @@ public class EventPageActivity extends AppCompatActivity {
 
         // Retrieve and cache the system's default "medium" animation time.
         mAnimDuration = getResources().getInteger
-                (android.R.integer.config_longAnimTime);
+                (android.R.integer.config_mediumAnimTime);
 
 
         //get the event id
