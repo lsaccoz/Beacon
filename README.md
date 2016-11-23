@@ -41,10 +41,21 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
   * By Distance
   * By Tags
   * By Relevance
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
+    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Empty_Fav_View.jpg" width="200">
+   </div>
 
 4. Post comments and photos on event pages
 
 5. Favourite events and receive notifications for favourited events
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
+   </div>
 
+6. Edit how large the search radius is for finding events, and whether or not you want notifications
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Settings_View.jpg" width="200">
+   </div>
 
 
