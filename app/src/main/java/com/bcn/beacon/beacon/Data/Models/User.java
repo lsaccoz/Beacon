@@ -26,7 +26,8 @@ public class User {
     public void upload(){
 
         DatabaseReference users = FirebaseDatabase.getInstance().getReference("Users");
-        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null &&
+                users.equalTo(this.getId()) == null) {
             String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
             setName(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
             setEmail(FirebaseAuth.getInstance().getCurrentUser().getEmail());
