@@ -57,5 +57,18 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Settings_View.jpg" width="200">
    </div>
+ 
+##Installation Guide (For Developpers)
+In order to be able to fork off of this repository to make your own changes to Beacon, we highly suggest that you download and install  Android Studio as your IDE for developement. If you do, the process of getting the Beacon's source code onto your own local machine should be relatively seamless and straightforward. 
+
+###Dependancies
+1. Beacon utilizes Google's Firebase for all the following services:
+..* Remote Realtime Database
+..* Storage of images and videos uploaded by the user
+..* Sign-in Authentication (Via Google Sign-in only)
+ 
+ The most notable of these is the Remote Realtime Database. It is this databse which contains all of the key information for that the 
+ app uses such as: Users, Events, Comments, as well as references to the url locations of the aforementioned images and videos.
+ 
 
 
