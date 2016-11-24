@@ -43,7 +43,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
   * By Relevance
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
-    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Empty_Fav_View.jpg" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Empty_Fav_View.jpg" width="200">
    </div>
 
 4. Post comments and photos on event pages
@@ -63,12 +63,22 @@ In order to be able to fork off of this repository to make your own changes to B
 
 ###Dependancies
 1. Beacon utilizes Google's Firebase for all the following services:
-..* Remote Realtime Database
-..* Storage of images and videos uploaded by the user
-..* Sign-in Authentication (Via Google Sign-in only)
+
+  * Remote Realtime Database
+  * Storage of images and videos uploaded by the user
+  * Sign-in Authentication (Via Google Sign-in only)
  
- The most notable of these is the Remote Realtime Database. It is this databse which contains all of the key information for that the 
- app uses such as: Users, Events, Comments, as well as references to the url locations of the aforementioned images and videos.
+ The most notable of these is the Remote Realtime Database. It is this databse which contains all of the key information for that the a app uses such as: Users, Events, Comments, as well as references to the url locations of the aforementioned images and videos. 
+
+ To learn how to use the Firebase Realtime Database effectively, an extensive compilation of resrouces, as well as documentation can be found at: https://firebase.google.com/docs/android/setup
+
+2. Google Map API
+
+ Beacon uses Google maps in order to effectively and efficiently display all the user generated events on a map which the user can easily interact with. Not only does Google maps allow the user to see the events going around them at any given point in time, it is also how the user sets the location of their event when they wish to create one themselves. Beacon utilizes Google's autocomplete feature built-in to their Google Maps API in order to facilitate the user's experience. 
+ 
+ If you are looking to learn more about the Google Maps API, resources and documentation can be found at: https://developers.google.com/maps/documentation/android-api/start
+ 
+ 
  
 
 
