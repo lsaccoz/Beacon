@@ -210,7 +210,7 @@
                             android:layout_height="wrap_content"
                             android:text="@string/comments"
                             android:paddingLeft="16dp"
-                            android:paddingTop="8dp"
+                            android:paddingTop="4dp"
                             android:textColor="@color/dark_gray"
                             android:textSize="24sp"
                             android:textStyle="bold" />
@@ -236,7 +236,8 @@
                             android:layout_alignParentRight="true"
                             android:gravity="center_horizontal"
                             android:paddingRight="21dp"
-                            android:paddingTop="13dp"
+                            android:paddingTop="8dp"
+                            android:layout_marginBottom="5dp"
                             android:text="{fa-comment-o}"
                             android:textColor="@color/colorPrimary"
                             android:textSize="30dp" />

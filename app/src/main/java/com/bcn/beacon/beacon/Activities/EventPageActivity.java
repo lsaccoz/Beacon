@@ -33,6 +33,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Adapters.CommentAdapter;
 import com.bcn.beacon.beacon.Data.CommentEditText;
 import com.bcn.beacon.beacon.Data.Models.Comment;
 import com.bcn.beacon.beacon.Data.Models.Event;
@@ -81,6 +82,8 @@ public class EventPageActivity extends AppCompatActivity {
     private String mEventId;
     private Date mDate;
     private Context mContext;
+    private CommentAdapter mAdapter;
+    private ArrayList<Comment> commentsList = new ArrayList<>();
 
     private ArrayList<Drawable> mImageDrawables;
     private TextView mTitle;
@@ -184,11 +187,14 @@ public class EventPageActivity extends AppCompatActivity {
         mPostComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                Calendar c = Calendar.getInstance();
+                long time = c.getTimeInMillis();
                 Comment comment = new Comment();
                 String text = mWriteComment.getText().toString();
                 if (text.length() >= COMMENT_CHARACTER_LIMIT) {
                     comment.setText(text);
                     comment.setEventId(mEventId);
+                    comment.setDate(time);
                     comment.writeComment();
                     mWriteComment.setText("");
                     hideCommentTab();
@@ -325,6 +331,16 @@ public class EventPageActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //get the event
                 mEvent = dataSnapshot.getValue(Event.class);
+
+                if (!commentsList.isEmpty()) {
+                    commentsList.clear();
+                }
+                // for comments
+                for (DataSnapshot comment : dataSnapshot.child("comments").getChildren()) {
+                    commentsList.add(comment.getValue(Comment.class));
+                }
+                mEvent.setComments(commentsList);
+
                 //populate the views in the view hierarchy with actual event data
                 populate();
             }
@@ -415,6 +431,20 @@ public class EventPageActivity extends AppCompatActivity {
 
 //        mAddress.setText("666 Trump Ave.");
 
+        /*if (!commentsList.isEmpty()) {
+            commentsList.clear();
+        }
+        for (int i = 0; i < mComments.size(); i++) {
+            mComments.values();
+        }*/
+
+
+        mAdapter = new CommentAdapter(mContext, 0, commentsList);
+        if (commentsList != null) {
+            mCommentsList.setAdapter(mAdapter);
+            mAdapter.notifyDataSetChanged();
+        }
+
     }
 
     /**
@@ -454,6 +484,14 @@ public class EventPageActivity extends AppCompatActivity {
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
         //finish();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        /*if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }*/
     }
 
     // for fixing the clicking favourites twice bug
