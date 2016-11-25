@@ -40,6 +40,7 @@ import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.joanzapata.iconify.widget.IconTextView;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -310,6 +311,8 @@ public class EventPageActivity extends AppCompatActivity {
                 for (DataSnapshot comment : dataSnapshot.child("comments").getChildren()) {
                     commentsList.add(comment.getValue(Comment.class));
                 }
+                Collections.reverse(commentsList);
+                
                 mEvent.setComments(commentsList);
 
                 //populate the views in the view hierarchy with actual event data
