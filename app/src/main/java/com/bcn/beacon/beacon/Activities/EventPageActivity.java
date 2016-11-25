@@ -195,12 +195,14 @@ public class EventPageActivity extends AppCompatActivity {
                     comment.setText(text);
                     comment.setEventId(mEventId);
                     comment.setDate(time);
-                    comment.writeComment();
+                    comment = comment.writeComment();
                     mWriteComment.setText("");
                     hideCommentTab();
                     imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                     Toast toast = Toast.makeText(mContext, "Comment posted", Toast.LENGTH_SHORT);
                     toast.show();
+                    commentsList.add(0, comment);
+                    mAdapter.notifyDataSetChanged();
                 }
                 else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT + " characters";
@@ -323,7 +325,6 @@ public class EventPageActivity extends AppCompatActivity {
      */
     private void getEvent(String eventId) {
 
-
         DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference("Events/" + eventId);
 
         eventRef.addListenerForSingleValueEvent(new ValueEventListener() {
@@ -437,7 +438,6 @@ public class EventPageActivity extends AppCompatActivity {
         for (int i = 0; i < mComments.size(); i++) {
             mComments.values();
         }*/
-
 
         mAdapter = new CommentAdapter(mContext, 0, commentsList);
         if (commentsList != null) {

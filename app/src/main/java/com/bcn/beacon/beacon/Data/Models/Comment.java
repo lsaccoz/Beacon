@@ -32,11 +32,12 @@ public class Comment {
     public Comment writeComment() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference events = database.getReference("Events");
-        //FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
 
         String commentId = events.child(eventId).child("comments").push().getKey();
         setId(commentId);
-        setUserId(FirebaseAuth.getInstance().getCurrentUser().getUid());
+        setUserId(user.getUid());
+        setUserName(user.getDisplayName());
 
         events.child(eventId).child("comments").child(id).setValue(this);
 
@@ -49,7 +50,9 @@ public class Comment {
 
     public String getUserId() { return userId; }
 
-    public String getUserName() {
+    public String getUserName() { return userName; }
+
+    /*public String getUserName() {
         //userName = ""; // in case user is not found
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference users = database.getReference("Users");
@@ -64,7 +67,7 @@ public class Comment {
             }
         });
         return userName;
-    }
+    }*/
 
     public String getText(){
         return text;
@@ -91,5 +94,7 @@ public class Comment {
     public void setDate(Long date) { this.date = date; }
 
     public void setEventId(String eventId) { this.eventId = eventId; }
+
+    public void setUserName(String userName) { this.userName = userName; }
 
 }
