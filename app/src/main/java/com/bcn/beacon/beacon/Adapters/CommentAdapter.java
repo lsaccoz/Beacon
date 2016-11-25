@@ -52,7 +52,7 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
         // TODO: change this
-        String timeSpan = DateUtils.getRelativeTimeSpanString(Calendar.getInstance().getTimeInMillis(), comment.getDate(), DateUtils.HOUR_IN_MILLIS).toString();
+        String timeSpan = DateUtils.getRelativeTimeSpanString(comment.getDate(), Calendar.getInstance().getTimeInMillis(), DateUtils.MINUTE_IN_MILLIS).toString();
 
         // Populate data via viewHolder
         viewHolder.user.setText(comment.getUserName() + " says:");
