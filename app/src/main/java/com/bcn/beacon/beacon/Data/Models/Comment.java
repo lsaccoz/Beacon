@@ -1,6 +1,9 @@
 package com.bcn.beacon.beacon.Data.Models;
 
 
+import android.net.Uri;
+import android.util.Log;
+
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -20,6 +23,7 @@ public class Comment {
     private String text;
     private Long date;
     private String userName;
+    private String url;
 
     public Comment() {
         // Default constructor required for calls to DataSnapshot.getValue(Comment.class)
@@ -38,6 +42,7 @@ public class Comment {
         setId(commentId);
         setUserId(user.getUid());
         setUserName(user.getDisplayName());
+        setImageUrl(user.getPhotoUrl().toString());
 
         events.child(eventId).child("comments").child(id).setValue(this);
 
@@ -79,6 +84,8 @@ public class Comment {
 
     public String getEventId() { return eventId; }
 
+    public String getImageUrl() { return url; }
+
     public void setId(String id){
         this.id = id;
     }
@@ -96,5 +103,7 @@ public class Comment {
     public void setEventId(String eventId) { this.eventId = eventId; }
 
     public void setUserName(String userName) { this.userName = userName; }
+
+    public void setImageUrl(String url) { this.url = url; }
 
 }

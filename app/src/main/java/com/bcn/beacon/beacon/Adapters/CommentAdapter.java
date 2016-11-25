@@ -1,16 +1,22 @@
 package com.bcn.beacon.beacon.Adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
+import android.net.Uri;
+import android.provider.MediaStore;
 import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bcn.beacon.beacon.Data.Models.Comment;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -24,6 +30,7 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         TextView user;
         TextView comment;
         TextView time;
+        ImageView userPic;
     }
 
     public CommentAdapter(Context context, int resourceId, ArrayList<Comment> comments){
@@ -44,6 +51,7 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
             viewHolder.user = (TextView) convertView.findViewById(R.id.user);
             viewHolder.comment = (TextView) convertView.findViewById(R.id.comment);
             viewHolder.time = (TextView) convertView.findViewById(R.id.time);
+            viewHolder.userPic = (ImageView) convertView.findViewById(R.id.userPic);
             // Cache the viewHolder object inside the fresh view
             convertView.setTag(viewHolder);
         }
@@ -58,8 +66,13 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         viewHolder.user.setText(comment.getUserName() + " says:");
         viewHolder.comment.setText(comment.getText());
         viewHolder.time.setText(timeSpan);
+        Picasso.with(getContext()) //Context
+                .load(comment.getImageUrl()) //URL/FILE
+                .into(viewHolder.userPic);
 
         // Return the completed view
         return convertView;
     }
+
+
 }
