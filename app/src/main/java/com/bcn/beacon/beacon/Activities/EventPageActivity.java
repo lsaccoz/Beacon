@@ -13,6 +13,10 @@ import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.method.KeyListener;
+import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -22,6 +26,7 @@ import android.view.Window;
 import android.widget.TextView;
 
 import com.bcn.beacon.beacon.Adapters.CommentAdapter;
+import com.bcn.beacon.beacon.CustomViews.CommentEditText;
 import com.bcn.beacon.beacon.Data.Models.Comment;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
@@ -73,7 +78,7 @@ public class EventPageActivity extends AppCompatActivity {
     private ListView mCommentsList;
     private IconTextView mCommentButton;
     private IconTextView mPostComment;
-    private EditText mWriteComment;
+    private CommentEditText mWriteComment;
 
     private boolean mFavourited = false;
     private boolean commentTab = false;
@@ -135,7 +140,7 @@ public class EventPageActivity extends AppCompatActivity {
         mCommentsList = (ListView) findViewById(R.id.comments_list);
         mCommentButton = (IconTextView) findViewById(R.id.comment_button);
         mPostComment = (IconTextView) findViewById(R.id.post_comment);
-        mWriteComment = (EditText) findViewById(R.id.write_comment);
+        mWriteComment = (CommentEditText) findViewById(R.id.write_comment);
 
         // input manager for showing keyboard immediately
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -158,13 +163,7 @@ public class EventPageActivity extends AppCompatActivity {
                 }
                 else {
                     imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                    commentTab = false;
-                    mCommentButton.setText("{fa-comment-o}");
-                    mPostComment.setVisibility(View.GONE);
-                    mPostComment.setEnabled(false);
-                    mWriteComment.setVisibility(View.GONE);
-                    mWriteComment.setEnabled(false);
-                    mWriteComment.clearFocus();
+                    hideCommentTab();
                 }
 
             }
@@ -200,8 +199,6 @@ public class EventPageActivity extends AppCompatActivity {
 
         initFavourite();
 
-
-
         //Add fake images to the event page
         mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
         mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
@@ -226,6 +223,7 @@ public class EventPageActivity extends AppCompatActivity {
             mPostComment.setVisibility(View.GONE);
             mPostComment.setEnabled(false);
             mWriteComment.setVisibility(View.GONE);
+            mWriteComment.setText("");
             mWriteComment.setEnabled(false);
             mWriteComment.clearFocus();
         }

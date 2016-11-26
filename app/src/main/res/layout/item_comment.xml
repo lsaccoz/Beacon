@@ -23,8 +23,8 @@
         android:paddingRight="5dp"
         android:text="user says:"
         android:textAppearance="?android:attr/textAppearanceListItem"
-        android:textStyle="bold" />
-
+        android:textStyle="bold"
+        android:textColor="@color/dark_gray" />
 
     <TextView
         android:id="@+id/time"

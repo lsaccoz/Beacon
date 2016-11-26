@@ -268,15 +268,15 @@
 
                     </RelativeLayout>
 
-                    <EditText
+                    <com.bcn.beacon.beacon.CustomViews.CommentEditText
                         android:id="@+id/write_comment"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-
                         android:paddingLeft="8dp"
                         android:paddingRight="8dp"
                         android:visibility="gone"
-                        android:enabled="false"/>
+                        android:enabled="false"
+                        android:textColor="@color/dark_gray" />
                         <!--
                         android:paddingLeft="16dp"
                         android:paddingTop="8dp"
