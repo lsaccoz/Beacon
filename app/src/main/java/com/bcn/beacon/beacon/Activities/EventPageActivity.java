@@ -114,7 +114,7 @@ public class EventPageActivity extends AppCompatActivity {
         System.out.println(mEventId);
 
         // check if event is favourited and set favourited accordingly
-        //setFavourited();
+        setFavourited();
 
         //fetch the event from the firebase database
         getEvent(mEventId);
@@ -272,7 +272,7 @@ public class EventPageActivity extends AppCompatActivity {
     /**
      * Function to check if the event is favourited, and changes icon fill accordingly
      */
-    /*public void setFavourited() {
+    public void setFavourited() {
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users/"
                                         + FirebaseAuth.getInstance().getCurrentUser().getUid()
                                         + "/favourites/" + mEventId);
@@ -294,72 +294,6 @@ public class EventPageActivity extends AppCompatActivity {
             public void onCancelled(DatabaseError databaseError) {
             }
         });
-    }*/
-
-    /**
-     * This method populates the views in the event page
-     */
-    private void populate() {
-        //setTitle(mEvent.getName());
-//        TextView description = (TextView) findViewById(R.id.description);
-        assert mEvent != null;
-        assert mDescription != null;
-
-        mDescription.setText(mEvent.getDescription());
-        mTitle.setText(mEvent.getName());
-
-        //display the tags for this event
-        mTags.setText(" #Party\n #Awesome\n #Fun");
-
-        boolean isPM = false;
-
-        //get Location
-        Location location = mEvent.getLocation();
-        Geocoder coder = new Geocoder(this);
-        List<Address> addresses;
-        Address address;
-
-        //convert address to a readable string if possible
-        try{
-            addresses = coder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-            if(!addresses.isEmpty()) {
-                address = addresses.get(0);
-
-                //set the address text to the retrieved address
-                mAddress.setText(address.getAddressLine(0));
-            }
-
-        }catch(IOException e){
-            e.printStackTrace();
-        }
-
-        Date date = mEvent.getDate();
-
-        if (date.getHour() >= 12) {
-            isPM = true;
-        }
-        //set the
-        mStartDay.setText("" + date.getDay());
-        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
-        mStartTime.setText(" " + String.format(Locale.US, "%02d:%02d %s",
-                (date.getHour() == 12 || date.getMinute() == 0) ? 12 : date.getHour() % 12, date.getMinute(),
-                isPM ? "PM" : "AM"));
-
-//        mAddress.setText("666 Trump Ave.");
-
-        /*if (!commentsList.isEmpty()) {
-            commentsList.clear();
-        }
-        for (int i = 0; i < mComments.size(); i++) {
-            mComments.values();
-        }*/
-
-        mAdapter = new CommentAdapter(mContext, 0, commentsList);
-        if (commentsList != null) {
-            mCommentsList.setAdapter(mAdapter);
-            mAdapter.notifyDataSetChanged();
-        }
-
     }
 
     /**
@@ -461,6 +395,12 @@ public class EventPageActivity extends AppCompatActivity {
             mStartDay.setText("" + date.getDay());
             mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
             mStartTime.setText(date.formatted());
+
+            mAdapter = new CommentAdapter(mContext, 0, commentsList);
+            if (commentsList != null) {
+                mCommentsList.setAdapter(mAdapter);
+                mAdapter.notifyDataSetChanged();
+            }
         }
 
         @Override
