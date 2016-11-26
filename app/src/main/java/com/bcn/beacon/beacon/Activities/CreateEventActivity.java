@@ -211,7 +211,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 int hour = mcurrentTime.get(Calendar.HOUR_OF_DAY);
                 int minute = mcurrentTime.get(Calendar.MINUTE);
                 TimePickerDialog mTimePicker;
-                mTimePicker = new TimePickerDialog(CreateEventActivity.this, new TimePickerDialog.OnTimeSetListener() {
+                mTimePicker = new TimePickerDialog(CreateEventActivity.this, R.style.PickerDialogTheme, new TimePickerDialog.OnTimeSetListener() {
                     @Override
                     public void onTimeSet(TimePicker timePicker, int selectedHour, int selectedMinute) {
                         boolean isPM = (selectedHour >= 12);
@@ -233,7 +233,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 int mDay = mcurrentDate.get(Calendar.DAY_OF_MONTH);
 
                 DatePickerDialog mDatePicker;
-                mDatePicker = new DatePickerDialog(CreateEventActivity.this, new DatePickerDialog.OnDateSetListener() {
+                mDatePicker = new DatePickerDialog(CreateEventActivity.this, R.style.PickerDialogTheme, new DatePickerDialog.OnDateSetListener() {
                     public void onDateSet(DatePicker datepicker, int selectedyear, int selectedmonth, int selectedday) {
                         selectedmonth = selectedmonth + 1;
                         eDate.setText("" + selectedday + "/" + selectedmonth + "/" + selectedyear);
