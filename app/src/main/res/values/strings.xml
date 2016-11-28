@@ -15,7 +15,7 @@
     <string name="favourites_fragment">Favourites</string>
 
     <!-- Google Maps API Key -->
-    <string name="google_maps_key">AIzaSyBq0s_kXLltw-BmRwL4HRQGFA50I4FamKE </string>
+    <string name="google_maps_key">AIzaSyB_JjOg03PymmAvu5PQWa2hGwhUuZIpBPc</string>
 
     <string-array name="categories_array">
         <item>#party</item>

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/activity_select_location"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.bcn.beacon.beacon.Activities.SelectLocationActivity">
+
+    <android.support.v7.widget.CardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/auto_complete_cardView"
+        app:cardCornerRadius="4dp">
+
+        <fragment
+            android:id="@+id/place_autocomplete_fragment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:name="com.google.android.gms.location.places.ui.PlaceAutocompleteFragment"
+            />
+    </android.support.v7.widget.CardView>
+
+    <fragment
+        class="com.google.android.gms.maps.MapFragment"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/auto_complete_cardView"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/locale_select_map"
+         />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/set_location_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentRight="true"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="@dimen/fab_margin"
+        android:src="@android:drawable/ic_dialog_map"
+        app:backgroundTint="@color/colorPrimary" />
+
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/reset_location_fab"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        app:backgroundTint="@color/colorPrimary"
+        android:layout_above="@+id/set_location_fab"
+        android:layout_alignLeft="@+id/set_location_fab"
+        android:layout_alignStart="@+id/set_location_fab"
+        app:srcCompat="@android:drawable/ic_menu_mylocation" />
+
+
+
+
+</RelativeLayout>
