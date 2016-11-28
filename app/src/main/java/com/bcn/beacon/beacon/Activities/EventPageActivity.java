@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,8 +17,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.method.KeyListener;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -57,7 +60,8 @@ import java.util.ArrayList;
 
 public class EventPageActivity extends AppCompatActivity {
 
-    private static final int COMMENT_CHARACTER_LIMIT = 2;
+    private static final int COMMENT_CHARACTER_LIMIT_MIN = 2;
+    private static final int COMMENT_CHARACTER_LIMIT_MAX = 140;
     private Event mEvent;
     private String mEventId;
     private Context mContext;
@@ -81,6 +85,7 @@ public class EventPageActivity extends AppCompatActivity {
     private IconTextView mCommentButton;
     private IconTextView mPostComment;
     private CommentEditText mWriteComment;
+    private TextView mCharacterCount;
 
     private boolean mFavourited = false;
     private boolean commentTab = false;
@@ -143,6 +148,7 @@ public class EventPageActivity extends AppCompatActivity {
         mCommentButton = (IconTextView) findViewById(R.id.comment_button);
         mPostComment = (IconTextView) findViewById(R.id.post_comment);
         mWriteComment = (CommentEditText) findViewById(R.id.write_comment);
+        mCharacterCount = (TextView) findViewById(R.id.character_count);
 
         // input manager for showing keyboard immediately
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -150,6 +156,7 @@ public class EventPageActivity extends AppCompatActivity {
         // set empty view if there are no favourites
         mCommentsList.setEmptyView(findViewById(R.id.empty));
 
+        // Listener for the button to write a comment (opens the EditText)
         mCommentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -161,6 +168,8 @@ public class EventPageActivity extends AppCompatActivity {
                     mWriteComment.setVisibility(View.VISIBLE);
                     mWriteComment.setEnabled(true);
                     mWriteComment.requestFocus();
+                    mCharacterCount.setEnabled(true);
+                    mCharacterCount.setVisibility(View.VISIBLE);
                     imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
                 }
                 else {
@@ -171,6 +180,7 @@ public class EventPageActivity extends AppCompatActivity {
             }
         });
 
+        // Listener for the button for posting the comment
         mPostComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -178,7 +188,18 @@ public class EventPageActivity extends AppCompatActivity {
                 long time = c.getTimeInMillis();
                 Comment comment = new Comment();
                 String text = mWriteComment.getText().toString();
-                if (text.length() >= COMMENT_CHARACTER_LIMIT) {
+                String whitespace = new String(new char[text.length()]).replace("\0", " ");
+                if (text.length() >= COMMENT_CHARACTER_LIMIT_MIN) {
+                    // Validation point: check for whitespace-only comments
+                    if (text.equals(whitespace)) {
+                        String alert = "You cannot post a comment consisting of only whitespace";
+                        Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
+                        // centre the alignment of the text in toast
+                        TextView view = (TextView) toast.getView().findViewById(android.R.id.message);
+                        if (view != null) view.setGravity(Gravity.CENTER);
+                        toast.show();
+                        return;
+                    }
                     comment.setText(text);
                     comment.setEventId(mEventId);
                     comment.setDate(time);
@@ -192,9 +213,38 @@ public class EventPageActivity extends AppCompatActivity {
                     mAdapter.notifyDataSetChanged();
                 }
                 else {
-                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT + " characters";
+                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
                     Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
                     toast.show();
+                }
+            }
+        });
+
+        mCharacterCount.setText("0/" + COMMENT_CHARACTER_LIMIT_MAX);
+        mCharacterCount.setTextColor(Color.GRAY);
+
+        // Listener for the character limit counter
+        mWriteComment.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                mCharacterCount.setText(s.toString().length() + "/" + COMMENT_CHARACTER_LIMIT_MAX);
+                switch (s.toString().length()) {
+                    case COMMENT_CHARACTER_LIMIT_MAX: {
+                        mCharacterCount.setTextColor(Color.RED);
+                        break;
+                    }
+                    default: {
+                        mCharacterCount.setTextColor(Color.GRAY);
+                        break;
+                    }
                 }
             }
         });
@@ -227,12 +277,15 @@ public class EventPageActivity extends AppCompatActivity {
             mWriteComment.setVisibility(View.GONE);
             mWriteComment.setText("");
             mWriteComment.setEnabled(false);
+            mCharacterCount.setEnabled(false);
+            mCharacterCount.setVisibility(View.GONE);
             mWriteComment.clearFocus();
         }
     }
 
+    // Method for showing a discard alert
     public void showDiscardAlert() {
-        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT) {
+        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT_MIN) {
             // show alert if the user entered more than required characters
             AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
             alert.setIcon(R.drawable.attention);
