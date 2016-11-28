@@ -44,6 +44,7 @@ import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.ImageUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 
 import java.io.InputStream;
@@ -69,6 +70,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
     private FloatingActionButton myFab;
     private ScrollView mScrollView;
     private Spinner categorySpinner;
+    private ImageUtil imgUtil = new ImageUtil();
 
     private File tempfile;
 
@@ -285,7 +287,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
                 Log.d("System out", "orient " + getImageOrientation());
 
                 try {
-                    handleSamplingAndRotationBitmap(this, Uri.fromFile(croppedImageFile));
+                    imgUtil.handleSamplingAndRotationBitmap(this, Uri.fromFile(croppedImageFile));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
