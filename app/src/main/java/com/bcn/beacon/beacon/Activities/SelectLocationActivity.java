@@ -22,6 +22,7 @@ import android.widget.AdapterView;
 
 
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -47,7 +48,7 @@ import java.util.Locale;
 public class SelectLocationActivity extends AuthBaseActivity implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        AdapterView.OnItemSelectedListener, View.OnClickListener {
+      View.OnClickListener {
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
@@ -61,8 +62,9 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
     private double currentLat;
     double currentLng;
     private String currentName;
-
     private Marker marker;
+
+    private LocationUtil localUtil = new LocationUtil();
 
 
     @Override
@@ -79,7 +81,6 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
             userLng = extras.getDouble("userlng");
             currentLng = extras.getDouble("curlng");
             currentLat = extras.getDouble("curlat");
-            //The key argument here must match that used in the other activity
         }
 
         resetLocationButton = (FloatingActionButton) findViewById(R.id.reset_location_fab);
@@ -102,26 +103,19 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
-                // TODO: Get info about the selected place.
                 //Log.i(TAG, "Place: " + place.getName());
                 currentLat = place.getLatLng().latitude;
                 currentLng = place.getLatLng().longitude;
                 currentName = place.getName().toString();
 
+                localUtil.setPinLocation(currentLat, currentLng, marker, mMap, true, getApplicationContext());
                 marker.hideInfoWindow();
-
-                marker.setPosition(place.getLatLng());
-
-                mMap.moveCamera(CameraUpdateFactory.newLatLngZoom((place.getLatLng()), 15));
-
                 marker.setTitle(currentName);
                 marker.showInfoWindow();
             }
 
             @Override
             public void onError(Status status) {
-                // TODO: Handle the error.
-                //Log.i(TAG, "An error occurred: " + status);
             }
         });
     }
@@ -130,10 +124,12 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
     public void onClick(View v) {
         switch (v.getId()) {
             case(R.id.reset_location_fab) :{
+
+                localUtil.setPinLocation(userLat, userLng, marker, mMap, true, this);
                 currentLat = userLat;
                 currentLng = userLng;
+                currentName = localUtil.getLocationName(currentLat, currentLng, this);
 
-                setLocationAndPin(userLat, userLng, marker, true);
                 break;
             }
             case(R.id.set_location_fab) :{
@@ -183,7 +179,6 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
             mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                 @Override
                 public void onMarkerDragStart(Marker arg0) {
-                    // TODO Auto-generated method stub
                     Log.d("System out", "onMarkerDragStart..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
                 }
 
@@ -193,12 +188,14 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
                     // TODO Auto-generated method stub
                     Log.d("System out", "onMarkerDragEnd..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
 
-                    setLocationAndPin(arg0.getPosition().latitude, arg0.getPosition().longitude, arg0, false);
+                    currentLat = arg0.getPosition().latitude;
+                    currentLng = arg0.getPosition().longitude;
+                    localUtil.setPinLocation(currentLat, currentLng, arg0, mMap, false, getApplicationContext());
+                    currentName = localUtil.getLocationName(currentLat, currentLng, getApplicationContext());
                 }
 
                 @Override
                 public void onMarkerDrag(Marker arg0) {
-                    // TODO Auto-generated method stub
                     Log.i("System out", "onMarkerDrag...");
                 }
             });
@@ -209,52 +206,9 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
                     .position(new LatLng(currentLat, currentLng)));
 
             marker.setDraggable(true);
-            setLocationAndPin(currentLat, currentLng, marker, true);
-
+            localUtil.setPinLocation(currentLat, currentLng, marker, mMap, true, this);
+            currentName = localUtil.getLocationName(currentLat, currentLng, getApplicationContext());
         }
-    }
-
-    void setLocationAndPin(double lat, double lng, Marker arg, boolean zoom){
-        List<Address> addresses = null;
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-
-        try {
-            addresses = geocoder.getFromLocation(lat,lng, 1);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        arg.hideInfoWindow();
-
-        if(!addresses.isEmpty()) {
-            currentName = addresses.get(0).getAddressLine(0);
-            arg.setTitle(currentName);
-        }else{
-            currentName = "";
-            arg.setTitle("");
-        }
-
-        arg.setPosition(new LatLng(lat,lng));
-        if(zoom) {
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom((new LatLng(lat, lng)), 15));
-        }else{
-            mMap.animateCamera(CameraUpdateFactory.newLatLng(new LatLng(lat, lng)));
-        }
-        currentLat = lat;
-        currentLng = lng;
-        arg.showInfoWindow();
-    }
-
-
-
-    @Override
-    public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-
-    }
-
-    @Override
-    public void onNothingSelected(AdapterView<?> parent) {
-
     }
 
     @Override
