@@ -232,30 +232,45 @@ public class EventPageActivity extends AppCompatActivity {
     }
 
     public void showDiscardAlert() {
-        AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
-        alert.setIcon(R.drawable.attention);
-        alert.setTitle("DISCARD COMMENT?");
-        alert.setMessage("Your changes will be discarded.");
-        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-            // check for android.view.WindowLeaked: exception!
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // hide the comment tab if yes
-                hideCommentTab();
-                dialog.dismiss();
-            }
-        });
-        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT) {
+            // show alert if the user entered more than required characters
+            AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
+            alert.setIcon(R.drawable.attention);
+            alert.setTitle("DISCARD COMMENT?");
+            alert.setMessage("Your changes will be discarded.");
+            alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                // check for android.view.WindowLeaked: exception!
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // hide the comment tab if yes
+                    hideCommentTab();
+                    dialog.dismiss();
+                }
+            });
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
 
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                // do nothing
-                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
-                dialog.dismiss();
-            }
-        });
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // do nothing
+                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                    dialog.dismiss();
+                }
+            });
+            alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                // this listener is for if the user presses back button when the dialog is visible
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    hideCommentTab();
+                    dialog.dismiss();
+                }
+            });
 
-        alert.show();
+            alert.show();
+        }
+        else {
+            // if not, just hide the comment tab
+            hideCommentTab();
+        }
     }
 
     /**
