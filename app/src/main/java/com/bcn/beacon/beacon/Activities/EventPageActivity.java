@@ -20,10 +20,14 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.text.method.KeyListener;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
@@ -36,9 +40,11 @@ import com.bcn.beacon.beacon.Data.Models.Comment;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
 import com.bcn.beacon.beacon.Data.Models.Date;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -238,7 +244,7 @@ public class EventPageActivity extends AppCompatActivity {
                 mCharacterCount.setText(s.toString().length() + "/" + COMMENT_CHARACTER_LIMIT_MAX);
                 switch (s.toString().length()) {
                     case COMMENT_CHARACTER_LIMIT_MAX: {
-                        mCharacterCount.setTextColor(Color.RED);
+                        mCharacterCount.setTextColor(getResources().getColor(R.color.dark_red));
                         break;
                     }
                     default: {
@@ -248,6 +254,30 @@ public class EventPageActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // the listeners for item long click in case user wants to edit or delete their comment
+        /*mCommentsList.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+            // TODO: maybe move the hardcoded stuff to strings.xml and load resources from there?
+            @Override
+            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+                if (v.getId() == R.id.comments_list) {
+                    AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+                    Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
+                    if (userId == comment.getUserId()) {
+                        //menu.add(Menu.NONE, 0, 0, "Edit");
+                        menu.add(Menu.NONE, 1, 1, "Delete");
+                    }
+                    else {
+                        // do nothing
+                        return;
+                    }
+                }
+            }
+        });*/
+
+        registerForContextMenu(mCommentsList);
 
         initFavourite();
 
@@ -265,6 +295,59 @@ public class EventPageActivity extends AppCompatActivity {
         mImageScroller.setLayoutManager(horizontalLayoutManagaer);
 
         mImageScroller.setAdapter(eventImageAdapter);
+    }
+
+    // Method for overriding context menu
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        if (v.getId() == R.id.comments_list) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
+            if (userId.equals(comment.getUserId())) {
+                //menu.add(Menu.NONE, 0, 0, "Edit");
+                menu.add(Menu.NONE, 1, 1, "Delete");
+            }
+            else {
+                // do nothing
+                return;
+            }
+        }
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    // Method for the context menu items, handles item clicks
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
+        int index = item.getItemId(); // Edit = 0, Delete = 1
+        if (index == 0) {
+            //editComment(comment.getId());
+        }
+        else if (index == 1) {
+            deleteComment(comment, info.position);
+        }
+        super.onContextItemSelected(item);
+        return true;
+    }
+
+    // Method for editing a comment
+    /*private boolean editComment(String commentId) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference comment = database.getReference("Events");
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        return true;
+    }*/
+    // Method for deleting a comment
+    private boolean deleteComment(Comment comment, int position) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference comments = database.getReference("Events/" + comment.getEventId() + "/comments");
+        comments.child(comment.getId()).removeValue();
+        commentsList.remove(position);
+        mAdapter.notifyDataSetChanged();
+        return true;
     }
 
     // Method for hiding comment tab on back press from EditText
@@ -496,6 +579,7 @@ public class EventPageActivity extends AppCompatActivity {
             if (commentsList != null) {
                 mCommentsList.setAdapter(mAdapter);
                 mAdapter.notifyDataSetChanged();
+                //registerForContextMenu(mCommentsList);
             }
         }
 
