@@ -41,6 +41,7 @@ import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.DataUtil;
+import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
@@ -94,6 +95,7 @@ public class MainActivity extends AuthBaseActivity
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
+    private LocationUtil localUtil = new LocationUtil();
 
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -102,6 +104,7 @@ public class MainActivity extends AuthBaseActivity
     private List<IconTextView> mTabs;
     private TextView mTitle;
     private Fragment mActiveFragment;
+    private String pinAddress;
 
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
@@ -796,26 +799,15 @@ public class MainActivity extends AuthBaseActivity
     public boolean onMarkerClick(Marker marker) {
 
         ListEvent event = events_list.get(marker.getId());
+
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
         if(event != null) {
-
-            try {
-                addresses = geocoder.getFromLocation(event.getLocation().getLatitude(), event.getLocation().getLongitude(), 1);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
         }
 
         else {
-
-            try {
-                addresses = geocoder.getFromLocation(userLat, userLng, 1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            pinAddress = localUtil.getLocationName(userLat, userLng, this);
 
         }
 
@@ -1030,8 +1022,6 @@ public class MainActivity extends AuthBaseActivity
             TextView Address = ((TextView) v.findViewById(R.id.address));
             IconTextView fav = ((IconTextView) v.findViewById(R.id.map_fav));
 
-            String address = addresses.get(0).getAddressLine(0).toString();
-
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.FILL_PARENT);
 
@@ -1053,12 +1043,10 @@ public class MainActivity extends AuthBaseActivity
                 Time.setText(time);
                 Time.setTextSize(12);
 
-                if (!addresses.isEmpty()) {
 
-                    assert Address != null;
-                    Address.setText(address);
+                assert Address != null;
+                Address.setText(pinAddress);
 
-                }
 
                 ArrayList favs = getFavouriteIdsList();
 
@@ -1076,7 +1064,7 @@ public class MainActivity extends AuthBaseActivity
 
                 Title.setLayoutParams(lp);
                 Title.setText("You!");
-                Address.setText(address);
+                Address.setText(pinAddress);
                 fav.setText("");
                 Time.setTextSize(0);
 

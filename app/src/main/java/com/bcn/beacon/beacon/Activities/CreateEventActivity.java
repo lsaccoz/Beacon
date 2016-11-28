@@ -17,6 +17,7 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
@@ -45,6 +46,7 @@ import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.ImageUtil;
+import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 
 import java.io.InputStream;
@@ -55,6 +57,8 @@ import java.util.Locale;
 public class CreateEventActivity extends AuthBaseActivity implements
         AdapterView.OnItemSelectedListener, View.OnClickListener{
 
+    private LocationUtil localUtil = new LocationUtil();
+
     private EditText eTime;
     private EditText eDate;
     private Date date = new Date();
@@ -63,6 +67,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
     private EditText eAddress;
 
     private int from;
+
 
     private Location location = new Location();
     private ImageButton eAddImage;
@@ -87,8 +92,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
-
-
 
         ActionBar actionBar = getSupportActionBar();
         //actionBar.setDisplayHomeAsUpEnabled(true);
@@ -130,7 +133,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
             from = extras.getInt("from");
             location.setLatitude(userLat);
             location.setLongitude(userLng);
-            eAddress.setText(findLocationName(userLat, userLng));
+            eAddress.setText(localUtil.getLocationName(userLat, userLng, getApplicationContext()));
             //The key argument here must match that used in the other activity
         }
     }
@@ -175,7 +178,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
                     }
                 }, mYear, mMonth, mDay);
                 mDatePicker.setTitle("Select Date");
-                //mDatePicker.getDatePicker().setMinDate(mcurrentDate.getTimeInMillis());
+                mDatePicker.getDatePicker().setMaxDate(mcurrentDate.getTimeInMillis() + DateUtils.YEAR_IN_MILLIS);
                 mDatePicker.getDatePicker().setMinDate(mcurrentDate.getTimeInMillis());
                 mDatePicker.show();
                 break;
@@ -274,11 +277,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
                 startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
             }
             else if (requestCode == PIC_CROP) {
-                /* ViewGroup.LayoutParams imglayout = eAddImage.getLayoutParams();
-                if(imglayout.height < 300) {
-                    imglayout.height = imglayout.height + 400;
-                }
-                eAddImage.setLayoutParams(imglayout); */
                 eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 eAddImage.setImageBitmap(BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath()));
             }
@@ -306,7 +304,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
                     eAddress.setText(name);
                     location.setLatitude(currentLat);
                     location.setLongitude(currentLng);
-                    //The key argument here must match that used in the other activity
                 }
             }
         }
@@ -317,7 +314,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
 
-            // Should we show an explanation?
             if (shouldShowRequestPermissionRationale(
                     Manifest.permission.READ_EXTERNAL_STORAGE)) {
                 // Explain to the user why we need to read the contacts
@@ -326,17 +322,13 @@ public class CreateEventActivity extends AuthBaseActivity implements
             requestPermissions(new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
                     MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE);
 
-            // MY_PERMISSIONS_REQUEST_READ_EXTERNAL_STORAGE is an
-            // app-defined int constant
-
             return;
         }
     }
 
     public void onItemSelected(AdapterView<?> parent, View view,
                                int pos, long id) {
-        // An item was selected. You can retrieve the selected item using
-        // parent.getItemAtPosition(pos)
+        //parent.getItemAtPosition(pos)
     }
 
     public void onNothingSelected(AdapterView<?> parent) {
@@ -393,29 +385,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
         eTime.setText(String.format(Locale.US, "%02d:%02d %s",
                 (hour == 12 || hour == 0) ? 12 : hour % 12, minute,
                 isPM ? "PM" : "AM"));
-    }
-
-    private String findLocationName(double lat, double lng){
-        String name = new String();
-
-        List<Address> addresses = null;
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-
-        try {
-            addresses = geocoder.getFromLocation(lat,lng, 1);
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        if(addresses != null) {
-            if (!addresses.isEmpty()) {
-                name = addresses.get(0).getAddressLine(0);
-            } else {
-                name = "";
-            }
-        }
-
-        return name;
     }
 
     @Override
