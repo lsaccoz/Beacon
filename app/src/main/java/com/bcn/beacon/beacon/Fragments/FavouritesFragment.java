@@ -37,8 +37,6 @@ import java.util.HashMap;
 
 /**
  * The fragment for favourites page
- * TODO: Create event button goes to the new event page
- * TODO: Fix the bug in place of temporary fix
  */
 public class FavouritesFragment extends Fragment {
 
@@ -133,7 +131,7 @@ public class FavouritesFragment extends Fragment {
                 final int pos = position;
                 ListEvent event = (ListEvent) parent.getAdapter().getItem(position);
                 // play with the themes to find the best one
-                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity(), android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity(), android.R.style.ThemeOverlay_Material_Dialog_Alert);
                 alert.setIcon(R.drawable.fire);
                 alert.setTitle("NOT LIT ENOUGH?");
                 alert.setMessage("Remove '" + event.getName() + "' from favourites?");

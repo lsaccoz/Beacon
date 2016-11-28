@@ -1,7 +1,9 @@
 package com.bcn.beacon.beacon.Activities;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.graphics.drawable.Drawable;
@@ -162,8 +164,8 @@ public class EventPageActivity extends AppCompatActivity {
                     imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
                 }
                 else {
+                    showDiscardAlert();
                     imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                    hideCommentTab();
                 }
 
             }
@@ -229,6 +231,33 @@ public class EventPageActivity extends AppCompatActivity {
         }
     }
 
+    public void showDiscardAlert() {
+        AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
+        alert.setIcon(R.drawable.attention);
+        alert.setTitle("DISCARD COMMENT?");
+        alert.setMessage("Your changes will be discarded.");
+        alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            // check for android.view.WindowLeaked: exception!
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // hide the comment tab if yes
+                hideCommentTab();
+                dialog.dismiss();
+            }
+        });
+        alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                // do nothing
+                ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                dialog.dismiss();
+            }
+        });
+
+        alert.show();
+    }
+
     /**
      * This method fetches the Event data from the firebase database
      *
@@ -251,6 +280,7 @@ public class EventPageActivity extends AppCompatActivity {
                 for (DataSnapshot comment : dataSnapshot.child("comments").getChildren()) {
                     commentsList.add(comment.getValue(Comment.class));
                 }
+                Log.i("DATA:", "CHANGED");
                 Collections.reverse(commentsList);
                 
                 mEvent.setComments(commentsList);
