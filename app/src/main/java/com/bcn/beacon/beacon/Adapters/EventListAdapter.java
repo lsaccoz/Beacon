@@ -7,9 +7,12 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
+import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
+import com.joanzapata.iconify.widget.IconTextView;
 
 import java.util.ArrayList;
 
@@ -19,15 +22,20 @@ import java.util.ArrayList;
  */
 public class EventListAdapter extends ArrayAdapter<ListEvent> {
     // view lookup cache for faster item loading
+
+    ArrayList<String> mFavouritedEventIds;
+
     private static class ViewHolder {
         TextView title;
         TextView host;
         TextView distance;
         TextView start;
+        IconTextView favourite;
     }
 
-    public EventListAdapter(Context context, int resourceId,  ArrayList<ListEvent> events){
+    public EventListAdapter(Context context, int resourceId,  ArrayList<ListEvent> events, ArrayList<String> Ids){
         super(context, resourceId, events);
+        mFavouritedEventIds = Ids;
     }
 
 
@@ -44,6 +52,7 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
             viewHolder.host = (TextView) convertView.findViewById(R.id.host);
             viewHolder.distance = (TextView) convertView.findViewById(R.id.distance);
             viewHolder.start = (TextView) convertView.findViewById(R.id.start);
+            viewHolder.favourite = (IconTextView) convertView.findViewById(R.id.favourite);
             // Cache the viewHolder object inside the fresh view
             convertView.setTag(viewHolder);
         }
@@ -51,9 +60,18 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
             // view recycled, retrieve view holder object
             viewHolder = (ViewHolder) convertView.getTag();
         }
+
+        if (mFavouritedEventIds.contains(event.getEventId()))
+            viewHolder.favourite.setText("{fa-star}");
+        else
+            viewHolder.favourite.setText("{fa-star-o}");
         // Populate data via viewHolder
         viewHolder.title.setText(event.getName());
         viewHolder.host.setText(event.getHost());
+
+        //check if title too long, if so truncate it
+        UI_Util.truncateText(viewHolder.title, 30);
+
         viewHolder.distance.setText(String.format("%.1f", event.distance) + " km");
         viewHolder.start.setText(event.getDate().formatted());
 

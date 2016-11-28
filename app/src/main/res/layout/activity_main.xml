@@ -53,8 +53,8 @@
             android:layout_weight="1"
             android:background="@color/otherTabColor"
             android:gravity="center"
-            android:text="{fa-star}"
-            android:textColor="@color/yellow"
+            android:text="{fa-star-o}"
+            android:textColor="@color/custom_white"
             android:textSize="30sp" />
 
         <com.joanzapata.iconify.widget.IconTextView
@@ -100,11 +100,10 @@
         app:elevation="6dp"
         android:layout_weight="1"
         android:contextClickable="false"
-        app:backgroundTint="@color/common_google_signin_btn_text_dark_default"
+        app:backgroundTint="@color/colorPrimary"
         android:baselineAlignBottom="false"
-        android:foregroundTint="@color/black"
         android:clickable="true"
-        android:tint="@android:color/holo_blue_dark" />
+        android:tint="@color/white" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/create_event_fab"
@@ -115,9 +114,9 @@
         android:layout_alignParentRight="true"
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
-        android:tint="@android:color/holo_blue_dark"
+        android:tint="@android:color/white"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/common_google_signin_btn_text_dark_default" />
+        app:backgroundTint="@color/colorPrimary" />
 
 
 

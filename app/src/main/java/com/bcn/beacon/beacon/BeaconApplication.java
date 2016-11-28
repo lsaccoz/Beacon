@@ -26,4 +26,7 @@ public class BeaconApplication extends Application {
 
         Firebase.setAndroidContext(this);
     }
+
+
+
 }

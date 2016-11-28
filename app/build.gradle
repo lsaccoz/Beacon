@@ -39,6 +39,7 @@ android {
 dependencies {
     compile 'me.villani.lorenzo.android:android-cropimage:1.1.2'
     compile 'com.joanzapata.iconify:android-iconify-fontawesome:2.2.2'
+    compile 'com.squareup.picasso:picasso:2.5.0'
     androidTestCompile 'com.android.support.test.espresso:espresso-core:2.2.2'
 
     compile fileTree(dir: 'libs', include: ['*.jar'])

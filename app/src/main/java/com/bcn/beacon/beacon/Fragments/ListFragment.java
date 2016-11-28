@@ -21,6 +21,7 @@ import com.bcn.beacon.beacon.Adapters.EventListAdapter;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 
 import java.util.ArrayList;
 
@@ -34,6 +35,7 @@ public class ListFragment extends Fragment {
 
     private ListView listView;
     private ArrayList<ListEvent> events;
+    private ArrayList<String> favouritedEventIds;
     private Context appContext;
     private SwipeRefreshLayout swipeContainer;
     EventListAdapter adapter;
@@ -82,6 +84,10 @@ public class ListFragment extends Fragment {
         // set empty view if there are no events to show
         listView.setEmptyView(view.findViewById(R.id.empty));
 
+        //hide the divider in the listview
+        UI_Util.hideListViewDivider(listView);
+
+
         //set adapter for the events list view
         listView.setAdapter(adapter);
         Log.i("VIEW","CREATED");
@@ -95,6 +101,13 @@ public class ListFragment extends Fragment {
 
                 // pass the event id to the new activity
                 intent.putExtra("Event", event.getEventId());
+
+                //pass intent extra to indicate if event is already favourited
+                if(favouritedEventIds.contains(event.getEventId())) {
+                    intent.putExtra("Favourited", true);
+                }else{
+                    intent.putExtra("Favourited", false);
+                }
                 // to indicate that event page was clicked from list view
                 intent.putExtra("from", 1);
 
@@ -129,8 +142,11 @@ public class ListFragment extends Fragment {
         //get the events from the parent activity
         //TODO ensure this gets an updated version of the events list
         events = ((MainActivity) getActivity()).getEventList();
+        favouritedEventIds = ((MainActivity) getActivity()).getFavouriteIdsList();
+
+
         // Populate the list view
-        adapter = new EventListAdapter(appContext, 0, events);
+        adapter = new EventListAdapter(appContext, 0, events, favouritedEventIds);
 
     }
 
@@ -146,6 +162,14 @@ public class ListFragment extends Fragment {
         events.clear();
         events.addAll(results);
         adapter.notifyDataSetChanged();
+    }
+
+    private void updateListFavourites(){
+        ArrayList<String> results = ((MainActivity) getActivity()).getFavouriteIdsList();
+        favouritedEventIds.clear();
+        favouritedEventIds.addAll(results);
+        adapter.notifyDataSetChanged();
+
     }
 
     @Override

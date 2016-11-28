@@ -48,10 +48,14 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
 4. Post comments and photos on event pages
 
+<<<<<<< HEAD
 5. Favourite events and receive notifications for favourited events
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
    </div>
+=======
+5. Favourite events and receive notifications for favoyrited events
+>>>>>>> 3e8ca91ffc96ab149c134ba16379b6a92e6ca150
 
 6. Edit how large the search radius is for finding events, and whether or not you want notifications
    <div style="text-align:center">
