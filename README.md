@@ -1,4 +1,5 @@
-# Beacon
+#Beacon
+*Shinning a Light on the Action*
 
 ##Motivation/Opportunity
 
@@ -72,13 +73,15 @@ In order to be able to fork off of this repository to make your own changes to B
 
  To learn how to use the Firebase Realtime Database effectively, an extensive compilation of resrouces, as well as documentation can be found at: https://firebase.google.com/docs/android/setup
 
-2. Google Map API
+2. Google Maps API and Google Places API
 
- Beacon uses Google maps in order to effectively and efficiently display all the user generated events on a map which the user can easily interact with. Not only does Google maps allow the user to see the events going around them at any given point in time, it is also how the user sets the location of their event when they wish to create one themselves. Beacon utilizes Google's autocomplete feature built-in to their Google Maps API in order to facilitate the user's experience. 
+ Beacon uses the Google Maps and the Google Places APis in order to effectively and efficiently display all the user generated events on a map which the user can easily interact with. Not only does Google Maps allow the user to see the events going around them at any given point in time, it is also how the user sets the location of their event when they wish to create one themselves. Beacon uses Google Places in order to autocomplete/suggest locations and addresses to the user as they are inputting the location of their event.
  
  If you are looking to learn more about the Google Maps API, resources and documentation can be found at: https://developers.google.com/maps/documentation/android-api/start
  
- 
- 
+###Getting Beacon on your Local Machine
+Getting off the ground with your personal development of Beacon couldn't be simpler. All you'll need to do is download Android Studio (as mentioned before, this is the IDE we recommend), and start developping! You can clone this repository directly into AndroidStudioProjects directory for the simplest import into Android Studio. Then, after the cloning is complete, all you have to do is open Android Studio and navigate to "File->New->Import Project" and select the cloned repository. After that, you should be able to see the entire Beacon project.
 
+There is one slight complication that however. Since Beacon makes use of the Google services mentioned above, Beacon has been given a signed certificate using a keystore, that is also synced with Beacon's Firebase Console. Without this keystore, you will be unable to compile the project. The settings for the keystore are located within the app build.gradle file. If you wish to get a copy of the keystore that will allow to access these services, feel free to email: andy.tertzakian@gmail.com
 
+If you have received a copy of a valid keystore you are ready to start contributing to Beacon! while following these steps, once again, please feel free to contact andy.terzakian@gmail.com for assistance.
