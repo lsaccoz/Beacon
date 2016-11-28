@@ -49,20 +49,20 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
         AdapterView.OnItemSelectedListener, View.OnClickListener {
 
-    GoogleApiClient mGoogleApiClient;
-    GoogleMap mMap;
-    ActionBar actionBar;
-    FloatingActionButton resetLocationButton;
-    FloatingActionButton setLocationButton;
+    private GoogleApiClient mGoogleApiClient;
+    private GoogleMap mMap;
+    private ActionBar actionBar;
+    private FloatingActionButton resetLocationButton;
+    private FloatingActionButton setLocationButton;
 
 
-    double userLat;
-    double userLng;
-    double currentLat;
+    private double userLat;
+    private double userLng;
+    private double currentLat;
     double currentLng;
-    String currentName;
+    private String currentName;
 
-    Marker marker;
+    private Marker marker;
 
 
     @Override
@@ -79,8 +79,6 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
             userLng = extras.getDouble("userlng");
             currentLng = extras.getDouble("curlng");
             currentLat = extras.getDouble("curlat");
-            //location.setLatitude(userLat);
-            //location.setLongitude(userLng);
             //The key argument here must match that used in the other activity
         }
 
@@ -99,6 +97,7 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
 
         PlaceAutocompleteFragment autocompleteFragment = (PlaceAutocompleteFragment)
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
+
 
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override

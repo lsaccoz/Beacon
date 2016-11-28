@@ -76,7 +76,7 @@ public class CreateEventEspressoTest {
     public void create_valid_event(){
         onView(withId(R.id.input_name)).perform(typeText("espresso test event"), closeSoftKeyboard());
 
-        onView(withId(R.id.input_location_search)).perform(typeText("Argentina"), closeSoftKeyboard());
+        //onView(withId(R.id.input_location_search)).perform(typeText("Argentina"), closeSoftKeyboard());
         onView(withId(R.id.search_button)).perform(click());
 
         onView(withId(R.id.fab)).perform(click());
@@ -84,7 +84,7 @@ public class CreateEventEspressoTest {
     }
 
     public void perform_search_for_ubc(){
-        onView(withId(R.id.input_location_search)).perform(typeText("UBC"), closeSoftKeyboard());
+       // onView(withId(R.id.input_location_search)).perform(typeText("UBC"), closeSoftKeyboard());
         onView(withId(R.id.search_button)).perform(click());
 
     }

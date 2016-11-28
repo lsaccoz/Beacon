@@ -54,23 +54,23 @@ import java.util.Locale;
 public class CreateEventActivity extends AuthBaseActivity implements
         AdapterView.OnItemSelectedListener, View.OnClickListener{
 
-    EditText eTime;
-    EditText eDate;
-    Date date = new Date();
-    EditText eName;
-    EditText eDescription;
-    EditText eAddress;
+    private EditText eTime;
+    private EditText eDate;
+    private Date date = new Date();
+    private EditText eName;
+    private EditText eDescription;
+    private EditText eAddress;
 
     private int from;
 
-    Location location = new Location();
-    ImageButton eAddImage;
-    Uri picUri;
-    FloatingActionButton myFab;
-    ScrollView mScrollView;
-    Spinner categorySpinner;
+    private Location location = new Location();
+    private ImageButton eAddImage;
+    private Uri picUri;
+    private FloatingActionButton myFab;
+    private ScrollView mScrollView;
+    private Spinner categorySpinner;
 
-    File tempfile;
+    private File tempfile;
 
     private double currentLat, currentLng;
     private double userLat, userLng;
