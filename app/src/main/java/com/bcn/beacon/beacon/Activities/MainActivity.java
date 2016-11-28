@@ -77,6 +77,8 @@ import java.util.Locale;
 //import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.list;
 import static com.bcn.beacon.beacon.R.id.time;
+import static com.bcn.beacon.beacon.R.id.range;
+import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;
 import static java.lang.Math.cos;
 
