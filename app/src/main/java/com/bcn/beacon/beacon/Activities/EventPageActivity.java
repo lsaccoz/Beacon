@@ -13,7 +13,9 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.Dimension;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -26,6 +28,7 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
@@ -90,6 +93,8 @@ public class EventPageActivity extends AppCompatActivity {
     private ListView mCommentsList;
     private IconTextView mCommentButton;
     private IconTextView mPostComment;
+    private IconTextView mEditConfirm;
+    private CardView mCardViewComments;
     private CommentEditText mWriteComment;
     private TextView mCharacterCount;
 
@@ -98,6 +103,8 @@ public class EventPageActivity extends AppCompatActivity {
     private int mAnimDuration;
 
     private int from;
+    private Comment currentComment = null;
+    private int currentCommentPos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -152,9 +159,11 @@ public class EventPageActivity extends AppCompatActivity {
         mTags = (TextView) findViewById(R.id.tags);
         mCommentsList = (ListView) findViewById(R.id.comments_list);
         mCommentButton = (IconTextView) findViewById(R.id.comment_button);
+        mEditConfirm = (IconTextView) findViewById(R.id.edit_confirm);
         mPostComment = (IconTextView) findViewById(R.id.post_comment);
         mWriteComment = (CommentEditText) findViewById(R.id.write_comment);
         mCharacterCount = (TextView) findViewById(R.id.character_count);
+        mCardViewComments = (CardView) findViewById(R.id.card_view_comments);
 
         // input manager for showing keyboard immediately
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -195,9 +204,10 @@ public class EventPageActivity extends AppCompatActivity {
                 Comment comment = new Comment();
                 String text = mWriteComment.getText().toString();
                 String whitespace = new String(new char[text.length()]).replace("\0", " ");
+                String newline = new String(new char[text.length()]).replace("\0", "\n");
                 if (text.length() >= COMMENT_CHARACTER_LIMIT_MIN) {
                     // Validation point: check for whitespace-only comments
-                    if (text.equals(whitespace)) {
+                    if (text.equals(whitespace) || text.equals(newline)) {
                         String alert = "You cannot post a comment consisting of only whitespace";
                         Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
                         // centre the alignment of the text in toast
@@ -217,6 +227,33 @@ public class EventPageActivity extends AppCompatActivity {
                     toast.show();
                     commentsList.add(0, comment);
                     mAdapter.notifyDataSetChanged();
+                }
+                else {
+                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
+                    Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+        });
+
+        // Listener for edit button
+        // TODO: Refactor some stuff, add whitespace check to here as well (make it a function)
+        // TODO: Also, should edit time be recorded? shown?
+        mEditConfirm.setOnClickListener(new View.OnClickListener() {
+            InputMethodManager imm = ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE));
+
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference comment = database.getReference("Events/" + mEventId + "/comments/" + currentComment.getId());
+                String text = mWriteComment.getText().toString();
+                if (text.length() >= COMMENT_CHARACTER_LIMIT_MIN) {
+                    currentComment.setText(text);
+                    comment.child("text").setValue(text);
+                    commentsList.set(currentCommentPos, currentComment);
+                    mAdapter.notifyDataSetChanged();
+                    hideCommentTab();
+                    imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
                 else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
@@ -255,28 +292,6 @@ public class EventPageActivity extends AppCompatActivity {
             }
         });
 
-        // the listeners for item long click in case user wants to edit or delete their comment
-        /*mCommentsList.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
-            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-            // TODO: maybe move the hardcoded stuff to strings.xml and load resources from there?
-            @Override
-            public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
-                if (v.getId() == R.id.comments_list) {
-                    AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
-                    Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
-                    if (userId == comment.getUserId()) {
-                        //menu.add(Menu.NONE, 0, 0, "Edit");
-                        menu.add(Menu.NONE, 1, 1, "Delete");
-                    }
-                    else {
-                        // do nothing
-                        return;
-                    }
-                }
-            }
-        });*/
-
         registerForContextMenu(mCommentsList);
 
         initFavourite();
@@ -298,6 +313,7 @@ public class EventPageActivity extends AppCompatActivity {
     }
 
     // Method for overriding context menu
+    // TODO: maybe move the hardcoded stuff to strings.xml and load resources from there?
     @Override
     public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
@@ -306,7 +322,7 @@ public class EventPageActivity extends AppCompatActivity {
             AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
             Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
             if (userId.equals(comment.getUserId())) {
-                //menu.add(Menu.NONE, 0, 0, "Edit");
+                menu.add(Menu.NONE, 0, 0, "Edit");
                 menu.add(Menu.NONE, 1, 1, "Delete");
             }
             else {
@@ -324,7 +340,8 @@ public class EventPageActivity extends AppCompatActivity {
         Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
         int index = item.getItemId(); // Edit = 0, Delete = 1
         if (index == 0) {
-            //editComment(comment.getId());
+            editComment(comment);
+            currentCommentPos = info.position;
         }
         else if (index == 1) {
             deleteComment(comment, info.position);
@@ -334,12 +351,29 @@ public class EventPageActivity extends AppCompatActivity {
     }
 
     // Method for editing a comment
-    /*private boolean editComment(String commentId) {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference comment = database.getReference("Events");
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+    private boolean editComment(Comment comment) {
+        InputMethodManager imm = ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE));
+        if (!commentTab) {
+            commentTab = true;
+            mCommentButton.setText("{fa-comment}");
+            mEditConfirm.setEnabled(true);
+            mEditConfirm.setVisibility(View.VISIBLE);
+            mPostComment.setVisibility(View.GONE);
+            mPostComment.setEnabled(false);
+            mWriteComment.setVisibility(View.VISIBLE);
+            mWriteComment.setEnabled(true);
+            mWriteComment.getLayoutParams().width = (mCardViewComments.getWidth() - (mCommentButton.getWidth()));
+            mWriteComment.requestFocus();
+            mCharacterCount.setEnabled(true);
+            mCharacterCount.setVisibility(View.VISIBLE);
+            mWriteComment.setText(comment.getText());
+            mWriteComment.setSelection(mWriteComment.getText().length());
+            imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+            currentComment = comment;
+        }
+
         return true;
-    }*/
+    }
     // Method for deleting a comment
     private boolean deleteComment(Comment comment, int position) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -362,6 +396,8 @@ public class EventPageActivity extends AppCompatActivity {
             mWriteComment.setEnabled(false);
             mCharacterCount.setEnabled(false);
             mCharacterCount.setVisibility(View.GONE);
+            mEditConfirm.setEnabled(false);
+            mEditConfirm.setVisibility(View.GONE);
             mWriteComment.clearFocus();
         }
     }
@@ -507,10 +543,9 @@ public class EventPageActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        hideCommentTab();
+        //hideCommentTab();
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
-        //finish();
     }
 
     @Override
