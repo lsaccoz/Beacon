@@ -100,6 +100,7 @@ import com.google.android.gms.plus.model.people.Person;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.joanzapata.iconify.widget.IconTextView;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -113,7 +114,7 @@ import static android.support.design.R.styleable.View;
 public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyCallback,
         GoogleMap.OnMapClickListener,
         GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener,
-        AdapterView.OnItemSelectedListener, View.OnClickListener{
+        AdapterView.OnItemSelectedListener, View.OnClickListener {
 
     EditText eTime;
     EditText eDate;
@@ -150,7 +151,6 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
-
 
 
         ActionBar actionBar = getSupportActionBar();
@@ -254,9 +254,9 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 break;
             }
             case (R.id.fab): {
-                if( eName.getText().toString().trim().equals("")){
-                    eName.setError( "Your event needs a name!" );
-                }else {
+                if (eName.getText().toString().trim().equals("")) {
+                    eName.setError("Your event needs a name!");
+                } else {
                     upload();
                 }
                 break;
@@ -272,7 +272,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
-                    if(!addressList.isEmpty()) {
+                    if (!addressList.isEmpty()) {
                         Address address = addressList.get(0);
                         LatLng latLng = new LatLng(address.getLatitude(), address.getLongitude());
                         mMap.clear();
@@ -284,13 +284,13 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                         mMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
                         location.setLongitude(address.getLongitude());
                         location.setLatitude(address.getLatitude());
-                    }else{
-                        eLocationSearch.setError( "No results" );
+                    } else {
+                        eLocationSearch.setError("No results");
                     }
                 }
                 break;
             }
-            case(R.id.return_location_button):{
+            case (R.id.return_location_button): {
                 mMap.clear();
                 Marker marker = mMap.addMarker(new MarkerOptions()
                         .position(new LatLng(userLat, userLng))
@@ -341,10 +341,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 
-            File file = new File(Environment.getExternalStorageDirectory(),"temp.jpg");
+            File file = new File(Environment.getExternalStorageDirectory(), "temp.jpg");
             try {
                 file.createNewFile();
-            } catch (IOException e) {}
+            } catch (IOException e) {
+            }
 
             return file;
         } else {
@@ -369,8 +370,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 cropImage.setSourceImage(data.getData());
 
                 startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
-            }
-            else if (requestCode == PIC_CROP) {
+            } else if (requestCode == PIC_CROP) {
                 /* ViewGroup.LayoutParams imglayout = eAddImage.getLayoutParams();
                 if(imglayout.height < 300) {
                     imglayout.height = imglayout.height + 400;
@@ -378,8 +378,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
                 eAddImage.setLayoutParams(imglayout); */
                 eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 eAddImage.setImageBitmap(BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath()));
-            }
-            else if(requestCode == REQUEST_IMAGE_CAPTURE){
+            } else if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 Uri croppedImage = Uri.fromFile(croppedImageFile);
                 Log.d("System out", "orient " + getImageOrientation());
 
@@ -391,13 +390,14 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
                 CropImageIntentBuilder cropImage = new CropImageIntentBuilder(300, 300, 1080, 1080, croppedImage);
 
-                    cropImage.setOutlineColor(0xFF03A9F4);
-                    cropImage.setSourceImage(Uri.fromFile(tempfile));
-                    startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
+                cropImage.setOutlineColor(0xFF03A9F4);
+                cropImage.setSourceImage(Uri.fromFile(tempfile));
+                startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
 
             }
         }
     }
+
     /**
      * This method is responsible for solving the rotation issue if exist. Also scale the images to
      * 1024x1024 resolution
@@ -529,7 +529,7 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    private void checkExternalMemoryPermissions(){
+    private void checkExternalMemoryPermissions() {
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -561,15 +561,20 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
     private void upload() {
 
-    if(location == null) {
-        location.setLatitude(49.2765);
-        location.setLongitude(-123.2177);
-    }
+        if (location == null) {
+            location.setLatitude(49.2765);
+            location.setLongitude(-123.2177);
+        }
         Event toUpload = new Event();
 
         toUpload.setName(eName.getText().toString());
         toUpload.setDescription(eDescription.getText().toString());
+
+        //set the events timestamp
+        date.generateTimeStamp();
+
         toUpload.setDate(date);
+
         toUpload.setLocation(location);
         toUpload.upload();
 
@@ -580,13 +585,12 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
 
     }
 
-    void kill_activity()
-    {
+    void kill_activity() {
         finish();
     }
 
 
-    void initialzieDateandTime(){
+    void initialzieDateandTime() {
         Calendar mCurrentTime = Calendar.getInstance();
         int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
         int minute = mCurrentTime.get(Calendar.MINUTE);
@@ -619,11 +623,11 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
             mScrollView = (ScrollView) findViewById(R.id.scroll_view);
             ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map))
                     .setListener(new WorkaroundMapFragment.OnTouchListener() {
-                @Override
-                public void onTouch() {
-                    mScrollView.requestDisallowInterceptTouchEvent(true);
-                }
-            });
+                        @Override
+                        public void onTouch() {
+                            mScrollView.requestDisallowInterceptTouchEvent(true);
+                        }
+                    });
             ((WorkaroundMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMapAsync(this);
         }
     }
@@ -635,21 +639,21 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         super.onStop();
     }
 
-    public void initMap(){
-        if(mMap != null){
+    public void initMap() {
+        if (mMap != null) {
 
             mMap.setOnMarkerDragListener(new GoogleMap.OnMarkerDragListener() {
                 @Override
                 public void onMarkerDragStart(Marker arg0) {
                     // TODO Auto-generated method stub
-                    Log.d("System out", "onMarkerDragStart..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
+                    Log.d("System out", "onMarkerDragStart..." + arg0.getPosition().latitude + "..." + arg0.getPosition().longitude);
                 }
 
                 @SuppressWarnings("unchecked")
                 @Override
                 public void onMarkerDragEnd(Marker arg0) {
                     // TODO Auto-generated method stub
-                    Log.d("System out", "onMarkerDragEnd..."+arg0.getPosition().latitude+"..."+arg0.getPosition().longitude);
+                    Log.d("System out", "onMarkerDragEnd..." + arg0.getPosition().latitude + "..." + arg0.getPosition().longitude);
 
                     setLocationAndPin(arg0.getPosition().latitude, arg0.getPosition().longitude, arg0, false);
                 }
@@ -672,12 +676,12 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         }
     }
 
-    void setLocationAndPin(double lat, double lng, Marker arg, boolean zoom){
+    void setLocationAndPin(double lat, double lng, Marker arg, boolean zoom) {
         List<Address> addresses = null;
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
         try {
-            addresses = geocoder.getFromLocation(lat,lng, 1);
+            addresses = geocoder.getFromLocation(lat, lng, 1);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -686,16 +690,16 @@ public class CreateEventActivity extends AuthBaseActivity implements OnMapReadyC
         location.setLatitude(lat);
         arg.hideInfoWindow();
 
-        if(!addresses.isEmpty()) {
+        if (!addresses.isEmpty()) {
             arg.setTitle(addresses.get(0).getAddressLine(0));
             eLocationSearch.setText(addresses.get(0).getAddressLine(0));
-        }else{
+        } else {
             arg.setTitle("");
             eLocationSearch.setText("");
         }
-        if(zoom) {
+        if (zoom) {
             mMap.moveCamera(CameraUpdateFactory.newLatLngZoom((new LatLng(lat, lng)), 15));
-        }else{
+        } else {
             mMap.animateCamera(CameraUpdateFactory.newLatLng((new LatLng(lat, lng))));
         }
         arg.showInfoWindow();

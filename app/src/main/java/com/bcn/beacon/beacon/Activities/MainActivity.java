@@ -63,6 +63,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
@@ -564,6 +565,9 @@ public class MainActivity extends AuthBaseActivity
     private void getNearbyEvents() {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
+        
+        Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp").startAt()
+
         mDatabase.child("ListEvents").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -587,6 +591,7 @@ public class MainActivity extends AuthBaseActivity
                     }
                 }
                 Collections.sort(events, new DistanceComparator());
+
             }
 
             @Override
