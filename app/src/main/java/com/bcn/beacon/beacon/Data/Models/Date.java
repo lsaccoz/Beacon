@@ -10,8 +10,6 @@ public class Date {
     private int day;
     private int hour;
     private int minute;
-    //timestamp used to determine whether an event has expired or not
-    private Long timestamp;
 
 
     public String formatted() {
@@ -22,22 +20,7 @@ public class Date {
                 isPM ? "PM" : "AM");
     }
 
-    /**
-     * Generates a timestamp for this date object
-     *
-     * Pre-conditions: all fields must be initialized and not null
-     * Post-conditions: timestamp will be set to a millisecond value
-     *                  representing the start date of the event
-     */
-    public void generateTimeStamp(){
 
-        Calendar calendar = Calendar.getInstance();
-        calendar.set(this.getYear(), this.getMonth(),
-                this.getDay(), this.getHour(),
-                this.getHour(), this.getMinute());
-
-        setTimestamp(calendar.getTimeInMillis());
-    }
 
     public int getYear() {
         return year;
@@ -59,9 +42,6 @@ public class Date {
         return minute;
     }
 
-    public Long getTimestamp() {return timestamp;}
-
-
     public void setYear(int year) {
         this.year = year;
     }
@@ -81,7 +61,5 @@ public class Date {
     public void setMinute(int minute) {
         this.minute = minute;
     }
-
-    public void setTimestamp(Long time){this.timestamp = time;}
 
 }

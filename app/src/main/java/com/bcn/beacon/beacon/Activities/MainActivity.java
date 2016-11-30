@@ -91,7 +91,7 @@ public class MainActivity extends AuthBaseActivity
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        View.OnClickListener{
+        View.OnClickListener {
 
 
     private GoogleApiClient mGoogleApiClient;
@@ -183,7 +183,7 @@ public class MainActivity extends AuthBaseActivity
             @Override
             public boolean onQueryTextSubmit(String query) {
                 //Toast.makeText(getApplicationContext(), "searched?", Toast.LENGTH_LONG).show();
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
                 searchBar.clearFocus();
                 ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
@@ -481,13 +481,11 @@ public class MainActivity extends AuthBaseActivity
                 // for temporary fix
                 if (mActiveFragment != null && mActiveFragment == mListFragment) {
                     intent.putExtra("from", 1);
-                }
-                else if (mActiveFragment != null && mActiveFragment == mMapFragment){
+                } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
                     // don't really need this, but keep for now
                     //Log.i("ACTIVE", "MAP");
                     intent.putExtra("from", 0);
-                }
-                else if (tracker == 1) {
+                } else if (tracker == 1) {
                     //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
                     intent.putExtra("from", 1);
                 }
@@ -574,10 +572,13 @@ public class MainActivity extends AuthBaseActivity
     private void getNearbyEvents() {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        
-        Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp").startAt()
 
-        mDatabase.child("ListEvents").addValueEventListener(new ValueEventListener() {
+        // use firebase query to only return events who's start
+        // date is greater than 2 days prior to now
+        Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
+                .startAt(DataUtil.getExpiredDate());
+
+        searchParams.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
@@ -636,7 +637,7 @@ public class MainActivity extends AuthBaseActivity
 
                 }
             });
-        }catch(NullPointerException e){
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
     }
@@ -724,14 +725,14 @@ public class MainActivity extends AuthBaseActivity
         if (mMap != null) {
             mMap.clear();
 
-            SharedPreferences prefs =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
 
             LatLngBounds Bound = new LatLngBounds(
-                        new LatLng(userLat - (pref/110.574), userLng - (pref/111.320*cos(pref/110.574))),
-                        new LatLng(userLat + (pref/110.575), userLng + (pref/111.320*cos(pref/110.574))));
+                    new LatLng(userLat - (pref / 110.574), userLng - (pref / 111.320 * cos(pref / 110.574))),
+                    new LatLng(userLat + (pref / 110.575), userLng + (pref / 111.320 * cos(pref / 110.574))));
 
-                mMap.setLatLngBoundsForCameraTarget(Bound);
+            mMap.setLatLngBoundsForCameraTarget(Bound);
 
             mMap.setMaxZoomPreference(17);
             mMap.setMinZoomPreference(12);
@@ -748,33 +749,33 @@ public class MainActivity extends AuthBaseActivity
                 mMap.setOnInfoWindowClickListener(this);
 
                 if (!events.isEmpty()) {
-                        for (int i = 0; i < events.size(); i++) {
+                    for (int i = 0; i < events.size(); i++) {
 
-                            ListEvent e = events.get(i);
+                        ListEvent e = events.get(i);
 
-                            double latitude = e.getLocation().getLatitude();
-                            double longitude = e.getLocation().getLongitude();
+                        double latitude = e.getLocation().getLatitude();
+                        double longitude = e.getLocation().getLongitude();
 
-                            Marker marker = mMap.addMarker(new MarkerOptions()
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                                    .position(new LatLng(latitude, longitude)));
-
-                            m.put(marker.getId(), e.getEventId());
-                            events_list.put(marker.getId(), e);
-
-                        }
-
-                    } else {
                         Marker marker = mMap.addMarker(new MarkerOptions()
-                                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                                .position(new LatLng(userLat, userLng))
-                                .title("Your Location"));
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                                .position(new LatLng(latitude, longitude)));
 
-                        mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
+                        m.put(marker.getId(), e.getEventId());
+                        events_list.put(marker.getId(), e);
+
                     }
 
+                } else {
+                    Marker marker = mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .position(new LatLng(userLat, userLng))
+                            .title("Your Location"));
 
-               LatLng UserLocation = new LatLng(userLat, userLng);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
+                }
+
+
+                LatLng UserLocation = new LatLng(userLat, userLng);
 
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(UserLocation)
@@ -807,27 +808,24 @@ public class MainActivity extends AuthBaseActivity
 
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
-        if(event != null) {
+        if (event != null) {
             pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
-        }
-
-        else {
+        } else {
             pinAddress = localUtil.getLocationName(userLat, userLng, this);
 
         }
 
         float zoom = mMap.getCameraPosition().zoom;
 
-            if(zoom < 14.00) {
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(marker.getPosition())
-                        .zoom(14)
-                        .build();
+        if (zoom < 14.00) {
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(marker.getPosition())
+                    .zoom(14)
+                    .build();
 
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
-            else
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        } else
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
 
 
         marker.showInfoWindow();
@@ -916,7 +914,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
 
-
     @Override
     public void onResume() {
         // Temporary fix for going back to list view from event page
@@ -932,6 +929,7 @@ public class MainActivity extends AuthBaseActivity
 
     /**
      * This is the temporary fix for displaying the current tab correctly
+     *
      * @param requestCode
      * @param resultCode
      * @param intent
@@ -1037,11 +1035,11 @@ public class MainActivity extends AuthBaseActivity
                 Title.setLayoutParams(lp);
 
                 String title = e.getName();
-                if(title.length() < 30)
+                if (title.length() < 30)
                     Title.setText(title);
 
                 else
-                    Title.setText(title.substring(0,30) + "...");
+                    Title.setText(title.substring(0, 30) + "...");
 
                 String time = getTime(e);
                 assert Time != null;
@@ -1061,9 +1059,7 @@ public class MainActivity extends AuthBaseActivity
                     fav.setText("{fa-star-o}");
 
                 return v;
-            }
-
-            else {
+            } else {
 
                 lp.gravity = Gravity.CENTER;
 
@@ -1087,19 +1083,21 @@ public class MainActivity extends AuthBaseActivity
 
     }
 
-    /** Function that converts the ListEvent time/ date fields to a
-     *  formatted string containing information relating to the
-     *  ListEvent's starting time, the day it starts, and the month it
-     *  starts in.
+    /**
+     * Function that converts the ListEvent time/ date fields to a
+     * formatted string containing information relating to the
+     * ListEvent's starting time, the day it starts, and the month it
+     * starts in.
+     *
      * @param e must have time/ date fields
      * @return String s
      */
 
-    public String getTime(ListEvent e){
+    public String getTime(ListEvent e) {
 
         boolean time_of_day = false;
 
-        if(e.getDate().getHour() >= 12)
+        if (e.getDate().getHour() >= 12)
             time_of_day = true;
 
         Date d = e.getDate();
@@ -1110,14 +1108,14 @@ public class MainActivity extends AuthBaseActivity
 
         StringBuilder sb = new StringBuilder(s);
 
-        if(s.charAt(0) == '0')
-          sb.deleteCharAt(0);
+        if (s.charAt(0) == '0')
+            sb.deleteCharAt(0);
 
         s = sb.toString();
 
-        String date = DataUtil.convertMonthToString(d.getMonth())+ " " + d.getDay();
+        String date = DataUtil.convertMonthToString(d.getMonth()) + " " + d.getDay();
 
-        date = date + ","+ " " + s;
+        date = date + "," + " " + s;
 
         return date;
     }

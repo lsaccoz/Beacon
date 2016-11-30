@@ -343,9 +343,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
         toUpload.setName(eName.getText().toString());
         toUpload.setDescription(eDescription.getText().toString());
-
-        //generate a time stamp for this date based on it's fields
-        date.generateTimeStamp();
         toUpload.setDate(date);
         toUpload.setLocation(location);
         toUpload.upload();

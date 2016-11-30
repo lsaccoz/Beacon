@@ -6,6 +6,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.Calendar;
+
 public class ListEvent {
     private String eventId;
     private String name;
@@ -15,6 +17,8 @@ public class ListEvent {
     private String description;
 
     public double distance;
+    //timestamp used to determine whether an event has expired or not
+    private Long timestamp;
 
     public ListEvent() {
 
@@ -24,6 +28,9 @@ public class ListEvent {
         eventId = event.getEventId();
         name = event.getName();
         date = event.getDate();
+
+        //generate a time stamp for this ListEvent based on it's date fields
+        generateTimeStamp();
         location = event.getLocation();
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -49,6 +56,28 @@ public class ListEvent {
         DatabaseReference list_events = database.getReference("ListEvents");
         list_events.child(eventId).setValue(this);
     }
+
+    /**
+     * Generates a timestamp for this date object
+     *
+     * Pre-conditions: all fields must be initialized and not null
+     * Post-conditions: timestamp will be set to a millisecond value
+     *                  representing the start date of the event
+     */
+    public void generateTimeStamp(){
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.set(
+                date.getYear(),
+                //Calendar object month is month mod 12, ie January is 0
+                date.getMonth() - 1,
+                date.getDay(), date.getHour(),
+                date.getHour(), date.getMinute());
+
+        setTimestamp(calendar.getTimeInMillis());
+    }
+
+    public Long getTimestamp() {return timestamp;}
 
     public String getEventId() {
         return eventId;
@@ -98,4 +127,6 @@ public class ListEvent {
     public void setDescription(String description) {
         this.description = description;
     }
+
+    public void setTimestamp(Long time){this.timestamp = time;}
 }
