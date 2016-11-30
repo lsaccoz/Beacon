@@ -28,7 +28,7 @@
 
             <ImageButton
                 android:layout_width="match_parent"
-                android:layout_height="336dp"
+                android:layout_height="wrap_content"
                 app:srcCompat="@android:drawable/ic_menu_camera"
                 android:id="@+id/addImageButton"
                 android:scaleType="centerInside" />
@@ -42,6 +42,8 @@
                     android:id="@+id/input_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColorHint="@color/dark_gray"
                     android:maxLines="1"
                     android:hint="Name" />
             </android.support.design.widget.TextInputLayout>
@@ -50,11 +52,14 @@
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/input_layout_description"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+                android:layout_height="wrap_content"
+                android:theme="@style/TextLabelTheme">
 
                 <EditText
                     android:id="@+id/input_description"
                     android:layout_width="match_parent"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColorHint="@color/dark_gray"
                     android:layout_height="wrap_content"
                     android:hint="Description" />
 
@@ -72,6 +77,8 @@
                     android:layout_height="wrap_content"
                     android:inputType="date"
                     android:ems="10"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColorHint="@color/dark_gray"
                     android:id="@+id/event_date"
                     android:focusable="false"
                     android:hint="Date" />
@@ -83,6 +90,8 @@
                     android:inputType="time"
                     android:ems="10"
                     android:id="@+id/event_time"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColorHint="@color/dark_gray"
                     android:layout_weight="1"
                     android:focusable="false"
                     android:hint="Time" />
@@ -100,55 +109,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="51dp"
                     android:id="@+id/spinner"
+                    android:textColorHint="@color/dark_gray"
+                    android:backgroundTint="@color/colorPrimary"
                     style="@style/Widget.AppCompat.Spinner.Underlined"/>
 
 
             </android.support.design.widget.TextInputLayout>
 
-        <LinearLayout
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp">
-
             <android.support.design.widget.TextInputLayout
-                android:id="@+id/input_location"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_weight="4">
+
+                android:id="@+id/input_address_layout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
                 <EditText
-                    android:id="@+id/input_location_search"
+                    android:id="@+id/input_address"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:backgroundTint="@color/colorPrimary"
+                    android:textColorHint="@color/dark_gray"
                     android:selectAllOnFocus="true"
+                    android:focusable="false"
                     android:hint="Location" />
 
             </android.support.design.widget.TextInputLayout>
 
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="search"
-                android:layout_weight="0.25"
-                android:id="@+id/return_location_button"
-                app:srcCompat="@android:drawable/ic_menu_mylocation" />
-
-            <ImageButton
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="search"
-                android:layout_weight="0.5"
-                android:id="@+id/search_button"
-                app:srcCompat="@android:drawable/ic_menu_search" />
-
-        </LinearLayout>
-
-            <fragment
-                android:id="@+id/map"
-                android:layout_width="fill_parent"
-                android:layout_height="300dp"
-                class="com.bcn.beacon.beacon.CustomViews.WorkaroundMapFragment"/>
         </LinearLayout>
 
     </ScrollView>
@@ -164,6 +149,5 @@
         android:layout_margin="@dimen/fab_margin"
         android:src="@android:drawable/ic_dialog_map"
         app:backgroundTint="@color/colorPrimary" />
-
 
 </RelativeLayout>

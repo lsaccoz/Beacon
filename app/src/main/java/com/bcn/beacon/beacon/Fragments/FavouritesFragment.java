@@ -23,6 +23,7 @@ import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -85,8 +86,9 @@ public class FavouritesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        populateFav();
 
-        adapter = new EventListAdapter(appContext, 0, favourites);
+        adapter = new EventListAdapter(appContext, 0, favourites, favouriteIds);
     }
 
     @Override
@@ -98,6 +100,9 @@ public class FavouritesFragment extends Fragment {
 
         // set empty view if there are no favourites
         favouritesView.setEmptyView(view.findViewById(R.id.empty));
+
+        //hide the list view divider
+        UI_Util.hideListViewDivider(favouritesView);
 
         // set adapter for the events list view
         favouritesView.setAdapter(adapter);

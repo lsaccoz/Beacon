@@ -4,6 +4,9 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class Event {
 
     private String eventId;
@@ -12,6 +15,9 @@ public class Event {
     private String description;
     private Date date;
     private Location location;
+    private ArrayList<Comment> commentsList;
+    private HashMap<String, Comment> comments;
+
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
@@ -66,6 +72,10 @@ public class Event {
         return date;
     }
 
+    public ArrayList<Comment> getCommentsList() {
+        return commentsList;
+    }
+
     public Location getLocation() {
         return location;
     }
@@ -93,5 +103,9 @@ public class Event {
 
     public void setLocation(Location location) {
         this.location = location;
+    }
+
+    public void setComments(ArrayList<Comment> commentsList) {
+        this.commentsList = commentsList;
     }
 }

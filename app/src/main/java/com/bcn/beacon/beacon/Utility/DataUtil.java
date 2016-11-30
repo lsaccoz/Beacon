@@ -1,11 +1,18 @@
 package com.bcn.beacon.beacon.Utility;
 
+import android.util.Log;
 import android.widget.TextView;
+
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * Created by neema on 2016-11-09.
  */
 public class DataUtil {
+
+    private static long EVENT_LIFETIME_IN_MILLIS = 172800000;
+    private static String LOG_TAG = "DataUtil";
 
     /**
      * Static helper method that converts an int representation of a month
@@ -17,29 +24,29 @@ public class DataUtil {
     public static String convertMonthToString(int month) {
         switch (month) {
 
-            case 0:
-                return "JAN";
             case 1:
-                return "FEB";
+                return "JAN";
             case 2:
-                return "MAR";
+                return "FEB";
             case 3:
-                return "APR";
+                return "MAR";
             case 4:
-                return "MAY";
+                return "APR";
             case 5:
-                return "JUN";
+                return "MAY";
             case 6:
-                return "JUL";
+                return "JUN";
             case 7:
-                return "AUG";
+                return "JUL";
             case 8:
-                return "SEP";
+                return "AUG";
             case 9:
-                return "OCT";
+                return "SEP";
             case 10:
-                return "NOV";
+                return "OCT";
             case 11:
+                return "NOV";
+            case 12:
                 return "DEC";
         }
         return "";
@@ -69,6 +76,30 @@ public class DataUtil {
                 return "Fri";
         }
         return "";
+    }
+
+    /**
+     * Get the earliest timestamp for which an event is still valid for retrieving
+     * from the database
+     *
+     * @return
+     *          A date represented in milliseconds
+     */
+    public static Long getExpiredDate(){
+
+        Calendar calendar = Calendar.getInstance();
+        Long currentTime = calendar.getTimeInMillis();
+
+        Log.i(LOG_TAG, currentTime.toString());
+
+        /** FOR DEBUGGING
+        System.out.println(calendar.get(Calendar.YEAR));
+        System.out.println(calendar.get(Calendar.HOUR_OF_DAY));
+        System.out.println(calendar.get(Calendar.MONTH));
+        System.out.println(calendar.get(Calendar.DAY_OF_MONTH));
+         **/
+
+        return currentTime - EVENT_LIFETIME_IN_MILLIS;
     }
 
     /**
