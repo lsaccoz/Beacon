@@ -55,7 +55,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class CreateEventActivity extends AuthBaseActivity implements
-        AdapterView.OnItemSelectedListener, View.OnClickListener{
+        AdapterView.OnItemSelectedListener, View.OnClickListener {
 
     private LocationUtil localUtil = new LocationUtil();
 
@@ -189,15 +189,15 @@ public class CreateEventActivity extends AuthBaseActivity implements
                 break;
             }
             case (R.id.fab): {
-                if( eName.getText().toString().trim().equals("")){
-                    eName.setError( "Your event needs a name!" );
-                }else {
+                if (eName.getText().toString().trim().equals("")) {
+                    eName.setError("Your event needs a name!");
+                } else {
                     upload();
                 }
 
                 break;
             }
-            case(R.id.input_address) : {
+            case (R.id.input_address): {
                 Intent intent = new Intent(this, SelectLocationActivity.class);
                 intent.putExtra("userlat", userLat);
                 intent.putExtra("userlng", userLng);
@@ -247,10 +247,11 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
         if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
 
-            File file = new File(Environment.getExternalStorageDirectory(),"temp.jpg");
+            File file = new File(Environment.getExternalStorageDirectory(), "temp.jpg");
             try {
                 file.createNewFile();
-            } catch (IOException e) {}
+            } catch (IOException e) {
+            }
 
             return file;
         } else {
@@ -275,12 +276,10 @@ public class CreateEventActivity extends AuthBaseActivity implements
                 cropImage.setSourceImage(data.getData());
 
                 startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
-            }
-            else if (requestCode == PIC_CROP) {
+            } else if (requestCode == PIC_CROP) {
                 eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
                 eAddImage.setImageBitmap(BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath()));
-            }
-            else if(requestCode == REQUEST_IMAGE_CAPTURE){
+            } else if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 Uri croppedImage = Uri.fromFile(croppedImageFile);
 
                 try {
@@ -291,12 +290,11 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
                 CropImageIntentBuilder cropImage = new CropImageIntentBuilder(300, 300, 1080, 1080, croppedImage);
 
-                    cropImage.setOutlineColor(0xFF03A9F4);
-                    cropImage.setSourceImage(Uri.fromFile(tempfile));
-                    startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
+                cropImage.setOutlineColor(0xFF03A9F4);
+                cropImage.setSourceImage(Uri.fromFile(tempfile));
+                startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
 
-            }
-            else if(requestCode == LOCATION_SELECTED){
+            } else if (requestCode == LOCATION_SELECTED) {
                 if (data.getExtras() != null) {
                     currentLat = data.getExtras().getDouble("lat");
                     currentLng = data.getExtras().getDouble("lng");
@@ -310,7 +308,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
     }
 
     @RequiresApi(api = Build.VERSION_CODES.M)
-    private void checkExternalMemoryPermissions(){
+    private void checkExternalMemoryPermissions() {
         if (checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE)
                 != PackageManager.PERMISSION_GRANTED) {
 
@@ -337,10 +335,10 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
     private void upload() {
 
-    if(location == null) {
-        location.setLatitude(49.2765);
-        location.setLongitude(-123.2177);
-    }
+        if (location == null) {
+            location.setLatitude(49.2765);
+            location.setLongitude(-123.2177);
+        }
         Event toUpload = new Event();
 
         toUpload.setName(eName.getText().toString());
@@ -356,13 +354,12 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
     }
 
-    private void kill_activity()
-    {
+    private void kill_activity() {
         finish();
     }
 
 
-    private void initialzieDateandTime(){
+    private void initialzieDateandTime() {
         Calendar mCurrentTime = Calendar.getInstance();
         int hour = mCurrentTime.get(Calendar.HOUR_OF_DAY);
         int minute = mCurrentTime.get(Calendar.MINUTE);
