@@ -223,15 +223,67 @@
                     android:layout_height="match_parent"
                     android:orientation="vertical">
 
-                    <TextView
-                        android:id="@+id/comments_title"
-                        android:layout_width="wrap_content"
+                    <!-- Use relative layout to position title and comment icon -->
+                    <RelativeLayout
+                        android:id="@+id/comment_header"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:id="@+id/comments_title"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/comments"
+                            android:paddingLeft="16dp"
+                            android:paddingTop="4dp"
+                            android:textColor="@color/dark_gray"
+                            android:textSize="24sp"
+                            android:textStyle="bold" />
+
+                        <com.joanzapata.iconify.widget.IconTextView
+                            android:id="@+id/post_comment"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:gravity="center_horizontal"
+                            android:paddingRight="70dp"
+                            android:paddingTop="8dp"
+                            android:text="{fa-send}"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="25dp"
+                            android:visibility="gone"
+                            android:enabled="false"/>
+
+                        <com.joanzapata.iconify.widget.IconTextView
+                            android:id="@+id/comment_button"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_alignParentRight="true"
+                            android:gravity="center_horizontal"
+                            android:paddingRight="21dp"
+                            android:paddingTop="8dp"
+                            android:layout_marginBottom="5dp"
+                            android:text="{fa-comment-o}"
+                            android:textColor="@color/colorPrimary"
+                            android:textSize="30dp" />
+
+                    </RelativeLayout>
+
+                    <com.bcn.beacon.beacon.CustomViews.CommentEditText
+                        android:id="@+id/write_comment"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:paddingLeft="8dp"
+                        android:paddingRight="8dp"
+                        android:visibility="gone"
+                        android:enabled="false"
+                        android:textColor="@color/dark_gray" />
+                        <!--
                         android:paddingLeft="16dp"
                         android:paddingTop="8dp"
                         android:text="@string/comments"
                         android:textColor="@color/dark_gray"
-                        android:textSize="24sp" />
+                        android:textSize="24sp"/> -->
+
 
                     <ListView
                         android:id="@+id/comments_list"
@@ -239,6 +291,13 @@
                         android:layout_height="match_parent">
 
                     </ListView>
+
+                    <TextView
+                        android:id="@+id/empty"
+                        android:text="No comments here yet. Be the first!"
+                        android:layout_width="fill_parent"
+                        android:layout_height="fill_parent"
+                        android:gravity="center" />
 
                 </LinearLayout>
 

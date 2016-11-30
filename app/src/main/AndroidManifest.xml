@@ -49,10 +49,11 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
         </activity>
         <activity
             android:name=".Activities.EventPageActivity"
+            android:windowSoftInputMode="adjustPan"
             android:label="@string/title_activity_event_page">
-
-        </activity>
-        <activity android:name="com.android.camera.CropImage"/>
+            android:label="@string/title_activity_event_page"></activity>
+        <activity android:name="com.android.camera.CropImage" />
+        <activity android:name=".Activities.SelectLocationActivity"></activity>
     </application>
 
 </manifest>

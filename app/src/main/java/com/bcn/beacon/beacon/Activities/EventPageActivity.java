@@ -1,7 +1,6 @@
 package com.bcn.beacon.beacon.Activities;
 
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
 
@@ -11,30 +10,29 @@ import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+import android.text.Editable;
+import android.text.method.KeyListener;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.Toast;
 import android.view.Window;
-import android.view.WindowManager;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import com.bcn.beacon.beacon.Adapters.CommentAdapter;
+import com.bcn.beacon.beacon.CustomViews.CommentEditText;
+import com.bcn.beacon.beacon.Data.Models.Comment;
 import com.bcn.beacon.beacon.Data.Models.Event;
-import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
 import com.bcn.beacon.beacon.Data.Models.Date;
-import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
-import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -43,24 +41,13 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
-import java.util.HashMap;
 
 import com.bcn.beacon.beacon.Utility.DataUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
-import com.google.android.gms.appindexing.Action;
-import com.google.android.gms.appindexing.AppIndex;
-import com.google.android.gms.appindexing.Thing;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
-import com.joanzapata.iconify.widget.IconButton;
 import com.joanzapata.iconify.widget.IconTextView;
 
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -68,9 +55,12 @@ import java.util.ArrayList;
 
 public class EventPageActivity extends AppCompatActivity {
 
+    private static final int COMMENT_CHARACTER_LIMIT = 2;
     private Event mEvent;
     private String mEventId;
     private Context mContext;
+    private CommentAdapter mAdapter;
+    private ArrayList<Comment> commentsList = new ArrayList<>();
 
     //the root view of the layout
     private View mContentView;
@@ -85,12 +75,16 @@ public class EventPageActivity extends AppCompatActivity {
     private TextView mStartDay;
     private TextView mAddress;
     private TextView mTags;
+    private ListView mCommentsList;
+    private IconTextView mCommentButton;
+    private IconTextView mPostComment;
+    private CommentEditText mWriteComment;
 
     private boolean mFavourited = false;
+    private boolean commentTab = false;
     private int mAnimDuration;
 
     private int from;
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +103,7 @@ public class EventPageActivity extends AppCompatActivity {
 
         //set the context for use in callback methods
         mContext = this;
+        //this.mWriteComment = new CommentEditText(mContext);
 
         // Retrieve and cache the system's default "medium" animation time.
         mAnimDuration = getResources().getInteger
@@ -122,6 +117,9 @@ public class EventPageActivity extends AppCompatActivity {
         mFavourited = getIntent().getBooleanExtra("Favourited", false);
 
         System.out.println(mEventId);
+
+        // check if event is favourited and set favourited accordingly
+        setFavourited();
 
         //fetch the event from the firebase database
         getEvent(mEventId);
@@ -139,10 +137,67 @@ public class EventPageActivity extends AppCompatActivity {
         mStartMonth = (TextView) findViewById(R.id.start_month);
         mAddress = (TextView) findViewById(R.id.address);
         mTags = (TextView) findViewById(R.id.tags);
+        mCommentsList = (ListView) findViewById(R.id.comments_list);
+        mCommentButton = (IconTextView) findViewById(R.id.comment_button);
+        mPostComment = (IconTextView) findViewById(R.id.post_comment);
+        mWriteComment = (CommentEditText) findViewById(R.id.write_comment);
+
+        // input manager for showing keyboard immediately
+        final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+
+        // set empty view if there are no favourites
+        mCommentsList.setEmptyView(findViewById(R.id.empty));
+
+        mCommentButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (!commentTab) {
+                    commentTab = true;
+                    mCommentButton.setText("{fa-comment}");
+                    mPostComment.setVisibility(View.VISIBLE);
+                    mPostComment.setEnabled(true);
+                    mWriteComment.setVisibility(View.VISIBLE);
+                    mWriteComment.setEnabled(true);
+                    mWriteComment.requestFocus();
+                    imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                }
+                else {
+                    imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    hideCommentTab();
+                }
+
+            }
+        });
+
+        mPostComment.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Calendar c = Calendar.getInstance();
+                long time = c.getTimeInMillis();
+                Comment comment = new Comment();
+                String text = mWriteComment.getText().toString();
+                if (text.length() >= COMMENT_CHARACTER_LIMIT) {
+                    comment.setText(text);
+                    comment.setEventId(mEventId);
+                    comment.setDate(time);
+                    comment = comment.writeComment();
+                    mWriteComment.setText("");
+                    hideCommentTab();
+                    imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    Toast toast = Toast.makeText(mContext, "Comment posted", Toast.LENGTH_SHORT);
+                    toast.show();
+                    commentsList.add(0, comment);
+                    mAdapter.notifyDataSetChanged();
+                }
+                else {
+                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT + " characters";
+                    Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+        });
 
         initFavourite();
-
-
 
         //Add fake images to the event page
         mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
@@ -160,13 +215,26 @@ public class EventPageActivity extends AppCompatActivity {
         mImageScroller.setAdapter(eventImageAdapter);
     }
 
+    // Method for hiding comment tab on back press from EditText
+    public void hideCommentTab() {
+        if (commentTab) {
+            commentTab = false;
+            mCommentButton.setText("{fa-comment-o}");
+            mPostComment.setVisibility(View.GONE);
+            mPostComment.setEnabled(false);
+            mWriteComment.setVisibility(View.GONE);
+            mWriteComment.setText("");
+            mWriteComment.setEnabled(false);
+            mWriteComment.clearFocus();
+        }
+    }
+
     /**
      * This method fetches the Event data from the firebase database
      *
      * @param eventId The event Id as a string
      */
     private void getEvent(String eventId) {
-
 
         DatabaseReference eventRef = FirebaseDatabase.getInstance().getReference("Events/" + eventId);
 
@@ -175,6 +243,18 @@ public class EventPageActivity extends AppCompatActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //get the event
                 mEvent = dataSnapshot.getValue(Event.class);
+
+                if (!commentsList.isEmpty()) {
+                    commentsList.clear();
+                }
+                // for comments
+                for (DataSnapshot comment : dataSnapshot.child("comments").getChildren()) {
+                    commentsList.add(comment.getValue(Comment.class));
+                }
+                Collections.reverse(commentsList);
+                
+                mEvent.setComments(commentsList);
+
                 //populate the views in the view hierarchy with actual event data
                 new PopulateUITask().execute();
             }
@@ -187,10 +267,35 @@ public class EventPageActivity extends AppCompatActivity {
         });
     }
 
+    /**
+     * Function to check if the event is favourited, and changes icon fill accordingly
+     */
+    public void setFavourited() {
+        DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users/"
+                                        + FirebaseAuth.getInstance().getCurrentUser().getUid()
+                                        + "/favourites/" + mEventId);
+        userRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                // since we only set the value to false, this check is alright
+                if (dataSnapshot.getValue() != null) {
+                    mFavourited = true;
+                    mFavourite.setText("{fa-star}");
+                }
+                else {
+                    mFavourited = false;
+                    mFavourite.setText("{fa-star-o}");
+                }
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+            }
+        });
+    }
 
     /**
      * Function for adding the event to user's favourites
-     *
      * @return true if successful, otherwise return false
      */
 
@@ -198,7 +303,6 @@ public class EventPageActivity extends AppCompatActivity {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference users = database.getReference("Users");
         String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        // TODO: We should add a "true" check for if an event is favourited, so the button can remove the event from favourites on click
         users.child(userId).child("favourites").child(mEventId).setValue(true);
 //        Toast.makeText(EventPageActivity.this, "Event added to favourites!", Toast.LENGTH_SHORT).show();
 
@@ -222,9 +326,38 @@ public class EventPageActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
+        hideCommentTab();
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
+        //finish();
     }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        /*if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }*/
+    }
+
+    // for fixing the clicking favourites twice bug
+    // TODO: this may be another way of fixing the clicking favourite button twice bug, by finish()ing activity on back press
+    // is it better to finish() activity everytime for less work done by the activity, I don't know...
+    // also, don't know if it will work, since onSaveInstance is usually called after onStart
+    /*@Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putBoolean("favourited", favourited);
+        outState.putString("favText", mFavourite.getText().toString());
+
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        favourited = savedInstanceState.getBoolean("favourited");
+        mFavourite.setText(savedInstanceState.getString("favText"));
+    }*/
 
 
     /**
@@ -260,6 +393,12 @@ public class EventPageActivity extends AppCompatActivity {
             mStartDay.setText("" + date.getDay());
             mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
             mStartTime.setText(date.formatted());
+
+            mAdapter = new CommentAdapter(mContext, 0, commentsList);
+            if (commentsList != null) {
+                mCommentsList.setAdapter(mAdapter);
+                mAdapter.notifyDataSetChanged();
+            }
         }
 
         @Override

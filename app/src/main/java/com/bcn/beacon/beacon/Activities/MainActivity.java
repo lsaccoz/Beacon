@@ -41,6 +41,7 @@ import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.DataUtil;
+import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
@@ -78,6 +79,8 @@ import java.util.Locale;
 //import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.list;
 import static com.bcn.beacon.beacon.R.id.time;
+import static com.bcn.beacon.beacon.R.id.range;
+import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;
 import static java.lang.Math.cos;
 
@@ -93,6 +96,7 @@ public class MainActivity extends AuthBaseActivity
 
     private GoogleApiClient mGoogleApiClient;
     private GoogleMap mMap;
+    private LocationUtil localUtil = new LocationUtil();
 
     private MapFragment mMapFragment;
     private ListFragment mListFragment;
@@ -101,6 +105,7 @@ public class MainActivity extends AuthBaseActivity
     private List<IconTextView> mTabs;
     private TextView mTitle;
     private Fragment mActiveFragment;
+    private String pinAddress;
 
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
@@ -191,7 +196,9 @@ public class MainActivity extends AuthBaseActivity
             @Override
             public boolean onQueryTextChange(String newText) {
                 ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                fragment.updateListForSearch(newText);
+                if (fragment != null) {
+                    fragment.updateListForSearch(newText);
+                }
                 return false;
             }
         });
@@ -344,7 +351,7 @@ public class MainActivity extends AuthBaseActivity
                     transaction.commit();
                 }
                 tracker = 1;
-                searchBar.setVisibility(View.VISIBLE);
+                //searchBar.setVisibility(View.VISIBLE);
 
                 break;
             }
@@ -385,6 +392,7 @@ public class MainActivity extends AuthBaseActivity
                     mMapFragment.getMapAsync(this);
                 }
                 tracker = 0;
+                searchBar.setEnabled(showBarInMap ? true : false);
                 searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
                 break;
@@ -426,7 +434,8 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
-                searchBar.setVisibility(View.VISIBLE);
+                //searchBar.setVisibility(View.VISIBLE);
+                tracker = 2;
                 break;
             }
             case (R.id.settings): {
@@ -460,7 +469,7 @@ public class MainActivity extends AuthBaseActivity
                     fragmentTransaction.commit();
 
                 }
-                searchBar.setVisibility(View.GONE);
+                //searchBar.setVisibility(View.GONE);
                 break;
             }
 
@@ -795,26 +804,15 @@ public class MainActivity extends AuthBaseActivity
     public boolean onMarkerClick(Marker marker) {
 
         ListEvent event = events_list.get(marker.getId());
+
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
         if(event != null) {
-
-            try {
-                addresses = geocoder.getFromLocation(event.getLocation().getLatitude(), event.getLocation().getLongitude(), 1);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
+            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
         }
 
         else {
-
-            try {
-                addresses = geocoder.getFromLocation(userLat, userLng, 1);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+            pinAddress = localUtil.getLocationName(userLat, userLng, this);
 
         }
 
@@ -867,6 +865,13 @@ public class MainActivity extends AuthBaseActivity
      */
     @Override
     public void onBackPressed() {
+        // fix for search bar being visible on back pressed in fragments
+        if (tracker == 1 || tracker == 2) {
+            tracker = 0;
+            searchBar.setEnabled(false);
+            searchBar.setVisibility(View.GONE);
+        }
+
         //currently viewing the map
         if (mMapFragment != null && mMapFragment.isVisible()) {
             //return to home screen
@@ -904,6 +909,12 @@ public class MainActivity extends AuthBaseActivity
     public static void setEventPageClickedFrom(int from) {
         eventPageClickedFrom = from;
     }
+
+    // To set the visibility of search bar in fragments
+    public SearchView getSearchBar() {
+        return searchBar;
+    }
+
 
 
     @Override
@@ -1016,8 +1027,6 @@ public class MainActivity extends AuthBaseActivity
             TextView Address = ((TextView) v.findViewById(R.id.address));
             IconTextView fav = ((IconTextView) v.findViewById(R.id.map_fav));
 
-            String address = addresses.get(0).getAddressLine(0).toString();
-
             LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT,
                     LinearLayout.LayoutParams.FILL_PARENT);
 
@@ -1039,12 +1048,10 @@ public class MainActivity extends AuthBaseActivity
                 Time.setText(time);
                 Time.setTextSize(12);
 
-                if (!addresses.isEmpty()) {
 
-                    assert Address != null;
-                    Address.setText(address);
+                assert Address != null;
+                Address.setText(pinAddress);
 
-                }
 
                 ArrayList favs = getFavouriteIdsList();
 
@@ -1062,7 +1069,7 @@ public class MainActivity extends AuthBaseActivity
 
                 Title.setLayoutParams(lp);
                 Title.setText("You!");
-                Address.setText(address);
+                Address.setText(pinAddress);
                 fav.setText("");
                 Time.setTextSize(0);
 

@@ -87,4 +87,11 @@ public class SettingsFragment extends PreferenceFragment {
         }
     }
 
+    @Override
+    public void onResume() {
+        ((MainActivity) getActivity()).getSearchBar().setEnabled(false);
+        ((MainActivity) getActivity()).getSearchBar().setVisibility(View.GONE);
+        super.onResume();
+    }
+
 }
