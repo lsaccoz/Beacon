@@ -52,6 +52,10 @@
     <string name="sign_out">Sign Out</string>
     <string name="sign_out_confirmation">Are you sure you want to sign out?</string>
 
+    <!-- No Internet Connection -->
+    <string name="no_internet_title">No Internet Connection</string>
+    <string name="no_internet_message">Beacon requires a stable internet connection for signing in</string>
+
 
 
 </resources>
