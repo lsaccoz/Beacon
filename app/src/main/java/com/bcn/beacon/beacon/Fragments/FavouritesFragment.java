@@ -115,8 +115,8 @@ public class FavouritesFragment extends Fragment
         hostingView = (ListView) view.findViewById(R.id.hostingView);
 
         // set empty view if there are no favourites
-        favouritesView.setEmptyView(view.findViewById(R.id.empty));
-        hostingView.setEmptyView(view.findViewById(R.id.empty));
+        favouritesView.setEmptyView(view.findViewById(R.id.empty_fav));
+        hostingView.setEmptyView(view.findViewById(R.id.empty_host));
 
         //hide the list view divider
         UI_Util.hideListViewDivider(favouritesView);
@@ -126,7 +126,7 @@ public class FavouritesFragment extends Fragment
         favouritesView.setAdapter(favAdapter);
         favouritesView.setLongClickable(true);
 
-        // set adapter for the events list view
+        // set adapter for the hosting events list view
         hostingView.setAdapter(hostingAdapter);
         hostingView.setLongClickable(true);
 
@@ -175,6 +175,7 @@ public class FavouritesFragment extends Fragment
         for (int i = 0; i < ids.size(); i++) {
             //Log.i("SIZE", Integer.toString(eventsMap.size()));
             ListEvent event = eventsMap.get(ids.get(i));
+            //only populates valid events that haven't expired
             if (event != null && event.getTimestamp() + 2*DateUtils.DAY_IN_MILLIS > mcurrentDate.getTimeInMillis()) {
                 events.add(event);
             }

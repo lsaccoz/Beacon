@@ -54,9 +54,16 @@
 
     </LinearLayout>
     </ScrollView>
+
     <TextView
-        android:id="@+id/empty"
+        android:id="@+id/empty_fav"
         android:text="You don't have any favourited events. [insert cheeky banter here]"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:gravity="center" />
+    <TextView
+        android:id="@+id/empty_host"
+        android:text="You're not hosting any events."
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
         android:gravity="center" />

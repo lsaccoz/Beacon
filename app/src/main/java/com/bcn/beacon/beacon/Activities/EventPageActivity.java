@@ -94,6 +94,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
     private boolean mFavourited = false;
     private boolean commentTab = false;
+    private boolean hosting = false;
     private int mAnimDuration;
 
     private int from;
@@ -226,6 +227,9 @@ public class EventPageActivity extends AuthBaseActivity {
         mImageScroller.setLayoutManager(horizontalLayoutManagaer);
 
         mImageScroller.setAdapter(eventImageAdapter);
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference events = database.getReference("Events");
     }
 
     @Override
@@ -235,6 +239,14 @@ public class EventPageActivity extends AuthBaseActivity {
 
         // return true so that the menu pop up is opened
         return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(!hosting)
+            menu.clear();
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
@@ -312,6 +324,19 @@ public class EventPageActivity extends AuthBaseActivity {
             public void onDataChange(DataSnapshot dataSnapshot) {
                 //get the event
                 mEvent = dataSnapshot.getValue(Event.class);
+
+                String hostId = mEvent.getHostId();
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                Log.d("test", "host: "+ hostId);
+                Log.d("test", "user: " + userId);
+
+                if (hostId.equals(userId)){
+                    hosting = true;
+                    invalidateOptionsMenu();
+                }
+
+                Log.d("test", String.valueOf(hosting));
 
                 if (!commentsList.isEmpty()) {
                     commentsList.clear();
@@ -408,6 +433,11 @@ public class EventPageActivity extends AuthBaseActivity {
             mAdapter.notifyDataSetChanged();
         }*/
     }
+
+//    @Override
+//    public void onStart(){
+//
+//    }
 
     // for fixing the clicking favourites twice bug
     // TODO: this may be another way of fixing the clicking favourite button twice bug, by finish()ing activity on back press
