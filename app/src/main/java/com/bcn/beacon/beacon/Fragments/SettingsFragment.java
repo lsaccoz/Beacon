@@ -102,9 +102,9 @@ public class SettingsFragment extends PreferenceFragment
     @Override
     public boolean onPreferenceChange(Preference preference, Object value) {
 
+        // call get nearby events to reset listener and trigger it so that our
+        // fetched events lie within the new search range
         if(preference instanceof SearchRangePreference){
-
-            System.out.println("I'm here homie");
             ((MainActivity) getActivity()).getNearbyEvents();
 
         }

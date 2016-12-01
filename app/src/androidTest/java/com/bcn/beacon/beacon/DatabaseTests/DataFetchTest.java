@@ -5,7 +5,10 @@ import android.content.SharedPreferences;
 import android.location.Location;
 import android.preference.PreferenceManager;
 import android.support.test.InstrumentationRegistry;
+import android.support.test.rule.ActivityTestRule;
+import android.util.Log;
 
+import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
@@ -20,6 +23,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 
 import java.util.ArrayList;
@@ -31,6 +35,12 @@ import java.util.Collections;
 public class DataFetchTest {
 
     private static Context instrumentationContext;
+    private static boolean success;
+    public static String LOG_TAG;
+
+    @Rule
+    public ActivityTestRule<MainActivity> mActivityRule =
+            new ActivityTestRule<>(MainActivity.class);
 
     @BeforeClass
     public static void initContext() {
@@ -39,19 +49,27 @@ public class DataFetchTest {
         instrumentationContext = InstrumentationRegistry.getContext();
     }
 
+    @Before
+    public void reset(){
+        success = false;
+    }
+
 
 
 
     @Test
     public void expiredEventsTest() {
 
+
+        //if any pulled events are expired then the implementation is broken
+        Long expiredDate = DataUtil.getExpiredDate();
         //get Firebase reference
 
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
 
         //create search query like we do in main activity
         Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
-                .startAt(DataUtil.getExpiredDate());
+                .startAt(expiredDate);
 
         final ArrayList<ListEvent> events = new ArrayList<>();
 
@@ -60,9 +78,17 @@ public class DataFetchTest {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
+                    System.out.println("I'm in here");
                     ListEvent event = eventSnapshot.getValue(ListEvent.class);
                     events.add(event);
                 }
+
+                if(events.size() == 0){
+                    System.out.println("this also failed");
+                }
+
+                success();
+
             }
 
             @Override
@@ -70,26 +96,58 @@ public class DataFetchTest {
 
             }
         });
-        //if any pulled events are expired then the implementation is broken
-        Long expiredDate = DataUtil.getExpiredDate();
+
+        Long startTime = System.currentTimeMillis();
+
+        while(!success){
+            if(System.currentTimeMillis() - startTime > 5000)
+                Log.e(LOG_TAG, "Timeout occured for database call");
+        }
+
         for (ListEvent event : events) {
             if (event.getTimestamp() < expiredDate) {
                 org.junit.Assert.fail("An expired list event was pulled from the database");
             }
         }
 
+
     }
 
     @Test
     public void outOfRangeEventsTest(){
 
+        outOfRangeHelper(0);
+        reset();
+        outOfRangeHelper(10);
+        reset();
+        outOfRangeHelper(100);
+        reset();
+        outOfRangeHelper(43);
+        reset();
+        outOfRangeHelper(5);
+        reset();
+    }
+
+
+    /**
+     * Attempted to fetch user preference for search range, was not possible so instead
+     * ran code with sample search ranges and tested to see that events that are pulled from database
+     * actually match the criteria
+     *
+     */
+
+    public void outOfRangeHelper(final int searchRangeLimit){
+
+
+        System.out.println("this was called");
         //get firebase reference
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
         final ArrayList<ListEvent> events = new ArrayList<ListEvent>();
-        //get the searchRangeLimit for this user
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(instrumentationContext);
+//        //get the searchRangeLimit for this user
+//        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(instrumentationContext);
+//
+//        final int searchRangeLimit = prefs.getInt("Search Range", 0);
 
-        final int searchRangeLimit = prefs.getInt("Search Range", 0);
 
         mDatabase.child("ListEvents").addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
@@ -104,10 +162,15 @@ public class DataFetchTest {
 
                     double userLat;
                     double userLng;
+                    System.out.println("I did this");
 
-                    Location userLocation = LocationUtil.getUserLocation(instrumentationContext);
+                    MainActivity activity = mActivityRule.getActivity();
+                    Location userLocation = LocationUtil.getUserLocation(activity);
+
                     userLat = userLocation.getLatitude();
                     userLng = userLocation.getLongitude();
+
+                    System.out.println(userLat);
 
 
                     distance = LocationUtil.distFrom(userLat, userLng, eventLat, eventLng);
@@ -118,7 +181,7 @@ public class DataFetchTest {
 
                     }
                 }
-
+                success();
 
 
             }
@@ -129,10 +192,23 @@ public class DataFetchTest {
             }
         });
 
-        for(ListEvent event: events){
-            assert (event.distance <= searchRangeLimit);
+        Long startTime = System.currentTimeMillis();
+
+        while(!success){
+            if(System.currentTimeMillis() - startTime > 5000)
+                Log.e(LOG_TAG, "Timeout occured for database call");
         }
 
+        for(ListEvent event: events){
+            assert (event.distance <= searchRangeLimit);
+
+        }
+
+
+    }
+
+    public void success(){
+        success = true;
     }
 
 }
