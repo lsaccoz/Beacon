@@ -57,6 +57,14 @@ public class ListEvent {
         list_events.child(eventId).setValue(this);
     }
 
+    public void removeTimestamp() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference list_events = database.getReference("ListEvents");
+        list_events.child(eventId).child("timestamp").setValue(0);
+
+        this.setTimestamp(new Long(0));
+    }
+
     /**
      * Generates a timestamp for this date object
      *

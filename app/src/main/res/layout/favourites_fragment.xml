@@ -4,17 +4,34 @@
     android:layout_height="match_parent"
     android:background="@color/custom_white"
     tools:context="com.bcn.beacon.beacon.Fragments.FavouritesFragment">
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
     <ListView
-        android:id="@+id/favouritesView"
+        android:id="@+id/hostingView"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:drawSelectorOnTop="true"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:elevation="1dp"
         />
 
+    <ListView
+        android:id="@+id/favouritesView"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:drawSelectorOnTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:elevation="1dp"
+        />
+
+</LinearLayout>
     <TextView
         android:id="@+id/empty"
         android:text="You don't have any favourited events. [insert cheeky banter here]"

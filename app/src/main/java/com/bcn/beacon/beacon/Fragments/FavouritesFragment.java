@@ -40,15 +40,22 @@ import java.util.HashMap;
  * TODO: Create event button goes to the new event page
  * TODO: Fix the bug in place of temporary fix
  */
-public class FavouritesFragment extends Fragment {
+public class FavouritesFragment extends Fragment
+        implements AdapterView.OnItemLongClickListener, AdapterView.OnItemClickListener{
 
     private ListView favouritesView;
+    private ListView hostingView;
     private ArrayList<ListEvent> favourites = new ArrayList<>();
+    private ArrayList<ListEvent> hosting = new ArrayList<>();
     private ArrayList<String> favouriteIds = new ArrayList<>();
+    private ArrayList<String> hostingIds = new ArrayList<>();
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
     private Context appContext;
     private String userId;
-    EventListAdapter adapter;
+    //EventListAdapter adapter;
+    EventListAdapter hostingAdapter;
+    EventListAdapter favAdapter;
+
 
     public static FavouritesFragment newInstance() {
         return new FavouritesFragment();
@@ -86,9 +93,15 @@ public class FavouritesFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        populateFav();
+        favouriteIds = ((MainActivity) getActivity()).getFavouriteIdsList();
+        hostingIds = ((MainActivity) getActivity()).getHostIdsList();
+        populate(favourites, favouriteIds);
+        populate(hosting, hostingIds);
 
-        adapter = new EventListAdapter(appContext, 0, favourites, favouriteIds);
+        favAdapter = new EventListAdapter(appContext, 0, favourites, favouriteIds);
+        hostingAdapter = new EventListAdapter(appContext, 0, hosting, hostingIds);
+
+
     }
 
     @Override
@@ -97,69 +110,33 @@ public class FavouritesFragment extends Fragment {
         View view = inflater.inflate(R.layout.favourites_fragment, container, false);
 
         favouritesView = (ListView) view.findViewById(R.id.favouritesView);
+        hostingView = (ListView) view.findViewById(R.id.hostingView);
 
         // set empty view if there are no favourites
         favouritesView.setEmptyView(view.findViewById(R.id.empty));
+        hostingView.setEmptyView(view.findViewById(R.id.empty));
 
         //hide the list view divider
         UI_Util.hideListViewDivider(favouritesView);
+        UI_Util.hideListViewDivider(hostingView);
 
         // set adapter for the events list view
-        favouritesView.setAdapter(adapter);
+        favouritesView.setAdapter(favAdapter);
         favouritesView.setLongClickable(true);
 
-        //Log.i("FAV VIEW", "CREATED");
+        // set adapter for the events list view
+        hostingView.setAdapter(hostingAdapter);
+        hostingView.setLongClickable(true);
+
 
         // the listener for item click to go to event page
-        favouritesView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ListEvent event = (ListEvent) parent.getAdapter().getItem(position);
-                Intent intent = new Intent(getActivity(), EventPageActivity.class);
-
-                // pass the event id to the new activity
-                intent.putExtra("Event", event.getEventId());
-                // to indicate that event page was clicked from favourites view
-                intent.putExtra("from", 2);
-
-                getActivity().startActivityForResult(intent, MainActivity.REQUEST_CODE_EVENTPAGE);
-            }
-        });
+        favouritesView.setOnItemClickListener(this);
+        hostingView.setOnItemClickListener(this);
 
         // the listener for item long click to ask to remove event from favourites
-        favouritesView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
-            @Override
-            public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
-                final int pos = position;
-                ListEvent event = (ListEvent) parent.getAdapter().getItem(position);
-                // play with the themes to find the best one
-                AlertDialog.Builder alert = new AlertDialog.Builder(getActivity(), android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
-                alert.setIcon(R.drawable.fire);
-                alert.setTitle("NOT LIT ENOUGH?");
-                alert.setMessage("Remove '" + event.getName() + "' from favourites?");
-                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    // check for android.view.WindowLeaked: exception!
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // remove event from favourites view and user favourites
-                        removeFav(pos);
-                        dialog.dismiss();
-                    }
-                });
-                alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+        favouritesView.setOnItemLongClickListener(this);
 
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        // do nothing
-                        dialog.dismiss();
-                    }
-                });
-
-                alert.show();
-
-                return true;
-            }
-        });
+        hostingView.setOnItemLongClickListener(this);
 
         return view;
     }
@@ -171,29 +148,32 @@ public class FavouritesFragment extends Fragment {
 
     @Override
     public void onResume() {
-        populateFav();
-        adapter.notifyDataSetChanged();
+        favouriteIds = ((MainActivity) getActivity()).getFavouriteIdsList();
+        hostingIds = ((MainActivity) getActivity()).getHostIdsList();
+        populate(favourites, favouriteIds);
+        populate(hosting, hostingIds);
+        favAdapter.notifyDataSetChanged();
+        hostingAdapter.notifyDataSetChanged();
         ((MainActivity) getActivity()).getSearchBar().setEnabled(true);
         ((MainActivity) getActivity()).getSearchBar().setVisibility(View.VISIBLE);
         super.onResume();
     }
 
 
+
     /**
-     * Function to be called in order get the data for populating the list
+     * Function to be called in order get the data for populating the hosting and/or favourite list
      */
-    public void populateFav() {
-        favouriteIds = ((MainActivity) getActivity()).getFavouriteIdsList();
-        //Log.i("IDS SIZE", Integer.toString(favouriteIds.size()));
+    public void populate(ArrayList<ListEvent> events, ArrayList<String> ids) {
         eventsMap = ((MainActivity) getActivity()).getEventsMap();
-        if (!favourites.isEmpty()) {
-            favourites.clear();
+        if (!events.isEmpty()) {
+            events.clear();
         }
-        for (int i = 0; i < favouriteIds.size(); i++) {
+        for (int i = 0; i < ids.size(); i++) {
             //Log.i("SIZE", Integer.toString(eventsMap.size()));
-            ListEvent event = eventsMap.get(favouriteIds.get(i));
+            ListEvent event = eventsMap.get(ids.get(i));
             if (event != null) {
-                favourites.add(event);
+                events.add(event);
             }
         }
     }
@@ -210,7 +190,104 @@ public class FavouritesFragment extends Fragment {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference users = database.getReference("Users");
         users.child(userId).child("favourites").child(eventId).removeValue();
-        adapter.notifyDataSetChanged();
+        favAdapter.notifyDataSetChanged();
     }
 
+    /**
+     * Function to remove the hosted event from the database as well as the list view
+     * @param pos - position of the event to be removed from favourites in the list view
+     */
+    public void removeHosting(int pos) {
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        String eventId = hosting.get(pos).getEventId();
+        //favouritesView.removeViewAt(pos);
+        hosting.remove(pos);
+        eventsMap.get(eventId).removeTimestamp();
+
+        hostingAdapter.notifyDataSetChanged();
+        favAdapter.notifyDataSetChanged();
+    }
+
+
+    @Override
+    public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
+        final int pos = position;
+        ListEvent event = (ListEvent) parent.getAdapter().getItem(position);
+        // play with the themes to find the best one
+        AlertDialog.Builder alert = new AlertDialog.Builder(getActivity(), android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+
+        switch(parent.getId()) {
+            case(R.id.favouritesView):{
+                    alert.setIcon(R.drawable.fire) ;
+                alert.setTitle("NOT LIT ENOUGH?");
+                alert.setMessage("Remove '" + event.getName() + "' from favourites?");
+
+                alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                        dialog.dismiss();
+                    }
+                });
+                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    // check for android.view.WindowLeaked: exception!
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // remove event from favourites view and user favourites
+                        removeFav(pos);
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.show();
+                break;
+            }
+            case(R.id.hostingView):{
+                alert.setIcon(R.drawable.fire) ;
+                alert.setTitle("NOT LIT ENOUGH?");
+                alert.setMessage("Delete your event '" + event.getName() + "'?");
+
+                alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    // check for android.view.WindowLeaked: exception!
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // remove event from favourites view and user favourites
+                        removeHosting(pos);
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.show();
+                break;
+            }
+        }
+
+        return true;
+    }
+
+
+    @Override
+    public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+        ListEvent event = (ListEvent) parent.getAdapter().getItem(position);
+        Intent intent = new Intent(getActivity(), EventPageActivity.class);
+
+        // pass the event id to the new activity
+        intent.putExtra("Event", event.getEventId());
+        // to indicate that event page was clicked from favourites view
+        intent.putExtra("from", 2);
+
+        getActivity().startActivityForResult(intent, MainActivity.REQUEST_CODE_EVENTPAGE);
+
+    }
 }
