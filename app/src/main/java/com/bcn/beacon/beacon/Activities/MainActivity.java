@@ -36,6 +36,7 @@ import android.widget.Toast;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
+import com.bcn.beacon.beacon.Data.Models.PhotoManager;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
@@ -585,6 +586,8 @@ public class MainActivity extends AuthBaseActivity
                     events.clear();
                 }
                 double distance;
+                PhotoManager photoManager = PhotoManager.getInstance();
+
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
 
@@ -597,7 +600,7 @@ public class MainActivity extends AuthBaseActivity
 
                         eventsMap.put(event.getEventId(), event);
                         events.add(event);
-
+                        photoManager.downloadThumbs(event.getEventId());
                     }
                 }
                 Collections.sort(events, new DistanceComparator());
