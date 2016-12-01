@@ -44,6 +44,15 @@ public class PhotoManager {
         byte[] data;
         int i = 0;
 
+        stream = new ByteArrayOutputStream();
+        Bitmap square = Bitmap.createBitmap(photos.get(0), 90, 0, 360, 360);
+        Bitmap thumb = Bitmap.createScaledBitmap(square, 90, 90, true);
+        thumb.compress(Bitmap.CompressFormat.JPEG, 100, stream);
+        data = stream.toByteArray();
+
+        StorageReference smallRef = storageRef.child(eventId + "/thumb.jpg");
+        smallRef.putBytes(data);
+
         for (Bitmap full : photos) {
             stream = new ByteArrayOutputStream();
             full.compress(Bitmap.CompressFormat.JPEG, 100, stream);
@@ -53,14 +62,6 @@ public class PhotoManager {
             fullRef.putBytes(data);
         }
 
-        stream = new ByteArrayOutputStream();
-        Bitmap square = Bitmap.createBitmap(photos.get(0), 90, 0, 360, 360);
-        Bitmap thumb = Bitmap.createScaledBitmap(square, 90, 90, true);
-        thumb.compress(Bitmap.CompressFormat.JPEG, 100, stream);
-        data = stream.toByteArray();
-
-        StorageReference smallRef = storageRef.child(eventId + "/thumb.jpg");
-        smallRef.putBytes(data);
     }
 
     public Bitmap getThumb(String eventId) {

@@ -201,7 +201,7 @@ public class EventPageActivity extends AppCompatActivity {
         initFavourite();
 
         //Add dummy image to the event page
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
+        mImageDrawables.add(getResources().getDrawable(R.drawable.default_event_photo));
 
         //create adapter between image list and recycler view
         EventImageAdapter eventImageAdapter = new EventImageAdapter(mImageDrawables);
