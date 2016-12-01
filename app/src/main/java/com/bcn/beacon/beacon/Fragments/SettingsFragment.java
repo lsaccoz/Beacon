@@ -25,7 +25,8 @@ import com.bcn.beacon.beacon.Utility.UI_Util;
 /**
  * Created by neema on 2016-10-28.
  */
-public class SettingsFragment extends PreferenceFragment {
+public class SettingsFragment extends PreferenceFragment
+            implements Preference.OnPreferenceChangeListener{
 
     private static SettingsFragment settingsFragment;
 
@@ -37,6 +38,10 @@ public class SettingsFragment extends PreferenceFragment {
         addPreferencesFromResource(R.xml.settings_fragment);
 
         Preference signOut = findPreference(getActivity().getString(R.string.sign_out));
+        Preference searchRange = findPreference(getActivity().getString(R.string.pref_range_key));
+
+        //set on preference change listener so that we can update our UI when necessary
+        searchRange.setOnPreferenceChangeListener(this);
 
         signOut.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
@@ -92,6 +97,18 @@ public class SettingsFragment extends PreferenceFragment {
         ((MainActivity) getActivity()).getSearchBar().setEnabled(false);
         ((MainActivity) getActivity()).getSearchBar().setVisibility(View.GONE);
         super.onResume();
+    }
+
+    @Override
+    public boolean onPreferenceChange(Preference preference, Object value) {
+
+        if(preference instanceof SearchRangePreference){
+
+            System.out.println("I'm here homie");
+            ((MainActivity) getActivity()).getNearbyEvents();
+
+        }
+        return true;
     }
 
 }

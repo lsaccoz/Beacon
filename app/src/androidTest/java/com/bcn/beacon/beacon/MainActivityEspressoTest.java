@@ -1,15 +1,33 @@
 package com.bcn.beacon.beacon;
 
+import android.support.test.espresso.Espresso;
 import android.support.test.rule.ActivityTestRule;
 import android.support.test.runner.AndroidJUnit4;
 
+import org.junit.Assert;
+
 import com.bcn.beacon.beacon.Activities.MainActivity;
+import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.R;
+import com.bcn.beacon.beacon.Utility.DataUtil;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.JUnit4;
 
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Map;
+
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
@@ -43,4 +61,8 @@ public class MainActivityEspressoTest {
         onView(withId(R.id.addImageButton)).check(matches(isDisplayed()));
         onView(withId(R.id.input_name)).check(matches(isDisplayed()));
     }
+
+
+
+
 }

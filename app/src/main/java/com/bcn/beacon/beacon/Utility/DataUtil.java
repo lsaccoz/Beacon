@@ -3,8 +3,11 @@ package com.bcn.beacon.beacon.Utility;
 import android.util.Log;
 import android.widget.TextView;
 
+import com.bcn.beacon.beacon.Data.Models.ListEvent;
+
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 /**
  * Created by neema on 2016-11-09.
@@ -100,6 +103,45 @@ public class DataUtil {
          **/
 
         return currentTime - EVENT_LIFETIME_IN_MILLIS;
+    }
+
+    /**
+     * Function that converts the ListEvent time/ date fields to a
+     * formatted string containing information relating to the
+     * ListEvent's starting time, the day it starts, and the month it
+     * starts in.
+     *
+     * TODO THIS CAN DEFINITELY BE REFACTORED
+     *
+     * @param e must have time/ date fields
+     * @return String s
+     */
+
+    public static String getTime(ListEvent e) {
+
+        boolean time_of_day = false;
+
+        if (e.getDate().getHour() >= 12)
+            time_of_day = true;
+
+        com.bcn.beacon.beacon.Data.Models.Date d = e.getDate();
+
+        String s = String.format(Locale.US, "%02d:%02d %s",
+                (d.getHour() == 12 || d.getMinute() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
+                time_of_day ? "PM" : "AM");
+
+        StringBuilder sb = new StringBuilder(s);
+
+        if (s.charAt(0) == '0')
+            sb.deleteCharAt(0);
+
+        s = sb.toString();
+
+        String date = DataUtil.convertMonthToString(d.getMonth()) + " " + d.getDay();
+
+        date = date + "," + " " + s;
+
+        return date;
     }
 
     /**
