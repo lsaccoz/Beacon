@@ -49,10 +49,20 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
 4. Post comments and photos on event pages
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 23b7d03440063ab83b130286cc3bcfcfd92c74fa
 5. Favourite events and receive notifications for favourited events
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
    </div>
+<<<<<<< HEAD
+=======
+5. Favourite events and receive notifications for favoyrited events
+>>>>>>> 3e8ca91ffc96ab149c134ba16379b6a92e6ca150
+=======
+>>>>>>> 23b7d03440063ab83b130286cc3bcfcfd92c74fa
 
 6. Edit how large the search radius is for finding events, and whether or not you want notifications
    <div style="text-align:center">
@@ -82,6 +92,6 @@ In order to be able to fork off of this repository to make your own changes to B
 ###Getting Beacon on your Local Machine
 Getting off the ground with your personal development of Beacon couldn't be simpler. All you'll need to do is download Android Studio (as mentioned before, this is the IDE we recommend), and start developing! You can clone this repository directly into AndroidStudioProjects directory for the simplest import into Android Studio. Then, after the cloning is complete, all you have to do is open Android Studio and navigate to "File->New->Import Project" and select the cloned repository. After that, you should be able to see the entire Beacon project.
 
-There is one slight complication that however. Since Beacon makes use of the Google services mentioned above, Beacon has been given a signed certificate using a keystore, that is also synced with Beacon's Firebase Console. Without this keystore, you will be unable to compile the project. The settings for the keystore are located within the app build.gradle file. If you wish to get a copy of the keystore that will allow to access these services, feel free to email: andy.tertzakian@gmail.com
+There is one slight complication, however. Since Beacon makes use of the Google services mentioned above, Beacon has been given a signed certificate using a keystore, that is also synced with Beacon's Firebase Console. Without this keystore, you will be unable to compile the project. The settings for the keystore are located within the app build.gradle file. If you wish to get a copy of the keystore that will allow to access these services, feel free to email: andy.tertzakian@gmail.com
 
-If you have received a copy of a valid keystore you are ready to start contributing to Beacon! while following these steps, once again, please feel free to contact andy.terzakian@gmail.com for assistance.
+If you have received a copy of a valid keystore you are ready to start contributing to Beacon! While following these steps, once again, please feel free to contact andy.terzakian@gmail.com for assistance.

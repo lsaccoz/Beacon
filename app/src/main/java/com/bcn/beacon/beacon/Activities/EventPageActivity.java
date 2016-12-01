@@ -1,7 +1,9 @@
 package com.bcn.beacon.beacon.Activities;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 
 import android.graphics.drawable.Drawable;
@@ -32,6 +34,7 @@ import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Location;
+import com.bcn.beacon.beacon.Data.Models.PhotoManager;
 import com.bcn.beacon.beacon.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -162,8 +165,8 @@ public class EventPageActivity extends AppCompatActivity {
                     imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
                 }
                 else {
+                    showDiscardAlert();
                     imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
-                    hideCommentTab();
                 }
 
             }
@@ -199,13 +202,12 @@ public class EventPageActivity extends AppCompatActivity {
 
         initFavourite();
 
-        //Add fake images to the event page
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
+        //Add dummy image to the event page
+        mImageDrawables.add(getResources().getDrawable(R.drawable.default_event_photo));
 
         //create adapter between image list and recycler view
         EventImageAdapter eventImageAdapter = new EventImageAdapter(mImageDrawables);
+        PhotoManager.getInstance().setEventPhotos(mEventId, eventImageAdapter);
 
         LinearLayoutManager horizontalLayoutManagaer
                 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -226,6 +228,48 @@ public class EventPageActivity extends AppCompatActivity {
             mWriteComment.setText("");
             mWriteComment.setEnabled(false);
             mWriteComment.clearFocus();
+        }
+    }
+
+    public void showDiscardAlert() {
+        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT) {
+            // show alert if the user entered more than required characters
+            AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
+            alert.setIcon(R.drawable.attention);
+            alert.setTitle("DISCARD COMMENT?");
+            alert.setMessage("Your changes will be discarded.");
+            alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                // check for android.view.WindowLeaked: exception!
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // hide the comment tab if yes
+                    hideCommentTab();
+                    dialog.dismiss();
+                }
+            });
+            alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                    // do nothing
+                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                    dialog.dismiss();
+                }
+            });
+            alert.setOnCancelListener(new DialogInterface.OnCancelListener() {
+                // this listener is for if the user presses back button when the dialog is visible
+                @Override
+                public void onCancel(DialogInterface dialog) {
+                    hideCommentTab();
+                    dialog.dismiss();
+                }
+            });
+
+            alert.show();
+        }
+        else {
+            // if not, just hide the comment tab
+            hideCommentTab();
         }
     }
 
@@ -251,6 +295,7 @@ public class EventPageActivity extends AppCompatActivity {
                 for (DataSnapshot comment : dataSnapshot.child("comments").getChildren()) {
                     commentsList.add(comment.getValue(Comment.class));
                 }
+                Log.i("DATA:", "CHANGED");
                 Collections.reverse(commentsList);
                 
                 mEvent.setComments(commentsList);

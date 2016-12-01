@@ -36,6 +36,7 @@ import android.widget.Toast;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
+import com.bcn.beacon.beacon.Data.Models.PhotoManager;
 import com.bcn.beacon.beacon.Data.StringAlgorithms;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
@@ -558,6 +559,8 @@ public class MainActivity extends AuthBaseActivity
                     events.clear();
                 }
                 double distance;
+                
+                PhotoManager photoManager = PhotoManager.getInstance();
 
                 //get the searchRangeLimit for this user
               SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -576,7 +579,7 @@ public class MainActivity extends AuthBaseActivity
 
                         eventsMap.put(event.getEventId(), event);
                         events.add(event);
-
+                        photoManager.downloadThumbs(event.getEventId());
                     }
                 }
                 Collections.sort(events, new DistanceComparator());

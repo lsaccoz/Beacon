@@ -50,6 +50,7 @@ import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
@@ -65,6 +66,8 @@ public class CreateEventActivity extends AuthBaseActivity implements
     private EditText eName;
     private EditText eDescription;
     private EditText eAddress;
+
+    private ArrayList photos = new ArrayList<Bitmap>();
 
     private int from;
 
@@ -271,14 +274,17 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
                 Uri croppedImage = Uri.fromFile(croppedImageFile);
 
-                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(300, 300, 1080, 1080, croppedImage);
+                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(3, 2, 540, 360, croppedImage);
                 cropImage.setOutlineColor(0xFF03A9F4);
                 cropImage.setSourceImage(data.getData());
 
                 startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
             } else if (requestCode == PIC_CROP) {
                 eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                eAddImage.setImageBitmap(BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath()));
+                Bitmap photo = BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath());
+                photos.add(photo);
+                eAddImage.setImageBitmap(photo);
+
             } else if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 Uri croppedImage = Uri.fromFile(croppedImageFile);
 
@@ -288,7 +294,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
                     e.printStackTrace();
                 }
 
-                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(300, 300, 1080, 1080, croppedImage);
+                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(3, 2, 540, 360, croppedImage);
 
                 cropImage.setOutlineColor(0xFF03A9F4);
                 cropImage.setSourceImage(Uri.fromFile(tempfile));
@@ -345,6 +351,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
         toUpload.setDescription(eDescription.getText().toString());
         toUpload.setDate(date);
         toUpload.setLocation(location);
+        toUpload.addPhotos(photos);
         toUpload.upload();
 
         // for temporary fix on back pressed
