@@ -51,3 +51,4 @@ captures/
 *.iml
 .idea/libraries
 
+# Keystore files
