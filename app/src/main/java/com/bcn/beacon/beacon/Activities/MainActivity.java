@@ -124,6 +124,9 @@ public class MainActivity extends AuthBaseActivity
     public static int REQUEST_CODE_EVENTPAGE = 10;
     public static int REQUEST_CODE_CREATEEVENT = 20;
 
+    // constant for permission id
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
 
     private boolean showBarInMap = false;
 
@@ -131,9 +134,6 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-
-    // constant for permission id
-    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
@@ -144,6 +144,8 @@ public class MainActivity extends AuthBaseActivity
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
     private ArrayList<String> favouriteIds = new ArrayList<>();
     private ArrayList<ListEvent> favourites = new ArrayList<>();
+
+    private ValueEventListener mCurrentListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -263,7 +265,11 @@ public class MainActivity extends AuthBaseActivity
         // get user favourite ids from firebase
         getFavouriteIds();
         // get the user location
-        getUserLocation();
+        Location location = LocationUtil.getUserLocation(this);
+        if(location != null) {
+            userLat = location.getLatitude();
+            userLng = location.getLongitude();
+        }
 
     }
 
@@ -510,44 +516,35 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     * Check for GPS permission
-     *
-     * @return true if user has allowed access to location, false otherwise
-     */
-    private boolean checkGPSPermission() {
-        String permission = "android.permission.ACCESS_FINE_LOCATION";
-        int res = getApplicationContext().checkCallingOrSelfPermission(permission);
-        return (res == PackageManager.PERMISSION_GRANTED);
-    }
-
-    /**
      * Gets the location of the user
+     *
+     * //TODO THIS CAN BE REFACTORED
      */
-    public void getUserLocation() {
-
-        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
-
-        if (checkGPSPermission()) {
-            List<String> providers = lm.getProviders(true);
-            Location bestLocation = null;
-            for (String provider : providers) {
-                Location l = lm.getLastKnownLocation(provider);
-                if (l == null) {
-                    continue;
-                }
-                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                    // Found best last known location: %s", l);
-                    bestLocation = l;
-                }
-            }
-            if (bestLocation != null) {
-                userLat = bestLocation.getLatitude();
-                userLng = bestLocation.getLongitude();
-                //Log.i("PERMISSION:", "ALLOWED");
-            }
-        }
-    }
+//    public void getUserLocation() {
+//
+//        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
+//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
+//
+//        if (checkGPSPermission()) {
+//            List<String> providers = lm.getProviders(true);
+//            Location bestLocation = null;
+//            for (String provider : providers) {
+//                Location l = lm.getLastKnownLocation(provider);
+//                if (l == null) {
+//                    continue;
+//                }
+//                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
+//                    // Found best last known location: %s", l);
+//                    bestLocation = l;
+//                }
+//            }
+//            if (bestLocation != null) {
+//                userLat = bestLocation.getLatitude();
+//                userLng = bestLocation.getLongitude();
+//                //Log.i("PERMISSION:", "ALLOWED");
+//            }
+//        }
+//    }
 
     /**
      * Call back method: app supposedly calls this again after user allows location services
@@ -569,8 +566,11 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-
-    private void getNearbyEvents() {
+    /**
+     *
+     * TODO THIS CAN BE REFACTORED
+     */
+    public void getNearbyEvents() {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
@@ -579,21 +579,30 @@ public class MainActivity extends AuthBaseActivity
         Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
                 .startAt(DataUtil.getExpiredDate());
 
-        searchParams.addValueEventListener(new ValueEventListener() {
+        if(mCurrentListener != null){
+            searchParams.removeEventListener(mCurrentListener);
+        }
+        mCurrentListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
                     events.clear();
                 }
                 double distance;
+
+                //get the searchRangeLimit for this user
+              SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+              int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
+
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
 
                     double eventLat = event.getLocation().getLatitude();
                     double eventLng = event.getLocation().getLongitude();
-                    distance = distFrom(userLat, userLng, eventLat, eventLng);
+                    distance = LocationUtil.distFrom(userLat, userLng, eventLat, eventLng);
 
-                    if (distance <= maxRadius) {
+                    if (distance <= searchRangeLimit) {
                         event.distance = distance;
 
                         eventsMap.put(event.getEventId(), event);
@@ -603,16 +612,25 @@ public class MainActivity extends AuthBaseActivity
                 }
                 Collections.sort(events, new DistanceComparator());
 
+
+//
+//                //filter events obtained from firebase query based on their distance
+//
+//                LocationUtil.filterEventsByDistance(events, searchRangeLimit);
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
-        });
+        };
+        searchParams.addValueEventListener(mCurrentListener);
+
     }
 
     /**
      * Function to get the event ids of user's favourites
+     * TODO THIS CAN BE REFACTORED
      */
     public void getFavouriteIds() {
         try {
@@ -643,33 +661,7 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-    /**
-     * Java implementation of the Haversine formula for calculating the distance between two locations.
-     * Taken from http://stackoverflow.com/questions/120283
-     * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
-     *
-     * @param userLat  - latitude of the user's location
-     * @param userLng  - longitude of the user's location
-     * @param eventLat - latitude of the event's location
-     * @param eventLng - longitude of the event's location
-     * @return dist - distance between the two locations
-     */
-    private static double distFrom(double userLat, double userLng, double eventLat,
-                                   double eventLng) {
-        double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
-        double dLat = Math.toRadians(eventLat - userLat);
-        double dLng = Math.toRadians(eventLng - userLng);
-        double sindLat = Math.sin(dLat / 2);
-        double sindLng = Math.sin(dLng / 2);
-        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
-                * cos(Math.toRadians(userLat)) * cos(Math.toRadians(eventLat));
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double dist = earthRadius * c;
-        // for rounding to 3 decimal places
-        dist = Math.floor(1000 * dist + 0.5) / 1000;
 
-        return dist; // in kilometers
-    }
 
     /**
      * Getter method for that returns the events list
@@ -716,7 +708,11 @@ public class MainActivity extends AuthBaseActivity
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        getUserLocation();
+        Location location = LocationUtil.getUserLocation(this);
+        if(location != null) {
+            userLat = location.getLatitude();
+            userLng = location.getLongitude();
+        }
     }
 
     @Override
@@ -1016,6 +1012,11 @@ public class MainActivity extends AuthBaseActivity
         Log.i("FINISHING?", Boolean.toString(this.isFinishing()));
     }
 
+    /**
+     *
+     * TODO THIS COULD POSSIBLY BE REFACTORED ??
+     *
+     */
 
     public class InfoWindow implements GoogleMap.InfoWindowAdapter {
 
@@ -1051,7 +1052,7 @@ public class MainActivity extends AuthBaseActivity
                 else
                     Title.setText(title.substring(0, 30) + "...");
 
-                String time = getTime(e);
+                String time = DataUtil.getTime(e);
                 assert Time != null;
                 Time.setText(time);
                 Time.setTextSize(12);
@@ -1093,44 +1094,10 @@ public class MainActivity extends AuthBaseActivity
 
     }
 
+
     /**
-     * Function that converts the ListEvent time/ date fields to a
-     * formatted string containing information relating to the
-     * ListEvent's starting time, the day it starts, and the month it
-     * starts in.
-     *
-     * @param e must have time/ date fields
-     * @return String s
+     * TODO COULD THIS BE MOVED TO AUTHBASEACTIVITY
      */
-
-    public String getTime(ListEvent e) {
-
-        boolean time_of_day = false;
-
-        if (e.getDate().getHour() >= 12)
-            time_of_day = true;
-
-        Date d = e.getDate();
-
-        String s = String.format(Locale.US, "%02d:%02d %s",
-                (d.getHour() == 12 || d.getMinute() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
-                time_of_day ? "PM" : "AM");
-
-        StringBuilder sb = new StringBuilder(s);
-
-        if (s.charAt(0) == '0')
-            sb.deleteCharAt(0);
-
-        s = sb.toString();
-
-        String date = DataUtil.convertMonthToString(d.getMonth()) + " " + d.getDay();
-
-        date = date + "," + " " + s;
-
-        return date;
-    }
-
-
     public void signOut() {
 
         mAuth.signOut();
