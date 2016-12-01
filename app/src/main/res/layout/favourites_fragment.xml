@@ -4,10 +4,24 @@
     android:layout_height="match_parent"
     android:background="@color/custom_white"
     tools:context="com.bcn.beacon.beacon.Fragments.FavouritesFragment">
-<LinearLayout
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical">
+
+
+    <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:id="@+id/scrollojt"
+        android:fillViewport="true" >
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/hosting_title"
+        android:text="Your Events"
+        android:textSize="18sp" />
 
     <ListView
         android:id="@+id/hostingView"
@@ -20,7 +34,14 @@
         android:elevation="1dp"
         />
 
-    <ListView
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/favourites_title"
+            android:text="Favourited Events"
+            android:textSize="18sp" />
+
+        <ListView
         android:id="@+id/favouritesView"
         android:layout_width="wrap_content"
         android:layout_height="0dp"
@@ -31,7 +52,8 @@
         android:elevation="1dp"
         />
 
-</LinearLayout>
+    </LinearLayout>
+    </ScrollView>
     <TextView
         android:id="@+id/empty"
         android:text="You don't have any favourited events. [insert cheeky banter here]"

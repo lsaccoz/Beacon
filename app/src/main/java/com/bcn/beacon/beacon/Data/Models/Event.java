@@ -48,9 +48,12 @@ public class Event {
 
         events.child(eventId).setValue(this);
 
-        new ListEvent(this);
+        new ListEvent(this).upload();
     }
 
+    public void delete(){
+        new ListEvent(this).delete();
+    }
 
     public String getEventId() {
         return eventId;

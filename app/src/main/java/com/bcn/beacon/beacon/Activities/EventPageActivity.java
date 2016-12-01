@@ -1,15 +1,20 @@
 package com.bcn.beacon.beacon.Activities;
 
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -17,14 +22,19 @@ import android.text.Editable;
 import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.KeyEvent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.Toast;
 import android.view.Window;
 import android.widget.TextView;
 
+import com.android.camera.CropImageIntentBuilder;
 import com.bcn.beacon.beacon.Adapters.CommentAdapter;
 import com.bcn.beacon.beacon.CustomViews.CommentEditText;
 import com.bcn.beacon.beacon.Data.Models.Comment;
@@ -40,12 +50,14 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.io.File;
 import java.io.IOException;
 
 import com.bcn.beacon.beacon.Utility.DataUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.joanzapata.iconify.widget.IconTextView;
 
+import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +65,7 @@ import java.util.Locale;
 
 import java.util.ArrayList;
 
-public class EventPageActivity extends AppCompatActivity {
+public class EventPageActivity extends AuthBaseActivity {
 
     private static final int COMMENT_CHARACTER_LIMIT = 2;
     private Event mEvent;
@@ -85,6 +97,8 @@ public class EventPageActivity extends AppCompatActivity {
     private int mAnimDuration;
 
     private int from;
+
+    private static int RETURN_FROM_EDIT = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -123,7 +137,6 @@ public class EventPageActivity extends AppCompatActivity {
 
         //fetch the event from the firebase database
         getEvent(mEventId);
-
 
         //retrieve all the views from the view hierarchy
         mContentView = findViewById(R.id.event_page_root);
@@ -215,6 +228,62 @@ public class EventPageActivity extends AppCompatActivity {
         mImageScroller.setAdapter(eventImageAdapter);
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.tab_menu, menu);
+
+        // return true so that the menu pop up is opened
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.delete:
+                AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+                alert.setIcon(R.drawable.fire) ;
+                alert.setTitle("NOT LIT ENOUGH?");
+                alert.setMessage("Delete your event '" + mEvent.getName() + "'?");
+
+                alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    // check for android.view.WindowLeaked: exception!
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // remove event from favourites view and user favourites
+                        mEvent.delete();
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.show();
+                return true;
+            case R.id.edit_event:
+                Intent intent = new Intent(this , EditEventActivity.class);
+                intent.putExtra("lat", mEvent.getLocation().getLatitude());
+                intent.putExtra("lng", mEvent.getLocation().getLongitude());
+                intent.putExtra("name", mTitle.getText());
+                intent.putExtra("description", mDescription.getText());
+                intent.putExtra("time", mStartTime.getText());
+                intent.putExtra("date", mEvent.getDate().getDay() + "/" +
+                        mEvent.getDate().getMonth() + "/" + mEvent.getDate().getYear());
+                startActivityForResult(intent, RETURN_FROM_EDIT);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
     // Method for hiding comment tab on back press from EditText
     public void hideCommentTab() {
         if (commentTab) {
@@ -256,7 +325,7 @@ public class EventPageActivity extends AppCompatActivity {
                 mEvent.setComments(commentsList);
 
                 //populate the views in the view hierarchy with actual event data
-                new PopulateUITask().execute();
+                 new PopulateUITask().execute();
             }
 
             @Override
@@ -403,9 +472,9 @@ public class EventPageActivity extends AppCompatActivity {
 
         @Override
         protected List<Address> doInBackground(Void... params) {
+            List<Address> addresses = new ArrayList<>();
 
             Geocoder coder = new Geocoder(mContext);
-            List<Address> addresses = new ArrayList<>();
 
             //get Location
             Location location = mEvent.getLocation();
@@ -499,6 +568,44 @@ public class EventPageActivity extends AppCompatActivity {
             }
 
         });
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK){
+            if (requestCode == RETURN_FROM_EDIT){
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    Location loc = new Location();
+                    loc.setLatitude(extras.getDouble("lat"));
+                    loc.setLongitude(extras.getDouble("lng"));
+                    mEvent.setLocation(loc);
+                    Date date = new Date();
+                    date.setMinute(extras.getInt("minute"));
+                    date.setHour(extras.getInt("hour"));
+                    date.setDay(extras.getInt("day"));
+                    date.setMonth(extras.getInt("month"));
+                    date.setYear(extras.getInt("year"));
+                    mEvent.setDate(date);
+                    mEvent.setName(extras.getString("name"));
+                    mEvent.setDescription(extras.getString("description"));
+
+                    mEvent.update();
+
+                    mTitle.setText(mEvent.getName().toString());
+                    mDescription.setText(mEvent.getDescription().toString());
+                    mStartDay.setText("" + extras.getInt("day"));
+                    mStartMonth.setText(("" + DataUtil.convertMonthToString(extras.getInt("month"))));
+                    mStartTime.setText(extras.getString("time"));
+                    mAddress.setText(extras.getString("address"));
+
+                    //The key argument here must match that used in the other activity
+                }
+            }
+        }
     }
 
 

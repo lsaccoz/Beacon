@@ -9,6 +9,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.app.Fragment;
+import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +33,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 
@@ -165,6 +167,7 @@ public class FavouritesFragment extends Fragment
      * Function to be called in order get the data for populating the hosting and/or favourite list
      */
     public void populate(ArrayList<ListEvent> events, ArrayList<String> ids) {
+        Calendar mcurrentDate = Calendar.getInstance();
         eventsMap = ((MainActivity) getActivity()).getEventsMap();
         if (!events.isEmpty()) {
             events.clear();
@@ -172,7 +175,7 @@ public class FavouritesFragment extends Fragment
         for (int i = 0; i < ids.size(); i++) {
             //Log.i("SIZE", Integer.toString(eventsMap.size()));
             ListEvent event = eventsMap.get(ids.get(i));
-            if (event != null) {
+            if (event != null && event.getTimestamp() + 2*DateUtils.DAY_IN_MILLIS > mcurrentDate.getTimeInMillis()) {
                 events.add(event);
             }
         }
@@ -200,9 +203,9 @@ public class FavouritesFragment extends Fragment
     public void removeHosting(int pos) {
         userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
         String eventId = hosting.get(pos).getEventId();
-        //favouritesView.removeViewAt(pos);
+        favouritesView.removeViewAt(pos);
         hosting.remove(pos);
-        eventsMap.get(eventId).removeTimestamp();
+        eventsMap.get(eventId).delete();
 
         hostingAdapter.notifyDataSetChanged();
         favAdapter.notifyDataSetChanged();

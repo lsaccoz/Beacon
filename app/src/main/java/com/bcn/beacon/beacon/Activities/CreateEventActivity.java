@@ -57,30 +57,29 @@ import java.util.Locale;
 public class CreateEventActivity extends AuthBaseActivity implements
         AdapterView.OnItemSelectedListener, View.OnClickListener {
 
-    private LocationUtil localUtil = new LocationUtil();
+    protected LocationUtil localUtil = new LocationUtil();
 
-    private EditText eTime;
-    private EditText eDate;
-    private Date date = new Date();
-    private EditText eName;
-    private EditText eDescription;
-    private EditText eAddress;
+    protected EditText eTime;
+    protected EditText eDate;
+    protected Date date = new Date();
+    protected EditText eName;
+    protected EditText eDescription;
+    protected EditText eAddress;
 
     private int from;
 
 
-    private Location location = new Location();
-    private ImageButton eAddImage;
-    private Uri picUri;
-    private FloatingActionButton myFab;
-    private ScrollView mScrollView;
-    private Spinner categorySpinner;
-    private ImageUtil imgUtil = new ImageUtil();
+    protected Location location = new Location();
+    protected ImageButton eAddImage;
+    protected Uri picUri;
+    protected FloatingActionButton myFab;
+    protected Spinner categorySpinner;
+    protected ImageUtil imgUtil = new ImageUtil();
 
     private File tempfile;
 
-    private double currentLat, currentLng;
-    private double userLat, userLng;
+    protected double currentLat, currentLng;
+    protected double userLat, userLng;
 
     final int LOCATION_SELECTED = 3;
     final int PIC_CROP = 2;
@@ -333,7 +332,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
         // Another interface callback
     }
 
-    private void upload() {
+    protected void upload() {
 
         if (location == null) {
             location.setLatitude(49.2765);

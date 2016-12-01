@@ -54,14 +54,12 @@ public class ListEvent {
     public void upload() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference list_events = database.getReference("ListEvents");
+        list_events.child(eventId).removeValue();
         list_events.child(eventId).setValue(this);
+
     }
 
-    public void removeTimestamp() {
-        FirebaseDatabase database = FirebaseDatabase.getInstance();
-        DatabaseReference list_events = database.getReference("ListEvents");
-        list_events.child(eventId).child("timestamp").setValue(0);
-
+    public void delete() {
         this.setTimestamp(new Long(0));
     }
 
