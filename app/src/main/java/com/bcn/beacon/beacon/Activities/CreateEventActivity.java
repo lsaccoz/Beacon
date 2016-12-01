@@ -274,7 +274,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
                 Uri croppedImage = Uri.fromFile(croppedImageFile);
 
-                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(3, 2, 1080, 720, croppedImage);
+                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(3, 2, 540, 360, croppedImage);
                 cropImage.setOutlineColor(0xFF03A9F4);
                 cropImage.setSourceImage(data.getData());
 
@@ -294,7 +294,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
                     e.printStackTrace();
                 }
 
-                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(3, 2, 1080, 720, croppedImage);
+                CropImageIntentBuilder cropImage = new CropImageIntentBuilder(3, 2, 540, 360, croppedImage);
 
                 cropImage.setOutlineColor(0xFF03A9F4);
                 cropImage.setSourceImage(Uri.fromFile(tempfile));
