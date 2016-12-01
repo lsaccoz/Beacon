@@ -144,6 +144,8 @@ public class MainActivity extends AuthBaseActivity
     private ArrayList<String> favouriteIds = new ArrayList<>();
     private ArrayList<ListEvent> favourites = new ArrayList<>();
 
+    private ValueEventListener mCurrentListener;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -567,7 +569,7 @@ public class MainActivity extends AuthBaseActivity
      *
      * TODO THIS CAN BE REFACTORED
      */
-    private void getNearbyEvents() {
+    public void getNearbyEvents() {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
 
@@ -576,7 +578,10 @@ public class MainActivity extends AuthBaseActivity
         Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
                 .startAt(DataUtil.getExpiredDate());
 
-        searchParams.addValueEventListener(new ValueEventListener() {
+        if(mCurrentListener != null){
+            searchParams.removeEventListener(mCurrentListener);
+        }
+        mCurrentListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
@@ -617,7 +622,9 @@ public class MainActivity extends AuthBaseActivity
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
-        });
+        };
+        searchParams.addValueEventListener(mCurrentListener);
+
     }
 
     /**
