@@ -516,37 +516,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     * Gets the location of the user
-     *
-     * //TODO THIS CAN BE REFACTORED
-     */
-//    public void getUserLocation() {
-//
-//        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-//        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
-//
-//        if (checkGPSPermission()) {
-//            List<String> providers = lm.getProviders(true);
-//            Location bestLocation = null;
-//            for (String provider : providers) {
-//                Location l = lm.getLastKnownLocation(provider);
-//                if (l == null) {
-//                    continue;
-//                }
-//                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-//                    // Found best last known location: %s", l);
-//                    bestLocation = l;
-//                }
-//            }
-//            if (bestLocation != null) {
-//                userLat = bestLocation.getLatitude();
-//                userLng = bestLocation.getLongitude();
-//                //Log.i("PERMISSION:", "ALLOWED");
-//            }
-//        }
-//    }
-
-    /**
      * Call back method: app supposedly calls this again after user allows location services
      *
      * @param requestCode
