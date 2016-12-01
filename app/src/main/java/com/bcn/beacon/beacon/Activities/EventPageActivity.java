@@ -34,6 +34,7 @@ import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Location;
+import com.bcn.beacon.beacon.Data.Models.PhotoManager;
 import com.bcn.beacon.beacon.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -201,13 +202,12 @@ public class EventPageActivity extends AppCompatActivity {
 
         initFavourite();
 
-        //Add fake images to the event page
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
+        //Add dummy image to the event page
+        mImageDrawables.add(getResources().getDrawable(R.drawable.default_event_photo));
 
         //create adapter between image list and recycler view
         EventImageAdapter eventImageAdapter = new EventImageAdapter(mImageDrawables);
+        PhotoManager.getInstance().setEventPhotos(mEventId, eventImageAdapter);
 
         LinearLayoutManager horizontalLayoutManagaer
                 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);

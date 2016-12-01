@@ -36,6 +36,8 @@ import android.widget.Toast;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
+import com.bcn.beacon.beacon.Data.Models.PhotoManager;
+import com.bcn.beacon.beacon.Data.StringAlgorithms;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
@@ -64,6 +66,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
@@ -90,7 +93,7 @@ public class MainActivity extends AuthBaseActivity
         GoogleMap.OnMarkerClickListener,
         GoogleMap.OnInfoWindowClickListener,
         GoogleApiClient.ConnectionCallbacks,
-        View.OnClickListener{
+        View.OnClickListener {
 
 
     private GoogleApiClient mGoogleApiClient;
@@ -122,6 +125,9 @@ public class MainActivity extends AuthBaseActivity
     public static int REQUEST_CODE_EVENTPAGE = 10;
     public static int REQUEST_CODE_CREATEEVENT = 20;
 
+    // constant for permission id
+    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
+
 
     private boolean showBarInMap = false;
 
@@ -129,9 +135,6 @@ public class MainActivity extends AuthBaseActivity
      * Copied over from BeaconListView
      */
     private DatabaseReference mDatabase;
-
-    // constant for permission id
-    private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
@@ -142,6 +145,8 @@ public class MainActivity extends AuthBaseActivity
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
     private ArrayList<String> favouriteIds = new ArrayList<>();
     private ArrayList<ListEvent> favourites = new ArrayList<>();
+
+    private ValueEventListener mCurrentListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,7 +187,7 @@ public class MainActivity extends AuthBaseActivity
             @Override
             public boolean onQueryTextSubmit(String query) {
                 //Toast.makeText(getApplicationContext(), "searched?", Toast.LENGTH_LONG).show();
-                InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
                 searchBar.clearFocus();
                 ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
@@ -261,7 +266,11 @@ public class MainActivity extends AuthBaseActivity
         // get user favourite ids from firebase
         getFavouriteIds();
         // get the user location
-        getUserLocation();
+        Location location = LocationUtil.getUserLocation(this);
+        if(location != null) {
+            userLat = location.getLatitude();
+            userLng = location.getLongitude();
+        }
 
     }
 
@@ -480,13 +489,11 @@ public class MainActivity extends AuthBaseActivity
                 // for temporary fix
                 if (mActiveFragment != null && mActiveFragment == mListFragment) {
                     intent.putExtra("from", 1);
-                }
-                else if (mActiveFragment != null && mActiveFragment == mMapFragment){
+                } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
                     // don't really need this, but keep for now
                     //Log.i("ACTIVE", "MAP");
                     intent.putExtra("from", 0);
-                }
-                else if (tracker == 1) {
+                } else if (tracker == 1) {
                     //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
                     intent.putExtra("from", 1);
                 }
@@ -510,46 +517,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     * Check for GPS permission
-     *
-     * @return true if user has allowed access to location, false otherwise
-     */
-    private boolean checkGPSPermission() {
-        String permission = "android.permission.ACCESS_FINE_LOCATION";
-        int res = getApplicationContext().checkCallingOrSelfPermission(permission);
-        return (res == PackageManager.PERMISSION_GRANTED);
-    }
-
-    /**
-     * Gets the location of the user
-     */
-    public void getUserLocation() {
-
-        LocationManager lm = (LocationManager) getSystemService(this.LOCATION_SERVICE);
-        ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_ACCESS_FINE_LOCATION);
-
-        if (checkGPSPermission()) {
-            List<String> providers = lm.getProviders(true);
-            Location bestLocation = null;
-            for (String provider : providers) {
-                Location l = lm.getLastKnownLocation(provider);
-                if (l == null) {
-                    continue;
-                }
-                if (bestLocation == null || l.getAccuracy() < bestLocation.getAccuracy()) {
-                    // Found best last known location: %s", l);
-                    bestLocation = l;
-                }
-            }
-            if (bestLocation != null) {
-                userLat = bestLocation.getLatitude();
-                userLng = bestLocation.getLongitude();
-                //Log.i("PERMISSION:", "ALLOWED");
-            }
-        }
-    }
-
-    /**
      * Call back method: app supposedly calls this again after user allows location services
      *
      * @param requestCode
@@ -569,43 +536,73 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-
-    private void getNearbyEvents() {
+    /**
+     *
+     * TODO THIS CAN BE REFACTORED
+     */
+    public void getNearbyEvents() {
 
         mDatabase = FirebaseDatabase.getInstance().getReference();
-        mDatabase.child("ListEvents").addValueEventListener(new ValueEventListener() {
+
+        // use firebase query to only return events who's start
+        // date is greater than 2 days prior to now
+        Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
+                .startAt(DataUtil.getExpiredDate());
+
+        if(mCurrentListener != null){
+            searchParams.removeEventListener(mCurrentListener);
+        }
+        mCurrentListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
                     events.clear();
                 }
                 double distance;
+                
+                PhotoManager photoManager = PhotoManager.getInstance();
+
+                //get the searchRangeLimit for this user
+              SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+              int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
+
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
 
                     double eventLat = event.getLocation().getLatitude();
                     double eventLng = event.getLocation().getLongitude();
-                    distance = distFrom(userLat, userLng, eventLat, eventLng);
+                    distance = LocationUtil.distFrom(userLat, userLng, eventLat, eventLng);
 
-                    if (distance <= maxRadius) {
+                    if (distance <= searchRangeLimit) {
                         event.distance = distance;
 
                         eventsMap.put(event.getEventId(), event);
                         events.add(event);
-
+                        photoManager.downloadThumbs(event.getEventId());
                     }
                 }
                 Collections.sort(events, new DistanceComparator());
+
+
+//
+//                //filter events obtained from firebase query based on their distance
+//
+//                LocationUtil.filterEventsByDistance(events, searchRangeLimit);
+
             }
 
             @Override
             public void onCancelled(DatabaseError databaseError) {
             }
-        });
+        };
+        searchParams.addValueEventListener(mCurrentListener);
+
     }
 
     /**
      * Function to get the event ids of user's favourites
+     * TODO THIS CAN BE REFACTORED
      */
     public void getFavouriteIds() {
         try {
@@ -631,38 +628,12 @@ public class MainActivity extends AuthBaseActivity
 
                 }
             });
-        }catch(NullPointerException e){
+        } catch (NullPointerException e) {
             e.printStackTrace();
         }
     }
 
-    /**
-     * Java implementation of the Haversine formula for calculating the distance between two locations.
-     * Taken from http://stackoverflow.com/questions/120283
-     * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
-     *
-     * @param userLat  - latitude of the user's location
-     * @param userLng  - longitude of the user's location
-     * @param eventLat - latitude of the event's location
-     * @param eventLng - longitude of the event's location
-     * @return dist - distance between the two locations
-     */
-    private static double distFrom(double userLat, double userLng, double eventLat,
-                                   double eventLng) {
-        double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
-        double dLat = Math.toRadians(eventLat - userLat);
-        double dLng = Math.toRadians(eventLng - userLng);
-        double sindLat = Math.sin(dLat / 2);
-        double sindLng = Math.sin(dLng / 2);
-        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
-                * cos(Math.toRadians(userLat)) * cos(Math.toRadians(eventLat));
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double dist = earthRadius * c;
-        // for rounding to 3 decimal places
-        dist = Math.floor(1000 * dist + 0.5) / 1000;
 
-        return dist; // in kilometers
-    }
 
     /**
      * Getter method for that returns the events list
@@ -685,10 +656,19 @@ public class MainActivity extends AuthBaseActivity
 
     public ArrayList<ListEvent> searchEvents(String query) {
         ArrayList<ListEvent> queries = new ArrayList<>();
-        for (ListEvent e : events) {
-            if (e.getName().toLowerCase().contains(query)) {
+        for (ListEvent e : events)
+            if (e.getName().toLowerCase().contains(query))
                 queries.add(e);
-            }
+
+        // if query doesn't find an exact match, look for typos
+        if (queries.isEmpty()) {
+
+            for (ListEvent e : events)
+                for (String typos : StringAlgorithms.getStringTypos(query))
+                    if (e.getName().toLowerCase().contains(typos)) {
+                        queries.add(e);
+                        break;
+                    }
         }
         return queries;
     }
@@ -700,7 +680,11 @@ public class MainActivity extends AuthBaseActivity
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
-        getUserLocation();
+        Location location = LocationUtil.getUserLocation(this);
+        if(location != null) {
+            userLat = location.getLatitude();
+            userLng = location.getLongitude();
+        }
     }
 
     @Override
@@ -719,14 +703,14 @@ public class MainActivity extends AuthBaseActivity
         if (mMap != null) {
             mMap.clear();
 
-            SharedPreferences prefs =  PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
 
             LatLngBounds Bound = new LatLngBounds(
-                        new LatLng(userLat - (pref/110.574), userLng - (pref/111.320*cos(pref/110.574))),
-                        new LatLng(userLat + (pref/110.575), userLng + (pref/111.320*cos(pref/110.574))));
+                    new LatLng(userLat - (pref / 110.574), userLng - (pref / 111.320 * cos(pref / 110.574))),
+                    new LatLng(userLat + (pref / 110.575), userLng + (pref / 111.320 * cos(pref / 110.574))));
 
-                mMap.setLatLngBoundsForCameraTarget(Bound);
+            mMap.setLatLngBoundsForCameraTarget(Bound);
 
             mMap.setMaxZoomPreference(17);
             mMap.setMinZoomPreference(12);
@@ -743,33 +727,33 @@ public class MainActivity extends AuthBaseActivity
                 mMap.setOnInfoWindowClickListener(this);
 
                 if (!events.isEmpty()) {
-                        for (int i = 0; i < events.size(); i++) {
+                    for (int i = 0; i < events.size(); i++) {
 
-                            ListEvent e = events.get(i);
+                        ListEvent e = events.get(i);
 
-                            double latitude = e.getLocation().getLatitude();
-                            double longitude = e.getLocation().getLongitude();
+                        double latitude = e.getLocation().getLatitude();
+                        double longitude = e.getLocation().getLongitude();
 
-                            Marker marker = mMap.addMarker(new MarkerOptions()
-                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                                    .position(new LatLng(latitude, longitude)));
-
-                            m.put(marker.getId(), e.getEventId());
-                            events_list.put(marker.getId(), e);
-
-                        }
-
-                    } else {
                         Marker marker = mMap.addMarker(new MarkerOptions()
-                                .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                                .position(new LatLng(userLat, userLng))
-                                .title("Your Location"));
+                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                                .position(new LatLng(latitude, longitude)));
 
-                        mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
+                        m.put(marker.getId(), e.getEventId());
+                        events_list.put(marker.getId(), e);
+
                     }
 
+                } else {
+                    Marker marker = mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .position(new LatLng(userLat, userLng))
+                            .title("Your Location"));
 
-               LatLng UserLocation = new LatLng(userLat, userLng);
+                    mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()), 50, null);
+                }
+
+
+                LatLng UserLocation = new LatLng(userLat, userLng);
 
                 CameraPosition cameraPosition = new CameraPosition.Builder()
                         .target(UserLocation)
@@ -802,27 +786,24 @@ public class MainActivity extends AuthBaseActivity
 
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
-        if(event != null) {
+        if (event != null) {
             pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
-        }
-
-        else {
+        } else {
             pinAddress = localUtil.getLocationName(userLat, userLng, this);
 
         }
 
         float zoom = mMap.getCameraPosition().zoom;
 
-            if(zoom < 14.00) {
-                CameraPosition cameraPosition = new CameraPosition.Builder()
-                        .target(marker.getPosition())
-                        .zoom(14)
-                        .build();
+        if (zoom < 14.00) {
+            CameraPosition cameraPosition = new CameraPosition.Builder()
+                    .target(marker.getPosition())
+                    .zoom(14)
+                    .build();
 
-                mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
-            }
-            else
-                mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
+            mMap.animateCamera(CameraUpdateFactory.newCameraPosition(cameraPosition));
+        } else
+            mMap.animateCamera(CameraUpdateFactory.newLatLng(marker.getPosition()));
 
 
         marker.showInfoWindow();
@@ -911,7 +892,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
 
-
     @Override
     public void onResume() {
         // Temporary fix for going back to list view from event page
@@ -927,6 +907,7 @@ public class MainActivity extends AuthBaseActivity
 
     /**
      * This is the temporary fix for displaying the current tab correctly
+     *
      * @param requestCode
      * @param resultCode
      * @param intent
@@ -1003,6 +984,11 @@ public class MainActivity extends AuthBaseActivity
         Log.i("FINISHING?", Boolean.toString(this.isFinishing()));
     }
 
+    /**
+     *
+     * TODO THIS COULD POSSIBLY BE REFACTORED ??
+     *
+     */
 
     public class InfoWindow implements GoogleMap.InfoWindowAdapter {
 
@@ -1032,13 +1018,13 @@ public class MainActivity extends AuthBaseActivity
                 Title.setLayoutParams(lp);
 
                 String title = e.getName();
-                if(title.length() < 30)
+                if (title.length() < 30)
                     Title.setText(title);
 
                 else
-                    Title.setText(title.substring(0,30) + "...");
+                    Title.setText(title.substring(0, 30) + "...");
 
-                String time = getTime(e);
+                String time = DataUtil.getTime(e);
                 assert Time != null;
                 Time.setText(time);
                 Time.setTextSize(12);
@@ -1056,9 +1042,7 @@ public class MainActivity extends AuthBaseActivity
                     fav.setText("{fa-star-o}");
 
                 return v;
-            }
-
-            else {
+            } else {
 
                 lp.gravity = Gravity.CENTER;
 
@@ -1082,42 +1066,10 @@ public class MainActivity extends AuthBaseActivity
 
     }
 
-    /** Function that converts the ListEvent time/ date fields to a
-     *  formatted string containing information relating to the
-     *  ListEvent's starting time, the day it starts, and the month it
-     *  starts in.
-     * @param e must have time/ date fields
-     * @return String s
+
+    /**
+     * TODO COULD THIS BE MOVED TO AUTHBASEACTIVITY
      */
-
-    public String getTime(ListEvent e){
-
-        boolean time_of_day = false;
-
-        if(e.getDate().getHour() >= 12)
-            time_of_day = true;
-
-        Date d = e.getDate();
-
-        String s = String.format(Locale.US, "%02d:%02d %s",
-                (d.getHour() == 12 || d.getMinute() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
-                time_of_day ? "PM" : "AM");
-
-        StringBuilder sb = new StringBuilder(s);
-
-        if(s.charAt(0) == '0')
-          sb.deleteCharAt(0);
-
-        s = sb.toString();
-
-        String date = DataUtil.convertMonthToString(d.getMonth())+ " " + d.getDay();
-
-        date = date + ","+ " " + s;
-
-        return date;
-    }
-
-
     public void signOut() {
 
         mAuth.signOut();

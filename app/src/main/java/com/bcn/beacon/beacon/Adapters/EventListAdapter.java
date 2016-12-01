@@ -1,15 +1,19 @@
 package com.bcn.beacon.beacon.Adapters;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bcn.beacon.beacon.Activities.MainActivity;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
+import com.bcn.beacon.beacon.Data.Models.PhotoManager;
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.joanzapata.iconify.widget.IconTextView;
@@ -31,6 +35,7 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
         TextView distance;
         TextView start;
         IconTextView favourite;
+        ImageView thumb;
     }
 
     public EventListAdapter(Context context, int resourceId,  ArrayList<ListEvent> events, ArrayList<String> Ids){
@@ -61,6 +66,8 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
             viewHolder = (ViewHolder) convertView.getTag();
         }
 
+        viewHolder.thumb = (ImageView) convertView.findViewById(R.id.eventPic);
+
         if (mFavouritedEventIds.contains(event.getEventId()))
             viewHolder.favourite.setText("{fa-star}");
         else
@@ -75,16 +82,12 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
         viewHolder.distance.setText(String.format("%.1f", event.distance) + " km");
         viewHolder.start.setText(event.getDate().formatted());
 
-        /*// Lookup view for data population (commented out for now)
-        TextView title = (TextView) convertView.findViewById(R.id.title);
-        TextView host = (TextView) convertView.findViewById(R.id.host);
-        TextView distance = (TextView) convertView.findViewById(R.id.distance);
-        TextView start = (TextView) convertView.findViewById(R.id.start);
-        // Populate events into the list view using the Event's getter methods
-        title.setText(event.getName());
-        host.setText(event.getHostId());
-        distance.setText(Double.toString(Math.floor(event.getDistance())));
-        start.setText(event.getTimeStart_Id());*/
+        Bitmap thumb = PhotoManager.getInstance().getThumb(event.getEventId());
+        if(thumb != null) {
+            viewHolder.thumb.setImageBitmap(thumb);
+        }else{
+            viewHolder.thumb.setImageDrawable(this.getContext().getDrawable(R.drawable.no_pic_icon));
+        }
 
         // Return the completed view
         return convertView;
