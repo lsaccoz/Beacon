@@ -36,6 +36,7 @@ import android.widget.Toast;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
+import com.bcn.beacon.beacon.Data.StringAlgorithms;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
@@ -691,10 +692,19 @@ public class MainActivity extends AuthBaseActivity
 
     public ArrayList<ListEvent> searchEvents(String query) {
         ArrayList<ListEvent> queries = new ArrayList<>();
-        for (ListEvent e : events) {
-            if (e.getName().toLowerCase().contains(query)) {
+        for (ListEvent e : events)
+            if (e.getName().toLowerCase().contains(query))
                 queries.add(e);
-            }
+
+        // if query doesn't find an exact match, look for typos
+        if (queries.isEmpty()) {
+
+            for (ListEvent e : events)
+                for (String typos : StringAlgorithms.getStringTypos(query))
+                    if (e.getName().toLowerCase().contains(typos)) {
+                        queries.add(e);
+                        break;
+                    }
         }
         return queries;
     }
