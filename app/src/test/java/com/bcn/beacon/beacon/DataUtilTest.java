@@ -1,6 +1,5 @@
-package com.bcn.beacon.beacon.UtilityTests;
+package com.bcn.beacon.beacon;
 
-import android.support.test.runner.AndroidJUnit4;
 
 import com.bcn.beacon.beacon.Utility.DataUtil;
 
@@ -11,8 +10,6 @@ import org.junit.runner.RunWith;
 /**
  * Created by neema on 2016-11-29.
  */
-
-@RunWith(AndroidJUnit4.class)
 public class DataUtilTest {
 
 
