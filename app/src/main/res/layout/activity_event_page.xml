@@ -6,6 +6,8 @@
     android:layout_height="match_parent"
     android:background="@color/custom_white"
     android:orientation="vertical"
+    android:clickable="true"
+    android:focusableInTouchMode="true"
     tools:context="com.bcn.beacon.beacon.Activities.EventPageActivity">
 
     <android.support.design.widget.AppBarLayout

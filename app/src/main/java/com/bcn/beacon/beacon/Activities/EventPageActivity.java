@@ -1,6 +1,7 @@
 package com.bcn.beacon.beacon.Activities;
 
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -107,6 +108,7 @@ public class EventPageActivity extends AppCompatActivity {
     private int from;
     private Comment currentComment = null;
     private int currentCommentPos;
+    private static boolean discarded;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -258,7 +260,9 @@ public class EventPageActivity extends AppCompatActivity {
                     hideCommentTab();
                     imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                     mWriteComment.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
-
+                    String t = "Comment edited";
+                    Toast toast = Toast.makeText(mContext, t, Toast.LENGTH_SHORT);
+                    toast.show();
                 }
                 else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
@@ -296,6 +300,27 @@ public class EventPageActivity extends AppCompatActivity {
                 }
             }
         });
+
+        // listener for leaving comments by clicking up
+        mWriteComment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && (!mEditConfirm.isPressed() && !mPostComment.isPressed())) {
+                    //hideCommentTab();
+                    if (!discarded) {
+                        hideKeyboard(v);
+                        showDiscardAlert();
+                    }
+                    else {
+                        discarded = false;
+                    }
+                }
+            }
+        });
+
+        // for making comments unclickable
+        mCommentsList.setEnabled(false);
+        mCommentsList.setOnItemClickListener(null);
 
         registerForContextMenu(mCommentsList);
 
@@ -397,6 +422,12 @@ public class EventPageActivity extends AppCompatActivity {
         this.currentCommentPos = position;
     }
 
+    // Method for hiding keyboard
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
     // Method for hiding comment tab on back press from EditText
     public void hideCommentTab() {
         if (commentTab) {
@@ -428,6 +459,7 @@ public class EventPageActivity extends AppCompatActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     // hide the comment tab if yes
+                    discarded = true;
                     hideCommentTab();
                     dialog.dismiss();
                 }
@@ -436,8 +468,13 @@ public class EventPageActivity extends AppCompatActivity {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    // do nothing
-                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                    if (!mWriteComment.hasFocus()) {
+                        mWriteComment.requestFocus();
+                        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+                    }
+                    else {
+                        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                    }
                     dialog.dismiss();
                 }
             });
