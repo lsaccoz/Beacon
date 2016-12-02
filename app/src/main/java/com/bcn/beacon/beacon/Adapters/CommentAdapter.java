@@ -1,6 +1,8 @@
 package com.bcn.beacon.beacon.Adapters;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -9,6 +11,7 @@ import android.text.format.DateUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -105,17 +108,38 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         viewHolder.delete.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ((EventPageActivity) mContext).deleteComment(comment, mComments.indexOf(comment));
-                mEdit.setVisibility(View.GONE);
-                mEdit.setEnabled(false);
-                mDelete.setVisibility(View.GONE);
-                mDelete.setEnabled(false);
+                AlertDialog.Builder alert = new AlertDialog.Builder(mContext, android.R.style.ThemeOverlay_Material_Dialog_Alert);
+                alert.setIcon(R.drawable.attention);
+                alert.setTitle("DELETE COMMENT?");
+                alert.setMessage("Your comment will be deleted.");
+                alert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    // check for android.view.WindowLeaked: exception!
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // delete comment if yes
+                        ((EventPageActivity) mContext).deleteComment(comment, mComments.indexOf(comment));
+                        mEdit.setVisibility(View.GONE);
+                        mEdit.setEnabled(false);
+                        mDelete.setVisibility(View.GONE);
+                        mDelete.setEnabled(false);
+                        dialog.dismiss();
+                    }
+                });
+                alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.show();
             }
         });
 
         // Return the completed view
         return convertView;
     }
-
 
 }
