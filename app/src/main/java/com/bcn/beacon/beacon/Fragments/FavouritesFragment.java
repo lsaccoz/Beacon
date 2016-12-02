@@ -209,8 +209,17 @@ public class FavouritesFragment extends Fragment
         for (int i = 0; i < ids.size(); i++) {
             ListEvent event = eventsMap.get(ids.get(i));
             //only populates valid events that haven't expired
-            if (event != null && event.getTimestamp() + 2*DateUtils.DAY_IN_MILLIS > mcurrentDate.getTimeInMillis()) {
-                events.add(event);
+            if (event != null) {
+                if(event.getTimestamp() + 2*DateUtils.DAY_IN_MILLIS > mcurrentDate.getTimeInMillis()) {
+                    events.add(event);
+                } else {
+                    removeFav(ids.get(i));
+                    events.remove(event);
+                    break;
+                }
+            }else{
+                removeFav(ids.get(i));
+                break;
             }
         }
     }
@@ -228,6 +237,16 @@ public class FavouritesFragment extends Fragment
         users.child(userId).child("favourites").child(eventId).removeValue();
         favAdapter.notifyDataSetChanged();
         resizeListView();
+    }
+
+    public void removeFav(String eventId) {
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        users.child(userId).child("favourites").child(eventId).removeValue();
+        favouriteIds.remove(eventId);
+        favourites.clear();
+        populate(favourites, favouriteIds);
     }
 
     /**

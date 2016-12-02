@@ -566,6 +566,7 @@ public class MainActivity extends AuthBaseActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
                     events.clear();
+                    eventsMap.clear();
                 }
 
                 double distance;
