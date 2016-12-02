@@ -108,7 +108,8 @@ public class EventPageActivity extends AppCompatActivity {
     private int from;
     private Comment currentComment = null;
     private int currentCommentPos;
-    private static boolean discarded;
+    private static boolean discarded = false;
+    private static boolean edited = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -287,6 +288,9 @@ public class EventPageActivity extends AppCompatActivity {
 
             @Override
             public void afterTextChanged(Editable s) {
+                if (!edited) {
+                    edited = true;
+                }
                 mCharacterCount.setText(s.toString().length() + "/" + COMMENT_CHARACTER_LIMIT_MAX);
                 switch (s.toString().length()) {
                     case COMMENT_CHARACTER_LIMIT_MAX: {
@@ -422,6 +426,11 @@ public class EventPageActivity extends AppCompatActivity {
         this.currentCommentPos = position;
     }
 
+    // Method for setting edited for not showing discard alert if not edited
+    public static void setEdited(boolean edit) {
+        edited = edit;
+    }
+
     // Method for hiding keyboard
     public void hideKeyboard(View view) {
         InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -448,7 +457,7 @@ public class EventPageActivity extends AppCompatActivity {
 
     // Method for showing a discard alert
     public void showDiscardAlert() {
-        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT_MIN) {
+        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT_MIN && edited) {
             // show alert if the user entered more than required characters
             AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
             alert.setIcon(R.drawable.attention);

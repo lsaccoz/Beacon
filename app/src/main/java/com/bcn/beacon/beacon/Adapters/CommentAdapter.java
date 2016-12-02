@@ -102,6 +102,7 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
             public void onClick(View v) {
                 ((EventPageActivity) mContext).setCurrentCommentPos(mComments.indexOf(comment));
                 ((EventPageActivity) mContext).editComment(comment);
+                ((EventPageActivity) mContext).setEdited(false);
             }
         });
 
