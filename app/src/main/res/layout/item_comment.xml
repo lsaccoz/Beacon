@@ -49,4 +49,32 @@
         android:text="awesome party yo!"
         android:textAppearance="?android:attr/textAppearanceListItem" />
 
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/delete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="{fa-trash-o}"
+            android:textSize="19dp"
+            android:layout_alignParentRight="true"
+            android:layout_below="@id/time"
+            android:textColor="@color/colorPrimary"
+            android:paddingTop="4dp"
+            android:paddingRight="8dp"
+            android:visibility="gone"
+            android:enabled="false"/>
+
+        <com.joanzapata.iconify.widget.IconTextView
+            android:id="@+id/edit"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="{fa-pencil}"
+            android:textSize="18dp"
+            android:layout_below="@+id/time"
+            android:layout_toLeftOf="@id/delete"
+            android:textColor="@color/colorPrimary"
+            android:paddingTop="4dp"
+            android:paddingRight="10dp"
+            android:visibility="gone"
+            android:enabled="false"/>
+
 </RelativeLayout>

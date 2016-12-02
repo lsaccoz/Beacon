@@ -316,6 +316,7 @@
                             android:layout_toRightOf="@+id/write_comment"
                             android:paddingTop="12dp"
                             android:textSize="25dp" />
+                        <!-- ^ maybe change the size (text size) -->
 
                     </RelativeLayout>
 

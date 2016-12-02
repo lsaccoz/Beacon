@@ -33,6 +33,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.view.Window;
 import android.widget.TextView;
@@ -46,6 +47,7 @@ import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Data.Models.Location;
 import com.bcn.beacon.beacon.R;
+import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -165,6 +167,7 @@ public class EventPageActivity extends AppCompatActivity {
         mCharacterCount = (TextView) findViewById(R.id.character_count);
         mCardViewComments = (CardView) findViewById(R.id.card_view_comments);
 
+
         // input manager for showing keyboard immediately
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
 
@@ -254,6 +257,8 @@ public class EventPageActivity extends AppCompatActivity {
                     mAdapter.notifyDataSetChanged();
                     hideCommentTab();
                     imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    mWriteComment.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
+
                 }
                 else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
@@ -351,7 +356,7 @@ public class EventPageActivity extends AppCompatActivity {
     }
 
     // Method for editing a comment
-    private boolean editComment(Comment comment) {
+    public boolean editComment(Comment comment) {
         InputMethodManager imm = ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE));
         if (!commentTab) {
             commentTab = true;
@@ -375,13 +380,18 @@ public class EventPageActivity extends AppCompatActivity {
         return true;
     }
     // Method for deleting a comment
-    private boolean deleteComment(Comment comment, int position) {
+    public boolean deleteComment(Comment comment, int position) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference comments = database.getReference("Events/" + comment.getEventId() + "/comments");
         comments.child(comment.getId()).removeValue();
         commentsList.remove(position);
         mAdapter.notifyDataSetChanged();
         return true;
+    }
+
+    // Method for adjusting the currentCommentPos in another class
+    public void setCurrentCommentPos(int position) {
+        this.currentCommentPos = position;
     }
 
     // Method for hiding comment tab on back press from EditText
