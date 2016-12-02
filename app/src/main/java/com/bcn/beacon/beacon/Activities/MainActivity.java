@@ -138,12 +138,17 @@ public class MainActivity extends AuthBaseActivity
 
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+    private static final String FAVOURITES = "favourites";
+    private static final String HOSTING = "hosting";
+
+
     // tracker for the temporary fix
     private static int tracker = -1;
 
     private ArrayList<ListEvent> events = new ArrayList<>();
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
     private ArrayList<String> favouriteIds = new ArrayList<>();
+    private ArrayList<String> hostingIds = new ArrayList<>();
     private ArrayList<ListEvent> favourites = new ArrayList<>();
 
     private ValueEventListener mCurrentListener;
@@ -282,7 +287,11 @@ public class MainActivity extends AuthBaseActivity
         mAuth.addAuthStateListener(mAuthListener);
 
         // get user favourite ids from firebase
-        getFavouriteIds();
+        getIds(FAVOURITES, favouriteIds);
+
+        // get user hosting ids from firebase
+        getIds(HOSTING, hostingIds);
+
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
@@ -558,6 +567,7 @@ public class MainActivity extends AuthBaseActivity
                 if (!events.isEmpty()) {
                     events.clear();
                 }
+
                 double distance;
                 
                 PhotoManager photoManager = PhotoManager.getInstance();
@@ -633,7 +643,65 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
+    /**
+     * Function to get the event ids of user's favourites
+     */
+    public void getIds(final String eventType, final ArrayList<String> idList ) {
+        try {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference users = database.getReference("Users");
+            users.child(userId).child(eventType).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!idList.isEmpty()) {
+                        idList.clear();
+                    }
+                    //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
+                    for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
+                        //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
+                        idList.add(fav_snapshot.getKey());
+                    }
 
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
+
+    /**
+     * Java implementation of the Haversine formula for calculating the distance between two locations.
+     * Taken from http://stackoverflow.com/questions/120283
+     * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
+     *
+     * @param userLat  - latitude of the user's location
+     * @param userLng  - longitude of the user's location
+     * @param eventLat - latitude of the event's location
+     * @param eventLng - longitude of the event's location
+     * @return dist - distance between the two locations
+     */
+    private static double distFrom(double userLat, double userLng, double eventLat,
+                                   double eventLng) {
+        double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
+        double dLat = Math.toRadians(eventLat - userLat);
+        double dLng = Math.toRadians(eventLng - userLng);
+        double sindLat = Math.sin(dLat / 2);
+        double sindLng = Math.sin(dLng / 2);
+        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
+                * cos(Math.toRadians(userLat)) * cos(Math.toRadians(eventLat));
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        double dist = earthRadius * c;
+        // for rounding to 3 decimal places
+        dist = Math.floor(1000 * dist + 0.5) / 1000;
+
+        return dist; // in kilometers
+    }
 
     /**
      * Getter method for that returns the events list
@@ -675,6 +743,9 @@ public class MainActivity extends AuthBaseActivity
 
     public ArrayList<String> getFavouriteIdsList() {
         return favouriteIds;
+    }
+    public ArrayList<String> getHostIdsList() {
+        return hostingIds;
     }
 
 
