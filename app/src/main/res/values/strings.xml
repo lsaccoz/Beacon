@@ -55,6 +55,9 @@
     <!-- No Internet Connection -->
     <string name="no_internet_title">No Internet Connection</string>
     <string name="no_internet_message">Beacon requires a stable internet connection for signing in</string>
+    <string name="no_internet_create_event_message">
+        Beacon requires a stable internet connection for event creation </string>
+
 
 
 

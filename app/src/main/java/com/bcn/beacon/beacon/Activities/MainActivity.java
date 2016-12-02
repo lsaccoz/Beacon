@@ -1,10 +1,13 @@
 package com.bcn.beacon.beacon.Activities;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.Application;
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -22,6 +25,7 @@ import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +37,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.BeaconApplication;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
@@ -413,8 +418,8 @@ public class MainActivity extends AuthBaseActivity
                 mFavourites.setBackgroundResource(R.color.currentTabColor);
 
                 //hide create event button on this page
-                mCreateEvent.setEnabled(false);
-                mCreateEvent.setVisibility(View.GONE);
+                mCreateEvent.setEnabled(true);
+                mCreateEvent.setVisibility(View.VISIBLE);
 
                 searchButton.setEnabled(false);
                 searchButton.setVisibility(View.GONE);
@@ -483,24 +488,52 @@ public class MainActivity extends AuthBaseActivity
 
             //if the user presses the floating button, launch the create event activity
             case (R.id.create_event_fab): {
-                Intent intent = new Intent(this, CreateEventActivity.class);
-                intent.putExtra("userlat", userLat);
-                intent.putExtra("userlng", userLng);
-                // for temporary fix
-                if (mActiveFragment != null && mActiveFragment == mListFragment) {
-                    intent.putExtra("from", 1);
-                } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
-                    // don't really need this, but keep for now
-                    //Log.i("ACTIVE", "MAP");
-                    intent.putExtra("from", 0);
-                } else if (tracker == 1) {
-                    //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
-                    intent.putExtra("from", 1);
-                }
 
-                // startActivity(intent);
-                // start activity for result using same code for now
-                startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
+                //check if the user has a stable internet connection, if not
+                //display an alert dialog
+                if (!BeaconApplication.isNetworkAvailable(this)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    //set message notifying user that the create event feature is unavailable
+                    //with no internet connection
+                    builder.setMessage(getString(R.string.no_internet_create_event_message))
+                            .setTitle(getString(R.string.no_internet_title))
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    AlertDialog signInDialog = builder.create();
+
+                    //allow user to dismiss dialog by touching outside it's scope
+                    signInDialog.setCanceledOnTouchOutside(true);
+
+                    signInDialog.show();
+
+                    UI_Util.setDialogStyle(signInDialog, this);
+
+                } else {
+                    Intent intent = new Intent(this, CreateEventActivity.class);
+                    intent.putExtra("userlat", userLat);
+                    intent.putExtra("userlng", userLng);
+                    // for temporary fix
+                    if (mActiveFragment != null && mActiveFragment == mListFragment) {
+                        intent.putExtra("from", 1);
+                    } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
+                        // don't really need this, but keep for now
+                        //Log.i("ACTIVE", "MAP");
+                        intent.putExtra("from", 0);
+                    } else if (tracker == 1) {
+                        //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
+                        intent.putExtra("from", 1);
+                    }
+
+                    // startActivity(intent);
+                    // start activity for result using same code for now
+                    startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
+                }
             }
         }
 
@@ -786,11 +819,16 @@ public class MainActivity extends AuthBaseActivity
 
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
-        if (event != null) {
-            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
-        } else {
-            pinAddress = localUtil.getLocationName(userLat, userLng, this);
-
+//        if (event != null) {
+//            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
+//        } else {
+//            pinAddress = localUtil.getLocationName(userLat, userLng, this);
+//
+//        }
+        if(event != null){
+            pinAddress = event.getLocation().getAddress();
+        }else{
+            pinAddress = "";
         }
 
         float zoom = mMap.getCameraPosition().zoom;
@@ -934,8 +972,8 @@ public class MainActivity extends AuthBaseActivity
                 case (2): {
                     resetTabColours();
                     mFavourites.setBackgroundResource(R.color.currentTabColor);
-                    mCreateEvent.setEnabled(false);
-                    mCreateEvent.setVisibility(View.GONE);
+                    mCreateEvent.setEnabled(true);
+                    mCreateEvent.setVisibility(View.VISIBLE);
 
                     searchButton.setEnabled(false);
                     searchButton.setVisibility(View.GONE);

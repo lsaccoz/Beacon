@@ -163,8 +163,7 @@ public class EventPageActivity extends AppCompatActivity {
                     mWriteComment.setEnabled(true);
                     mWriteComment.requestFocus();
                     imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
-                }
-                else {
+                } else {
                     showDiscardAlert();
                     imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
                 }
@@ -191,8 +190,7 @@ public class EventPageActivity extends AppCompatActivity {
                     toast.show();
                     commentsList.add(0, comment);
                     mAdapter.notifyDataSetChanged();
-                }
-                else {
+                } else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT + " characters";
                     Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
                     toast.show();
@@ -266,8 +264,7 @@ public class EventPageActivity extends AppCompatActivity {
             });
 
             alert.show();
-        }
-        else {
+        } else {
             // if not, just hide the comment tab
             hideCommentTab();
         }
@@ -297,11 +294,11 @@ public class EventPageActivity extends AppCompatActivity {
                 }
                 Log.i("DATA:", "CHANGED");
                 Collections.reverse(commentsList);
-                
+
                 mEvent.setComments(commentsList);
 
                 //populate the views in the view hierarchy with actual event data
-                new PopulateUITask().execute();
+                populateUI();
             }
 
             @Override
@@ -317,8 +314,8 @@ public class EventPageActivity extends AppCompatActivity {
      */
     public void setFavourited() {
         DatabaseReference userRef = FirebaseDatabase.getInstance().getReference("Users/"
-                                        + FirebaseAuth.getInstance().getCurrentUser().getUid()
-                                        + "/favourites/" + mEventId);
+                + FirebaseAuth.getInstance().getCurrentUser().getUid()
+                + "/favourites/" + mEventId);
         userRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
@@ -326,8 +323,7 @@ public class EventPageActivity extends AppCompatActivity {
                 if (dataSnapshot.getValue() != null) {
                     mFavourited = true;
                     mFavourite.setText("{fa-star}");
-                }
-                else {
+                } else {
                     mFavourited = false;
                     mFavourite.setText("{fa-star-o}");
                 }
@@ -341,6 +337,7 @@ public class EventPageActivity extends AppCompatActivity {
 
     /**
      * Function for adding the event to user's favourites
+     *
      * @return true if successful, otherwise return false
      */
 
@@ -404,6 +401,37 @@ public class EventPageActivity extends AppCompatActivity {
         mFavourite.setText(savedInstanceState.getString("favText"));
     }*/
 
+    private void populateUI() {
+
+        //initially hide the layout
+        mContentView.setVisibility(View.GONE);
+
+        mDescription.setText(mEvent.getDescription());
+        mTitle.setText(mEvent.getName());
+
+        //fetch the date
+        Date date = mEvent.getDate();
+
+        //display the tags for this event
+        mTags.setText(" #Party\n #Music\n #Fun");
+
+        //retrieve and set the address
+        mAddress.setText(mEvent.getLocation().getAddress());
+
+        //set the time and day fields
+        mStartDay.setText("" + date.getDay());
+        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
+        mStartTime.setText(date.formatted());
+
+        mAdapter = new CommentAdapter(mContext, 0, commentsList);
+        if (commentsList != null) {
+            mCommentsList.setAdapter(mAdapter);
+            mAdapter.notifyDataSetChanged();
+        }
+
+        showUI();
+    }
+
 
     /**
      * This class represents a helper task that will initialize the UI
@@ -417,75 +445,52 @@ public class EventPageActivity extends AppCompatActivity {
      * <p>
      * //TODO we should store address as a field variable in the event data model so that an API call is unneeded
      */
-    private class PopulateUITask extends AsyncTask<Void, Void, List<Address>> {
+//    private class PopulateUITask extends AsyncTask<Void, Void, List<Address>> {
+//
+//        @Override
+//        protected void onPreExecute() {
+//
 
-        @Override
-        protected void onPreExecute() {
-
-            //initially hide the layout
-            mContentView.setVisibility(View.GONE);
-
-            mDescription.setText(mEvent.getDescription());
-            mTitle.setText(mEvent.getName());
-
-            //fetch the date
-            Date date = mEvent.getDate();
-
-            //display the tags for this event
-            mTags.setText(" #Party\n #Music\n #Fun");
-
-            //set the time and day fields
-            mStartDay.setText("" + date.getDay());
-            mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
-            mStartTime.setText(date.formatted());
-
-            mAdapter = new CommentAdapter(mContext, 0, commentsList);
-            if (commentsList != null) {
-                mCommentsList.setAdapter(mAdapter);
-                mAdapter.notifyDataSetChanged();
-            }
-        }
-
-        @Override
-        protected List<Address> doInBackground(Void... params) {
-
-            Geocoder coder = new Geocoder(mContext);
-            List<Address> addresses = new ArrayList<>();
-
-            //get Location
-            Location location = mEvent.getLocation();
-
-            //convert address to a readable string if possible
-            try {
-                addresses = coder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-
-            } catch (IOException e) {
-                e.printStackTrace();
-
-            }
-
-            return addresses;
-
-        }
-
-        @Override
-        protected void onPostExecute(List<Address> addresses) {
-            Address address;
-            if (!addresses.isEmpty()) {
-                address = addresses.get(0);
-                mAddress.setText(address.getAddressLine(0));
-            }
-
-            showUI();
-
-        }
-    }
+//
+//        @Override
+//        protected List<Address> doInBackground(Void... params) {
+//
+//            Geocoder coder = new Geocoder(mContext);
+//            List<Address> addresses = new ArrayList<>();
+//
+//            //get Location
+//            Location location = mEvent.getLocation();
+//
+//            //convert address to a readable string if possible
+//            try {
+//                addresses = coder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+//
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//
+//            }
+//
+//            return addresses;
+//
+//        }
+//
+//        @Override
+//        protected void onPostExecute(List<Address> addresses) {
+//            Address address;
+//            if (!addresses.isEmpty()) {
+//                address = addresses.get(0);
+//                mAddress.setText(address.getAddressLine(0));
+//            }
+//
+//            showUI();
+//
+//        }
+//    }
 
     /**
      * Method to blur in the UI layout using an animation
-     *
+     * <p>
      * This is called after any relevant data is fetched from the network/local cache
-     *
      */
     private void showUI() {
 
@@ -502,11 +507,11 @@ public class EventPageActivity extends AppCompatActivity {
                 .setListener(null);
     }
 
-    private void initFavourite(){
+    private void initFavourite() {
 
-        if(mFavourited){
+        if (mFavourited) {
             mFavourite.setText("{fa-star}");
-        }else{
+        } else {
             mFavourite.setText("{fa-star-o}");
         }
 

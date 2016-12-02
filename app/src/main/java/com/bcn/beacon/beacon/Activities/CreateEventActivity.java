@@ -137,6 +137,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
             location.setLatitude(userLat);
             location.setLongitude(userLng);
             eAddress.setText(localUtil.getLocationName(userLat, userLng, getApplicationContext()));
+            location.setAddress(eAddress.getText().toString());
             //The key argument here must match that used in the other activity
         }
     }
@@ -308,6 +309,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
                     eAddress.setText(name);
                     location.setLatitude(currentLat);
                     location.setLongitude(currentLng);
+                    location.setAddress(eAddress.getText().toString());
                 }
             }
         }
@@ -344,8 +346,10 @@ public class CreateEventActivity extends AuthBaseActivity implements
         if (location == null) {
             location.setLatitude(49.2765);
             location.setLongitude(-123.2177);
+            location.setAddress("");
         }
         Event toUpload = new Event();
+
 
         toUpload.setName(eName.getText().toString());
         toUpload.setDescription(eDescription.getText().toString());
