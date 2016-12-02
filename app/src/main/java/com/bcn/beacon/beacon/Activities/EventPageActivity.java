@@ -315,7 +315,8 @@ public class EventPageActivity extends AuthBaseActivity {
         });
 
         // for making comments unclickable
-        mCommentsList.setEnabled(false);
+        // TODO: UNCOMMENT AFTER WE FIGURE OUT THE SCROLL THING
+        //mCommentsList.setEnabled(false);
         mCommentsList.setOnItemClickListener(null);
 
         registerForContextMenu(mCommentsList);
