@@ -2,6 +2,7 @@ package com.bcn.beacon.beacon.Adapters;
 
 import android.graphics.drawable.Drawable;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,9 +17,9 @@ import java.util.List;
 
 /**
  * Created by neema on 2016-11-09.
- * <p>
+ * <p/>
  * This class is the adapter for Image items in the event page activity
- * <p>
+ * <p/>
  * We are using a recycler view to implement a horizontal image scroller
  */
 public class EventImageAdapter extends RecyclerView.Adapter<EventImageAdapter.MyViewHolder> {
@@ -26,6 +27,7 @@ public class EventImageAdapter extends RecyclerView.Adapter<EventImageAdapter.My
     //List of Drawables that populate the images in the list
     private List<Drawable> mImageList;
 
+    private boolean hasDummy = true;
 
     //static view holder class that contains the views that we will be changing in each list item
     public class MyViewHolder extends RecyclerView.ViewHolder {
@@ -45,6 +47,15 @@ public class EventImageAdapter extends RecyclerView.Adapter<EventImageAdapter.My
     //constructor for setting the image list
     public EventImageAdapter(List<Drawable> mImageList) {
         this.mImageList = mImageList;
+    }
+
+    public void addPhoto(Drawable photo) {
+        if (hasDummy) {
+            mImageList.clear();
+            hasDummy = false;
+        }
+        mImageList.add(photo);
+        notifyDataSetChanged();
     }
 
     //inflate the root view and create a new viewholder to contain the image view

@@ -19,13 +19,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.bcn.beacon.beacon.R;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 /**
  * Created by neema on 2016-11-01.
  */
-public class SearchRangePreference extends Preference implements SeekBar.OnSeekBarChangeListener{
+public class SearchRangePreference extends Preference implements SeekBar.OnSeekBarChangeListener {
 
     //the seekbar that will be used to update the actual preference value
     SeekBar mRange;
@@ -68,7 +71,6 @@ public class SearchRangePreference extends Preference implements SeekBar.OnSeekB
         mRange.setOnSeekBarChangeListener(this);
 
 
-
         return view;
     }
 
@@ -79,6 +81,7 @@ public class SearchRangePreference extends Preference implements SeekBar.OnSeekB
                 (new PorterDuffColorFilter(newColor, PorterDuff.Mode.SRC_IN));
 
     }
+
     @TargetApi(16)
     private void customizeThumb(SeekBar seekBar, int newColor) {
 
@@ -94,8 +97,6 @@ public class SearchRangePreference extends Preference implements SeekBar.OnSeekB
     }
 
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-        getEditor().putInt(getContext().getString(R.string.pref_range_key), progress).commit();
-        mRangeText.setText(progress + " km");
     }
 
     @Override
@@ -105,6 +106,40 @@ public class SearchRangePreference extends Preference implements SeekBar.OnSeekB
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
+
+        //set minimum search radius to 1 km
+        if (seekBar.getProgress() == 0) {
+            seekBar.setProgress(1);
+            //if user picks a value that is not a multiple of 5, scale up or down
+        } else if (seekBar.getProgress() % 5 != 0) {
+
+            if ((seekBar.getProgress() % 5 < 3)) {
+                seekBar.setProgress(seekBar.getProgress() - (seekBar.getProgress() % 5));
+            } else {
+                seekBar.setProgress(seekBar.getProgress() + (5 - seekBar.getProgress() % 5));
+            }
+
+        }
+
+
+        //set the preference value once the user has picked a range value
+        getEditor().putInt(getContext().getString(R.string.pref_range_key), seekBar.getProgress()).commit();
+        //manually call this preferences on preference change listener
+        OnPreferenceChangeListener listener = this.getOnPreferenceChangeListener();
+        if (listener != null) {
+            listener.onPreferenceChange(this, null);
+        }
+
+
+        mRangeText.setText(seekBar.getProgress() + " km");
+
+
+        //display a toast to notify user that their search range was updated
+        Toast toast = Toast.makeText(getContext(),
+                getContext().getString(R.string.updated_pref_range),
+                Toast.LENGTH_SHORT);
+
+        toast.show();
 
     }
 

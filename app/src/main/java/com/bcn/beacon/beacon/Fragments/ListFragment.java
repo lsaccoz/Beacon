@@ -56,7 +56,7 @@ public class ListFragment extends Fragment {
 
         //since onAttach isn't called on versions of android with sdk level < 23
         //we need to check the version before we set the context
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             this.appContext = context;
         }
 
@@ -90,7 +90,6 @@ public class ListFragment extends Fragment {
 
         //set adapter for the events list view
         listView.setAdapter(adapter);
-        Log.i("VIEW","CREATED");
 
         //Launch the event details page if the user clicks on an event item
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -103,9 +102,9 @@ public class ListFragment extends Fragment {
                 intent.putExtra("Event", event.getEventId());
 
                 //pass intent extra to indicate if event is already favourited
-                if(favouritedEventIds.contains(event.getEventId())) {
+                if (favouritedEventIds.contains(event.getEventId())) {
                     intent.putExtra("Favourited", true);
-                }else{
+                } else {
                     intent.putExtra("Favourited", false);
                 }
                 // to indicate that event page was clicked from list view
@@ -115,7 +114,6 @@ public class ListFragment extends Fragment {
 
             }
         });
-
 
 
         // initialize the swap container variable with the view
@@ -150,21 +148,21 @@ public class ListFragment extends Fragment {
 
     }
 
-    public void updateListForSearch(String queryString){
+    public void updateListForSearch(String queryString) {
         ArrayList<ListEvent> results = ((MainActivity) getActivity()).searchEvents(queryString);
         events.clear();
         events.addAll(results);
         adapter.notifyDataSetChanged();
     }
 
-    public void updateListAllEvents(){
+    public void updateListAllEvents() {
         ArrayList<ListEvent> results = ((MainActivity) getActivity()).getEventList();
         events.clear();
         events.addAll(results);
         adapter.notifyDataSetChanged();
     }
 
-    private void updateListFavourites(){
+    private void updateListFavourites() {
         ArrayList<String> results = ((MainActivity) getActivity()).getFavouriteIdsList();
         favouritedEventIds.clear();
         favouritedEventIds.addAll(results);

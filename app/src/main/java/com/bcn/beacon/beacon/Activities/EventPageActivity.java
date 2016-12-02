@@ -1,7 +1,5 @@
 package com.bcn.beacon.beacon.Activities;
 
-
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -12,27 +10,21 @@ import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.annotation.Dimension;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.text.method.KeyListener;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Gravity;
-import android.view.KeyEvent;
 import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.inputmethod.InputMethod;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -45,12 +37,10 @@ import com.bcn.beacon.beacon.Data.Models.Comment;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Adapters.EventImageAdapter;
 import com.bcn.beacon.beacon.Data.Models.Date;
-import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Data.Models.Location;
+import com.bcn.beacon.beacon.Data.Models.PhotoManager;
 import com.bcn.beacon.beacon.R;
-import com.firebase.client.Firebase;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -66,11 +56,11 @@ import com.joanzapata.iconify.widget.IconTextView;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import java.util.ArrayList;
 
-public class EventPageActivity extends AppCompatActivity {
+
+public class EventPageActivity extends AuthBaseActivity {
 
     private static final int COMMENT_CHARACTER_LIMIT_MIN = 2;
     private static final int COMMENT_CHARACTER_LIMIT_MAX = 140;
@@ -103,6 +93,7 @@ public class EventPageActivity extends AppCompatActivity {
 
     private boolean mFavourited = false;
     private boolean commentTab = false;
+    private boolean hosting = false;
     private int mAnimDuration;
 
     private int from;
@@ -110,6 +101,8 @@ public class EventPageActivity extends AppCompatActivity {
     private int currentCommentPos;
     private static boolean discarded = false;
     private static boolean edited = false;
+
+    private static int RETURN_FROM_EDIT = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -148,7 +141,6 @@ public class EventPageActivity extends AppCompatActivity {
 
         //fetch the event from the firebase database
         getEvent(mEventId);
-
 
         //retrieve all the views from the view hierarchy
         mContentView = findViewById(R.id.event_page_root);
@@ -330,13 +322,12 @@ public class EventPageActivity extends AppCompatActivity {
 
         initFavourite();
 
-        //Add fake images to the event page
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
-        mImageDrawables.add(getResources().getDrawable(R.drawable.no_pic_icon));
+        //Add dummy image to the event page
+        mImageDrawables.add(getResources().getDrawable(R.drawable.default_event_photo));
 
         //create adapter between image list and recycler view
         EventImageAdapter eventImageAdapter = new EventImageAdapter(mImageDrawables);
+        PhotoManager.getInstance().setEventPhotos(mEventId, eventImageAdapter);
 
         LinearLayoutManager horizontalLayoutManagaer
                 = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -344,6 +335,75 @@ public class EventPageActivity extends AppCompatActivity {
         mImageScroller.setLayoutManager(horizontalLayoutManagaer);
 
         mImageScroller.setAdapter(eventImageAdapter);
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference events = database.getReference("Events");
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.tab_menu, menu);
+
+        // return true so that the menu pop up is opened
+        return true;
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        if(!hosting)
+            menu.clear();
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle item selection
+        switch (item.getItemId()) {
+            case R.id.delete:
+                AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+
+                alert.setTitle("Delete Event?");
+
+                alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // do nothing
+                        dialog.dismiss();
+                    }
+                });
+
+                alert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    // check for android.view.WindowLeaked: exception!
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        // remove event from favourites view and user favourites
+                        mEvent.delete();
+                        dialog.dismiss();
+                        confirmDeleteAlert();
+
+
+                    }
+                });
+
+                alert.show();
+                return true;
+            case R.id.edit_event:
+                Intent intent = new Intent(this , EditEventActivity.class);
+                intent.putExtra("lat", mEvent.getLocation().getLatitude());
+                intent.putExtra("lng", mEvent.getLocation().getLongitude());
+                intent.putExtra("name", mTitle.getText());
+                intent.putExtra("description", mDescription.getText());
+                intent.putExtra("time", mStartTime.getText());
+                intent.putExtra("date", mEvent.getDate().getDay() + "/" +
+                        mEvent.getDate().getMonth() + "/" + mEvent.getDate().getYear());
+                startActivityForResult(intent, RETURN_FROM_EDIT);
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     // Method for overriding context menu
@@ -497,11 +557,25 @@ public class EventPageActivity extends AppCompatActivity {
             });
 
             alert.show();
-        }
-        else {
+        } else {
             // if not, just hide the comment tab
             hideCommentTab();
         }
+    }
+
+    void confirmDeleteAlert(){
+        AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+        alert.setTitle("Your event has been deleted");
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            // check for android.view.WindowLeaked: exception!
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+
+        alert.show();
     }
 
     /**
@@ -519,6 +593,19 @@ public class EventPageActivity extends AppCompatActivity {
                 //get the event
                 mEvent = dataSnapshot.getValue(Event.class);
 
+                String hostId = mEvent.getHostId();
+                String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+                Log.d("test", "host: "+ hostId);
+                Log.d("test", "user: " + userId);
+
+                if (hostId.equals(userId)){
+                    hosting = true;
+                    invalidateOptionsMenu();
+                }
+
+                Log.d("test", String.valueOf(hosting));
+
                 if (!commentsList.isEmpty()) {
                     commentsList.clear();
                 }
@@ -532,7 +619,7 @@ public class EventPageActivity extends AppCompatActivity {
                 mEvent.setComments(commentsList);
 
                 //populate the views in the view hierarchy with actual event data
-                new PopulateUITask().execute();
+                 new PopulateUITask().execute();
             }
 
             @Override
@@ -615,6 +702,11 @@ public class EventPageActivity extends AppCompatActivity {
         }*/
     }
 
+//    @Override
+//    public void onStart(){
+//
+//    }
+
     // for fixing the clicking favourites twice bug
     // TODO: this may be another way of fixing the clicking favourite button twice bug, by finish()ing activity on back press
     // is it better to finish() activity everytime for less work done by the activity, I don't know...
@@ -679,9 +771,9 @@ public class EventPageActivity extends AppCompatActivity {
 
         @Override
         protected List<Address> doInBackground(Void... params) {
+            List<Address> addresses = new ArrayList<>();
 
             Geocoder coder = new Geocoder(mContext);
-            List<Address> addresses = new ArrayList<>();
 
             //get Location
             Location location = mEvent.getLocation();
@@ -775,6 +867,44 @@ public class EventPageActivity extends AppCompatActivity {
             }
 
         });
+    }
+
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+
+        super.onActivityResult(requestCode, resultCode, data);
+        if(resultCode == RESULT_OK){
+            if (requestCode == RETURN_FROM_EDIT){
+                Bundle extras = data.getExtras();
+                if (extras != null) {
+                    Location loc = new Location();
+                    loc.setLatitude(extras.getDouble("lat"));
+                    loc.setLongitude(extras.getDouble("lng"));
+                    mEvent.setLocation(loc);
+                    Date date = new Date();
+                    date.setMinute(extras.getInt("minute"));
+                    date.setHour(extras.getInt("hour"));
+                    date.setDay(extras.getInt("day"));
+                    date.setMonth(extras.getInt("month"));
+                    date.setYear(extras.getInt("year"));
+                    mEvent.setDate(date);
+                    mEvent.setName(extras.getString("name"));
+                    mEvent.setDescription(extras.getString("description"));
+
+                    mEvent.update();
+
+                    mTitle.setText(mEvent.getName().toString());
+                    mDescription.setText(mEvent.getDescription().toString());
+                    mStartDay.setText("" + extras.getInt("day"));
+                    mStartMonth.setText(("" + DataUtil.convertMonthToString(extras.getInt("month"))));
+                    mStartTime.setText(extras.getString("time"));
+                    mAddress.setText(extras.getString("address"));
+
+                    //The key argument here must match that used in the other activity
+                }
+            }
+        }
     }
 
 

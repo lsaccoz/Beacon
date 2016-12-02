@@ -1,5 +1,6 @@
 package com.bcn.beacon.beacon.Data.Models;
 
+import java.util.Calendar;
 import java.util.Locale;
 
 public class Date {
@@ -10,6 +11,7 @@ public class Date {
     private int hour;
     private int minute;
 
+
     public String formatted() {
         boolean isPM = 12 <= hour && hour < 24;
 
@@ -17,6 +19,8 @@ public class Date {
                 (hour == 12 || hour == 0) ? 12 : hour % 12, minute,
                 isPM ? "PM" : "AM");
     }
+
+
 
     public int getYear() {
         return year;
@@ -38,7 +42,6 @@ public class Date {
         return minute;
     }
 
-
     public void setYear(int year) {
         this.year = year;
     }
@@ -58,4 +61,5 @@ public class Date {
     public void setMinute(int minute) {
         this.minute = minute;
     }
+
 }

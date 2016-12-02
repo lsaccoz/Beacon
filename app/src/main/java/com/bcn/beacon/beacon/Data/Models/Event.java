@@ -1,5 +1,7 @@
 package com.bcn.beacon.beacon.Data.Models;
 
+import android.graphics.Bitmap;
+
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
@@ -18,6 +20,7 @@ public class Event {
     private ArrayList<Comment> commentsList;
     private HashMap<String, Comment> comments;
 
+    private ArrayList<Bitmap> photos;
 
     public Event() {
         // Default constructor required for calls to DataSnapshot.getValue(Event.class)
@@ -39,6 +42,8 @@ public class Event {
         users.child(userId).child("hosting").child(eventId).setValue(true);
 
         new ListEvent(this);
+
+        uploadPhotos();
     }
 
     //untested
@@ -48,9 +53,26 @@ public class Event {
 
         events.child(eventId).setValue(this);
 
-        new ListEvent(this);
+        new ListEvent(this).upload();
     }
 
+    public void addPhotos(ArrayList<Bitmap> photos) {
+        this.photos = photos;
+    }
+
+    private void uploadPhotos() {
+        PhotoManager.getInstance().upload(eventId, photos);
+    }
+
+    public void delete(){
+        new ListEvent(this).delete();
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        DatabaseReference hosting = users.child(hostId).child("hosting");
+
+        hosting.child(eventId).removeValue();
+    }
 
     public String getEventId() {
         return eventId;
