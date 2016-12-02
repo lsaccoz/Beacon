@@ -109,9 +109,9 @@ public class StringSearchTest {
 
         assert(Query9 != null && Query10 != null && Query11 != null);
         assert(Query9.isEmpty());
-        assert(Query10.isEmpty());
+        assert(Query10.size() == 4);
         assert(Query11.isEmpty());
-        
+
     }
 
     private boolean contains(ArrayList<ListEvent> events, ListEvent key) {

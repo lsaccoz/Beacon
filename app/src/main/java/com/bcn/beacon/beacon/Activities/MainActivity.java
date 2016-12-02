@@ -130,7 +130,10 @@ public class MainActivity extends AuthBaseActivity
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
 
-    private boolean showBarInMap = false;
+    //private boolean showBarInMap = false;
+    public boolean searchedMap = false;
+    public boolean searchedList = false;
+    public ArrayList<ListEvent> searchedEventsCache = new ArrayList<ListEvent>();
 
     /**
      * Copied over from BeaconListView
@@ -140,7 +143,7 @@ public class MainActivity extends AuthBaseActivity
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
     // tracker for the temporary fix
-    private static int tracker = -1;
+    private static int tracker = 0; // -1
 
     private ArrayList<ListEvent> events = new ArrayList<>();
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
@@ -187,12 +190,19 @@ public class MainActivity extends AuthBaseActivity
         searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //Toast.makeText(getApplicationContext(), "searched?", Toast.LENGTH_LONG).show();
+
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
                 searchBar.clearFocus();
-                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                fragment.updateListForSearch(query);
+                if (tracker == 1) { // list
+                    searchedList = true;
+                    ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                    fragment.updateListForSearch(query);
+                } else if (tracker == 0){ // map
+                    searchedMap = true;
+                    searchedEventsCache = Search.searchEvents(query, getEventList());
+                    putEventPinsOnMap(searchedEventsCache);
+                }
                 return false;
             }
 
@@ -200,9 +210,17 @@ public class MainActivity extends AuthBaseActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                if (fragment != null) {
-                    fragment.updateListForSearch(newText);
+                searchedEventsCache = Search.searchEvents(newText, getEventList());
+                if (tracker == 1) { // list
+                    searchedList = newText.length() != 0; // if not empty
+                    ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                    if (fragment != null) {
+                        fragment.updateListForSearch(newText);
+                    }
+
+                } else if (tracker == 0) { // world
+                    searchedMap = newText.length() != 0; // if not empty
+                    putEventPinsOnMap(searchedEventsCache);
                 }
                 return false;
             }
@@ -211,19 +229,31 @@ public class MainActivity extends AuthBaseActivity
         searchBar.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                //resetEventList();
-                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                fragment.updateListAllEvents();
+                if (tracker == 1) { // list
+                    searchedList = false;
+                    ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                    fragment.updateListAllEvents();
+                } else if (tracker == 0) { // world
+                    searchedMap = false;
+                    initMap(); // reset the map with all the events
+                    searchBar.setEnabled(false);
+                    searchBar.setVisibility(View.GONE);
+                    searchButton.setEnabled(true);
+                    searchButton.setVisibility(View.VISIBLE);
+                }
                 return false;
             }
         });
 
-        /*searchBar. lksfh sejfherfgh lskhjg r
-                f sfldkjgh rdslkjgh sr
-                g srlkjgh sdrlkjgh ser
-                g srlghj rlhjg sreg
-                sergj hserghjl er
-        */
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchBar.setEnabled(true);
+                searchBar.setVisibility(View.VISIBLE);
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
+            }
+        });
 
 
 
@@ -382,8 +412,11 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
 
-                searchButton.setEnabled(true);
-                searchButton.setVisibility(View.VISIBLE);
+                searchButton.setEnabled(!searchedMap);
+                searchButton.setVisibility(!searchedMap ? View.VISIBLE : View.GONE);
+
+                searchBar.setEnabled(searchedMap);
+                searchBar.setVisibility(searchedMap ? View.VISIBLE : View.GONE);
 
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
 
@@ -409,8 +442,6 @@ public class MainActivity extends AuthBaseActivity
                     mMapFragment.getMapAsync(this);
                 }
                 tracker = 0;
-                searchBar.setEnabled(showBarInMap ? true : false);
-                searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
                 break;
             }
@@ -451,7 +482,10 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
-                //searchBar.setVisibility(View.VISIBLE);
+
+                searchBar.setEnabled(false);
+                searchBar.setVisibility(View.GONE);
+
                 tracker = 2;
                 break;
             }
@@ -697,6 +731,13 @@ public class MainActivity extends AuthBaseActivity
         if (mMap != null) {
             mMap.clear();
 
+            ArrayList<ListEvent> toPopulate = new ArrayList<ListEvent>(events);
+
+            if (searchedMap) {
+                toPopulate = searchedEventsCache;
+            }
+
+
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
 
@@ -711,33 +752,19 @@ public class MainActivity extends AuthBaseActivity
 
             if (mAuth != null && mAuth.getCurrentUser() != null) {
 
-                //add marker for user
-                mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                        .position(new LatLng(userLat, userLng)));
-
                 mMap.setInfoWindowAdapter(new InfoWindow());
                 mMap.setOnMarkerClickListener(this);
                 mMap.setOnInfoWindowClickListener(this);
 
-                if (!events.isEmpty()) {
-                    for (int i = 0; i < events.size(); i++) {
+                if (!toPopulate.isEmpty()) {
+                    putEventPinsOnMap(toPopulate);
 
-                        ListEvent e = events.get(i);
-
-                        double latitude = e.getLocation().getLatitude();
-                        double longitude = e.getLocation().getLongitude();
-
-                        Marker marker = mMap.addMarker(new MarkerOptions()
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                                .position(new LatLng(latitude, longitude)));
-
-                        m.put(marker.getId(), e.getEventId());
-                        events_list.put(marker.getId(), e);
-
-                    }
-
-                } else {
+                    //add marker for user
+                    mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .position(new LatLng(userLat, userLng)));
+                }
+                 else {
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                             .position(new LatLng(userLat, userLng))
@@ -757,6 +784,32 @@ public class MainActivity extends AuthBaseActivity
 
             }
 
+        }
+    }
+
+    public void putEventPinsOnMap(List<ListEvent> events) {
+        if (events.isEmpty()) return;
+        if (mMap != null) {
+            mMap.clear();
+
+            //add marker for user
+            mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                    .position(new LatLng(userLat, userLng)));
+
+            for (ListEvent e : events) {
+
+                double latitude = e.getLocation().getLatitude();
+                double longitude = e.getLocation().getLongitude();
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(latitude, longitude)));
+
+                m.put(marker.getId(), e.getEventId());
+                events_list.put(marker.getId(), e);
+
+            }
         }
     }
 
