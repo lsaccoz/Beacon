@@ -11,6 +11,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -83,6 +84,7 @@ public class EventPageActivity extends AuthBaseActivity {
     private TextView mStartDay;
     private TextView mAddress;
     private TextView mTags;
+    private TextView mIconText;
     private ListView mCommentsList;
     private IconTextView mCommentButton;
     private IconTextView mPostComment;
@@ -148,6 +150,7 @@ public class EventPageActivity extends AuthBaseActivity {
         mTitle = (TextView) findViewById(R.id.event_title);
         mDescription = (TextView) findViewById(R.id.event_description);
         mFavourite = (IconTextView) findViewById(R.id.favourite_button);
+        mIconText = (TextView) findViewById(R.id.icon_text);
         mImageScroller = (RecyclerView) findViewById(R.id.image_scroller);
         mStartTime = (TextView) findViewById(R.id.start_time);
         mStartDay = (TextView) findViewById(R.id.start_day);
@@ -320,8 +323,6 @@ public class EventPageActivity extends AuthBaseActivity {
 
         registerForContextMenu(mCommentsList);
 
-        initFavourite();
-
         //Add dummy image to the event page
         mImageDrawables.add(getResources().getDrawable(R.drawable.default_event_photo));
 
@@ -362,10 +363,11 @@ public class EventPageActivity extends AuthBaseActivity {
         // Handle item selection
         switch (item.getItemId()) {
             case R.id.delete:
-                AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+                AlertDialog.Builder alert = new AlertDialog.Builder(
+                        new ContextThemeWrapper(this, R.style.DialogTheme));
 
-                alert.setTitle("Delete Event?");
-
+                alert.setTitle(getString(R.string.delete_event_question));
+                alert.setMessage(getString(R.string.delete_event_message));
                 alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
 
                     @Override
@@ -382,13 +384,18 @@ public class EventPageActivity extends AuthBaseActivity {
                         // remove event from favourites view and user favourites
                         mEvent.delete();
                         dialog.dismiss();
-                        confirmDeleteAlert();
+                        confirmDelete();
+
 
 
                     }
                 });
+                AlertDialog dialog = alert.create();
+                dialog.setCanceledOnTouchOutside(true);
+                dialog.show();
 
-                alert.show();
+                UI_Util.setDialogStyle(dialog, this);
+
                 return true;
             case R.id.edit_event:
                 Intent intent = new Intent(this , EditEventActivity.class);
@@ -563,19 +570,14 @@ public class EventPageActivity extends AuthBaseActivity {
         }
     }
 
-    void confirmDeleteAlert(){
-        AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
-        alert.setTitle("Your event has been deleted");
+    //show text to confirm that the event was deleted
+    private void confirmDelete(){
+        Toast toast = Toast.makeText(this,
+                getApplicationContext().getString(R.string.delete_event_confirmation),
+                Toast.LENGTH_SHORT);
 
-        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-            // check for android.view.WindowLeaked: exception!
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                finish();
-            }
-        });
-
-        alert.show();
+        toast.show();
+        finish();
     }
 
     /**
@@ -617,6 +619,7 @@ public class EventPageActivity extends AuthBaseActivity {
                 Collections.reverse(commentsList);
 
                 mEvent.setComments(commentsList);
+                initFavouriteOrHost(userId);
 
                 //populate the views in the view hierarchy with actual event data
                 populateUI();
@@ -776,48 +779,57 @@ public class EventPageActivity extends AuthBaseActivity {
                 .setListener(null);
     }
 
-    private void initFavourite() {
+    private void initFavouriteOrHost(String userId) {
 
-        if (mFavourited) {
-            mFavourite.setText("{fa-star}");
-        } else {
-            mFavourite.setText("{fa-star-o}");
-        }
+        //if the current user is hosting this event display a different icon as favouriting
+        //makes no sense for a host
+        if(mEvent.getHostId().equals(userId)){
+            mFavourite.setText("{fa-user}");
+            mIconText.setText(getString(R.string.host));
 
-        //change look of favourite icon when user presses it
-        //filled in means favourited, empty means not favourited
-        mFavourite.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-
-                int duration = Toast.LENGTH_SHORT;
-
-                if (!mFavourited) {
-                    ((IconTextView) view).setText("{fa-star}");
-                    CharSequence text = getString(R.string.favourited);
-
-                    addFavourite();
-
-                    Toast toast = Toast.makeText(mContext, text, duration);
-                    toast.show();
-                    mFavourited = true;
-//                    ((IconTextView) view).setBackgroundColor(getBaseContext()
-//                            .getResources().getColor(R.color.colorPrimary));
-                } else {
-                    CharSequence text = getString(R.string.un_favourited);
-
-                    removeFavourite();
-
-                    Toast toast = Toast.makeText(mContext, text, duration);
-                    toast.show();
-                    mFavourited = false;
-                    ((IconTextView) view).setText("{fa-star-o}");
-//                    ((IconTextView) view).setBackgroundColor(getBaseContext()
-//                            .getResources().getColor(R.color.colorPrimary));
-                }
+            //set the favourite icon's listener
+        }else {
+            if (mFavourited) {
+                mFavourite.setText("{fa-star}");
+            } else {
+                mFavourite.setText("{fa-star-o}");
             }
 
-        });
+            //change look of favourite icon when user presses it
+            //filled in means favourited, empty means not favourited
+            mFavourite.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+
+                    int duration = Toast.LENGTH_SHORT;
+
+                    if (!mFavourited) {
+                        ((IconTextView) view).setText("{fa-star}");
+                        CharSequence text = getString(R.string.favourited);
+
+                        addFavourite();
+
+                        Toast toast = Toast.makeText(mContext, text, duration);
+                        toast.show();
+                        mFavourited = true;
+                        //                    ((IconTextView) view).setBackgroundColor(getBaseContext()
+                        //                            .getResources().getColor(R.color.colorPrimary));
+                    } else {
+                        CharSequence text = getString(R.string.un_favourited);
+
+                        removeFavourite();
+
+                        Toast toast = Toast.makeText(mContext, text, duration);
+                        toast.show();
+                        mFavourited = false;
+                        ((IconTextView) view).setText("{fa-star-o}");
+                        //                    ((IconTextView) view).setBackgroundColor(getBaseContext()
+                        //                            .getResources().getColor(R.color.colorPrimary));
+                    }
+                }
+
+            });
+        }
     }
 
 
@@ -832,6 +844,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     Location loc = new Location();
                     loc.setLatitude(extras.getDouble("lat"));
                     loc.setLongitude(extras.getDouble("lng"));
+                    loc.setAddress(extras.getString("address"));
                     mEvent.setLocation(loc);
                     Date date = new Date();
                     date.setMinute(extras.getInt("minute"));

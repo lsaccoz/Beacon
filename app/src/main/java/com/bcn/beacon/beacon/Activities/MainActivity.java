@@ -50,6 +50,7 @@ import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.DataUtil;
 import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
+import com.firebase.client.Firebase;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -1116,15 +1117,23 @@ public class MainActivity extends AuthBaseActivity
                 assert Address != null;
                 Address.setText(pinAddress);
 
+                //this is a shoddy solution as we are relying on user names being unique
+                if (FirebaseAuth.getInstance().getCurrentUser()
+                        .getDisplayName().equals(e.getHost())) {
 
-                ArrayList favs = getFavouriteIdsList();
+                    fav.setText("{fa-user}");
+                } else {
 
-                if (favs.contains(e.getEventId()))
-                    fav.setText("{fa-star}");
-                else
-                    fav.setText("{fa-star-o}");
+                    ArrayList favs = getFavouriteIdsList();
+
+                    if (favs.contains(e.getEventId()))
+                        fav.setText("{fa-star}");
+                    else
+                        fav.setText("{fa-star-o}");
+                }
 
                 return v;
+
             } else {
 
                 lp.gravity = Gravity.CENTER;
@@ -1137,8 +1146,8 @@ public class MainActivity extends AuthBaseActivity
 
                 return v;
             }
-
         }
+
 
         @Override
         public View getInfoContents(Marker marker) {

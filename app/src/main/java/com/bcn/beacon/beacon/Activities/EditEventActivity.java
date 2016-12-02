@@ -4,8 +4,10 @@ import android.content.Intent;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.bcn.beacon.beacon.Data.Models.Event;
+import com.bcn.beacon.beacon.R;
 
 public class EditEventActivity extends CreateEventActivity {
 
@@ -51,6 +53,13 @@ public class EditEventActivity extends CreateEventActivity {
 
 
         setResult(RESULT_OK, data);
+
+        //show confirmation that the event was updated
+        Toast toast = Toast.makeText(this,
+                getString(R.string.event_update_confirmation),
+                Toast.LENGTH_SHORT);
+
+        toast.show();
 
         finish();
         return;

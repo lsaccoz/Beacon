@@ -47,6 +47,7 @@
     <string name="comments">Comments</string>
     <string name="favourited">Favourited event</string>
     <string name="un_favourited">Unfavourited event</string>
+    <string name="host">Host</string>
 
     <!-- Sign out Strings -->
     <string name="sign_out">Sign Out</string>
@@ -59,7 +60,13 @@
         Beacon requires a stable internet connection for event creation </string>
 
     <!-- CreateEventActivity strings -->
-    <string name="upload_event_confirmation">Event Uploaded!</string>
+    <string name="upload_event_confirmation">Event Uploaded</string>
+
+    <!-- EditEventPageActivity strings -->
+    <string name="event_update_confirmation">Event Updated</string>
+    <string name="delete_event_question">Delete Event?</string>
+    <string name="delete_event_message">Are you sure you want to delete this event?</string>
+    <string name="delete_event_confirmation">Event Deleted</string>
 
 
 

@@ -34,7 +34,7 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
         TextView host;
         TextView distance;
         TextView start;
-        IconTextView favourite;
+//        IconTextView favourite;
         ImageView thumb;
     }
 
@@ -57,7 +57,7 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
             viewHolder.host = (TextView) convertView.findViewById(R.id.host);
             viewHolder.distance = (TextView) convertView.findViewById(R.id.distance);
             viewHolder.start = (TextView) convertView.findViewById(R.id.start);
-            viewHolder.favourite = (IconTextView) convertView.findViewById(R.id.favourite);
+//            viewHolder.favourite = (IconTextView) convertView.findViewById(R.id.favourite);
             // Cache the viewHolder object inside the fresh view
             convertView.setTag(viewHolder);
         }
@@ -68,10 +68,10 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
 
         viewHolder.thumb = (ImageView) convertView.findViewById(R.id.eventPic);
 
-        if (mFavouritedEventIds.contains(event.getEventId()))
-            viewHolder.favourite.setText("{fa-star}");
-        else
-            viewHolder.favourite.setText("{fa-star-o}");
+//        if (mFavouritedEventIds.contains(event.getEventId()))
+//            viewHolder.favourite.setText("{fa-star}");
+//        else
+//            viewHolder.favourite.setText("{fa-star-o}");
         // Populate data via viewHolder
         viewHolder.title.setText(event.getName());
         viewHolder.host.setText(event.getHost());
