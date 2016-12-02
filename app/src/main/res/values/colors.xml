@@ -19,6 +19,7 @@
     <color name="yellow">#FFEB3B</color>
     <color name="light_gray">#757575</color>
     <color name="dark_gray">#545454</color>
+    <color name="dark_red">#C40000</color>
 
 
 </resources>

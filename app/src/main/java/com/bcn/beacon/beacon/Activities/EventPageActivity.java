@@ -1,40 +1,36 @@
 package com.bcn.beacon.beacon.Activities;
 
-
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 
-import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
-import android.net.Uri;
 import android.os.AsyncTask;
-import android.os.Build;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
-import android.text.method.KeyListener;
+import android.text.TextWatcher;
 import android.util.Log;
-import android.view.KeyEvent;
+import android.view.ContextMenu;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.EditText;
-import android.widget.ImageView;
+import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 import android.view.Window;
 import android.widget.TextView;
 
-import com.android.camera.CropImageIntentBuilder;
 import com.bcn.beacon.beacon.Adapters.CommentAdapter;
 import com.bcn.beacon.beacon.CustomViews.CommentEditText;
 import com.bcn.beacon.beacon.Data.Models.Comment;
@@ -51,26 +47,23 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import java.io.File;
 import java.io.IOException;
 
 import com.bcn.beacon.beacon.Utility.DataUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.joanzapata.iconify.widget.IconTextView;
 
-import java.io.Serializable;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 
 import java.util.ArrayList;
 
-import static android.R.attr.delay;
 
 public class EventPageActivity extends AuthBaseActivity {
 
-    private static final int COMMENT_CHARACTER_LIMIT = 2;
+    private static final int COMMENT_CHARACTER_LIMIT_MIN = 2;
+    private static final int COMMENT_CHARACTER_LIMIT_MAX = 140;
     private Event mEvent;
     private String mEventId;
     private Context mContext;
@@ -93,7 +86,10 @@ public class EventPageActivity extends AuthBaseActivity {
     private ListView mCommentsList;
     private IconTextView mCommentButton;
     private IconTextView mPostComment;
+    private IconTextView mEditConfirm;
+    private CardView mCardViewComments;
     private CommentEditText mWriteComment;
+    private TextView mCharacterCount;
 
     private boolean mFavourited = false;
     private boolean commentTab = false;
@@ -101,6 +97,10 @@ public class EventPageActivity extends AuthBaseActivity {
     private int mAnimDuration;
 
     private int from;
+    private Comment currentComment = null;
+    private int currentCommentPos;
+    private static boolean discarded = false;
+    private static boolean edited = false;
 
     private static int RETURN_FROM_EDIT = 0;
 
@@ -156,8 +156,12 @@ public class EventPageActivity extends AuthBaseActivity {
         mTags = (TextView) findViewById(R.id.tags);
         mCommentsList = (ListView) findViewById(R.id.comments_list);
         mCommentButton = (IconTextView) findViewById(R.id.comment_button);
+        mEditConfirm = (IconTextView) findViewById(R.id.edit_confirm);
         mPostComment = (IconTextView) findViewById(R.id.post_comment);
         mWriteComment = (CommentEditText) findViewById(R.id.write_comment);
+        mCharacterCount = (TextView) findViewById(R.id.character_count);
+        mCardViewComments = (CardView) findViewById(R.id.card_view_comments);
+
 
         // input manager for showing keyboard immediately
         final InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
@@ -165,6 +169,7 @@ public class EventPageActivity extends AuthBaseActivity {
         // set empty view if there are no favourites
         mCommentsList.setEmptyView(findViewById(R.id.empty));
 
+        // Listener for the button to write a comment (opens the EditText)
         mCommentButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -176,6 +181,8 @@ public class EventPageActivity extends AuthBaseActivity {
                     mWriteComment.setVisibility(View.VISIBLE);
                     mWriteComment.setEnabled(true);
                     mWriteComment.requestFocus();
+                    mCharacterCount.setEnabled(true);
+                    mCharacterCount.setVisibility(View.VISIBLE);
                     imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
                 } else {
                     showDiscardAlert();
@@ -185,6 +192,7 @@ public class EventPageActivity extends AuthBaseActivity {
             }
         });
 
+        // Listener for the button for posting the comment
         mPostComment.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -192,7 +200,19 @@ public class EventPageActivity extends AuthBaseActivity {
                 long time = c.getTimeInMillis();
                 Comment comment = new Comment();
                 String text = mWriteComment.getText().toString();
-                if (text.length() >= COMMENT_CHARACTER_LIMIT) {
+                String whitespace = new String(new char[text.length()]).replace("\0", " ");
+                String newline = new String(new char[text.length()]).replace("\0", "\n");
+                if (text.length() >= COMMENT_CHARACTER_LIMIT_MIN) {
+                    // Validation point: check for whitespace-only comments
+                    if (text.equals(whitespace) || text.equals(newline)) {
+                        String alert = "You cannot post a comment consisting of only whitespace";
+                        Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
+                        // centre the alignment of the text in toast
+                        TextView view = (TextView) toast.getView().findViewById(android.R.id.message);
+                        if (view != null) view.setGravity(Gravity.CENTER);
+                        toast.show();
+                        return;
+                    }
                     comment.setText(text);
                     comment.setEventId(mEventId);
                     comment.setDate(time);
@@ -204,13 +224,101 @@ public class EventPageActivity extends AuthBaseActivity {
                     toast.show();
                     commentsList.add(0, comment);
                     mAdapter.notifyDataSetChanged();
+
                 } else {
-                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT + " characters";
+                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
                     Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
                     toast.show();
                 }
             }
         });
+
+        // Listener for edit button
+        // TODO: Refactor some stuff, add whitespace check to here as well (make it a function)
+        // TODO: Also, should edit time be recorded? shown?
+        mEditConfirm.setOnClickListener(new View.OnClickListener() {
+            InputMethodManager imm = ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE));
+
+            @Override
+            public void onClick(View v) {
+                FirebaseDatabase database = FirebaseDatabase.getInstance();
+                DatabaseReference comment = database.getReference("Events/" + mEventId + "/comments/" + currentComment.getId());
+                String text = mWriteComment.getText().toString();
+                if (text.length() >= COMMENT_CHARACTER_LIMIT_MIN) {
+                    currentComment.setText(text);
+                    comment.child("text").setValue(text);
+                    commentsList.set(currentCommentPos, currentComment);
+                    mAdapter.notifyDataSetChanged();
+                    hideCommentTab();
+                    imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                    mWriteComment.getLayoutParams().width = RelativeLayout.LayoutParams.MATCH_PARENT;
+                    String t = "Comment edited";
+                    Toast toast = Toast.makeText(mContext, t, Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+                else {
+                    String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
+                    Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
+                    toast.show();
+                }
+            }
+        });
+
+        mCharacterCount.setText("0/" + COMMENT_CHARACTER_LIMIT_MAX);
+        mCharacterCount.setTextColor(Color.GRAY);
+
+        // Listener for the character limit counter
+        mWriteComment.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (!edited) {
+                    edited = true;
+                }
+                mCharacterCount.setText(s.toString().length() + "/" + COMMENT_CHARACTER_LIMIT_MAX);
+                switch (s.toString().length()) {
+                    case COMMENT_CHARACTER_LIMIT_MAX: {
+                        mCharacterCount.setTextColor(getResources().getColor(R.color.dark_red));
+                        break;
+                    }
+                    default: {
+                        mCharacterCount.setTextColor(Color.GRAY);
+                        break;
+                    }
+                }
+            }
+        });
+
+        // listener for leaving comments by clicking up
+        mWriteComment.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && (!mEditConfirm.isPressed() && !mPostComment.isPressed())) {
+                    //hideCommentTab();
+                    if (!discarded) {
+                        hideKeyboard(v);
+                        showDiscardAlert();
+                    }
+                    else {
+                        discarded = false;
+                    }
+                }
+            }
+        });
+
+        // for making comments unclickable
+        // TODO: UNCOMMENT AFTER WE FIGURE OUT THE SCROLL THING
+        //mCommentsList.setEnabled(false);
+        mCommentsList.setOnItemClickListener(null);
+
+        registerForContextMenu(mCommentsList);
 
         initFavourite();
 
@@ -298,6 +406,97 @@ public class EventPageActivity extends AuthBaseActivity {
         }
     }
 
+    // Method for overriding context menu
+    // TODO: maybe move the hardcoded stuff to strings.xml and load resources from there?
+    @Override
+    public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        if (v.getId() == R.id.comments_list) {
+            AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) menuInfo;
+            Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
+            if (userId.equals(comment.getUserId())) {
+                menu.add(Menu.NONE, 0, 0, "Edit");
+                menu.add(Menu.NONE, 1, 1, "Delete");
+            }
+            else {
+                // do nothing
+                return;
+            }
+        }
+        super.onCreateContextMenu(menu, v, menuInfo);
+    }
+
+    // Method for the context menu items, handles item clicks
+    @Override
+    public boolean onContextItemSelected(MenuItem item) {
+        AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo) item.getMenuInfo();
+        Comment comment = (Comment) mCommentsList.getItemAtPosition(info.position);
+        int index = item.getItemId(); // Edit = 0, Delete = 1
+        if (index == 0) {
+            editComment(comment);
+            currentCommentPos = info.position;
+        }
+        else if (index == 1) {
+            deleteComment(comment, info.position);
+        }
+        super.onContextItemSelected(item);
+        return true;
+    }
+
+    // Method for editing a comment
+    public boolean editComment(Comment comment) {
+        InputMethodManager imm = ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE));
+        if (!commentTab) {
+            commentTab = true;
+            mCommentButton.setText("{fa-comment}");
+            mEditConfirm.setEnabled(true);
+            mEditConfirm.setVisibility(View.VISIBLE);
+            mPostComment.setVisibility(View.GONE);
+            mPostComment.setEnabled(false);
+            mWriteComment.setVisibility(View.VISIBLE);
+            mWriteComment.setEnabled(true);
+            mWriteComment.getLayoutParams().width = (mCardViewComments.getWidth() - (mCommentButton.getWidth()));
+            mWriteComment.requestFocus();
+            mCharacterCount.setEnabled(true);
+            mCharacterCount.setVisibility(View.VISIBLE);
+            mWriteComment.setText(comment.getText());
+            mWriteComment.setSelection(mWriteComment.getText().length());
+            imm.toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+            currentComment = comment;
+        }
+
+        return true;
+    }
+    // Method for deleting a comment
+    public boolean deleteComment(Comment comment, int position) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference comments = database.getReference("Events/" + comment.getEventId() + "/comments");
+        comments.child(comment.getId()).removeValue();
+        commentsList.remove(position);
+        mAdapter.notifyDataSetChanged();
+        String text = "Comment deleted";
+        Toast toast = Toast.makeText(mContext, text, Toast.LENGTH_SHORT);
+        toast.show();
+        return true;
+    }
+
+    // Method for adjusting the currentCommentPos in another class
+    public void setCurrentCommentPos(int position) {
+        this.currentCommentPos = position;
+    }
+
+    // Method for setting edited for not showing discard alert if not edited
+    public static void setEdited(boolean edit) {
+        edited = edit;
+    }
+
+    // Method for hiding keyboard
+    public void hideKeyboard(View view) {
+        InputMethodManager inputMethodManager = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+        inputMethodManager.hideSoftInputFromWindow(view.getWindowToken(), 0);
+    }
+
     // Method for hiding comment tab on back press from EditText
     public void hideCommentTab() {
         if (commentTab) {
@@ -308,12 +507,17 @@ public class EventPageActivity extends AuthBaseActivity {
             mWriteComment.setVisibility(View.GONE);
             mWriteComment.setText("");
             mWriteComment.setEnabled(false);
+            mCharacterCount.setEnabled(false);
+            mCharacterCount.setVisibility(View.GONE);
+            mEditConfirm.setEnabled(false);
+            mEditConfirm.setVisibility(View.GONE);
             mWriteComment.clearFocus();
         }
     }
 
+    // Method for showing a discard alert
     public void showDiscardAlert() {
-        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT) {
+        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT_MIN && edited) {
             // show alert if the user entered more than required characters
             AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
             alert.setIcon(R.drawable.attention);
@@ -324,6 +528,7 @@ public class EventPageActivity extends AuthBaseActivity {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                     // hide the comment tab if yes
+                    discarded = true;
                     hideCommentTab();
                     dialog.dismiss();
                 }
@@ -332,8 +537,13 @@ public class EventPageActivity extends AuthBaseActivity {
 
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
-                    // do nothing
-                    ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                    if (!mWriteComment.hasFocus()) {
+                        mWriteComment.requestFocus();
+                        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
+                    }
+                    else {
+                        ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
+                    }
                     dialog.dismiss();
                 }
             });
@@ -480,10 +690,9 @@ public class EventPageActivity extends AuthBaseActivity {
 
     @Override
     public void onBackPressed() {
-        hideCommentTab();
+        //hideCommentTab();
         MainActivity.setEventPageClickedFrom(from);
         super.onBackPressed();
-        //finish();
     }
 
     @Override

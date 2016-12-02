@@ -33,7 +33,6 @@ public class CommentEditText extends EditText {
 
     @Override
     public boolean onKeyPreIme(int keyCode, KeyEvent event) {
-        // TODO: We might add an "are you sure" prompt for discarding changes for comment
         if (keyCode == KeyEvent.KEYCODE_BACK &&
                 event.getAction() == KeyEvent.ACTION_UP) {
             activity.showDiscardAlert();
