@@ -91,6 +91,8 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
             viewHolder.delete.setVisibility(View.VISIBLE);
             viewHolder.delete.setEnabled(true);
         }
+        final IconTextView mEdit = viewHolder.edit;
+        final IconTextView mDelete = viewHolder.delete;
 
         viewHolder.edit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -104,6 +106,10 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
             @Override
             public void onClick(View v) {
                 ((EventPageActivity) mContext).deleteComment(comment, mComments.indexOf(comment));
+                mEdit.setVisibility(View.GONE);
+                mEdit.setEnabled(false);
+                mDelete.setVisibility(View.GONE);
+                mDelete.setEnabled(false);
             }
         });
 
