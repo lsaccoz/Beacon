@@ -272,7 +272,7 @@ public class MainActivity extends AuthBaseActivity
         getFavouriteIds();
         // get the user location
         Location location = LocationUtil.getUserLocation(this);
-        if(location != null) {
+        if (location != null) {
             userLat = location.getLatitude();
             userLng = location.getLongitude();
         }
@@ -570,7 +570,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     *
      * TODO THIS CAN BE REFACTORED
      */
     public void getNearbyEvents() {
@@ -582,7 +581,7 @@ public class MainActivity extends AuthBaseActivity
         Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
                 .startAt(DataUtil.getExpiredDate());
 
-        if(mCurrentListener != null){
+        if (mCurrentListener != null) {
             searchParams.removeEventListener(mCurrentListener);
         }
         mCurrentListener = new ValueEventListener() {
@@ -592,13 +591,13 @@ public class MainActivity extends AuthBaseActivity
                     events.clear();
                 }
                 double distance;
-                
+
                 PhotoManager photoManager = PhotoManager.getInstance();
 
                 //get the searchRangeLimit for this user
-              SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-              int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
+                int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
 
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
@@ -667,7 +666,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
 
-
     /**
      * Getter method for that returns the events list
      *
@@ -714,7 +712,7 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Location location = LocationUtil.getUserLocation(this);
-        if(location != null) {
+        if (location != null) {
             userLat = location.getLatitude();
             userLng = location.getLongitude();
         }
@@ -825,9 +823,9 @@ public class MainActivity extends AuthBaseActivity
 //            pinAddress = localUtil.getLocationName(userLat, userLng, this);
 //
 //        }
-        if(event != null){
+        if (event != null) {
             pinAddress = event.getLocation().getAddress();
-        }else{
+        } else {
             pinAddress = "";
         }
 
@@ -873,7 +871,7 @@ public class MainActivity extends AuthBaseActivity
 
     /**
      * This method overrides the default back button functionality
-     * <p/>
+     * <p>
      * If the user is looking at a different tab the world tab will be loaded,
      * otherwise the activity will end and the user will return to the android home screen
      */
@@ -886,13 +884,9 @@ public class MainActivity extends AuthBaseActivity
             searchBar.setVisibility(View.GONE);
         }
 
-        //currently viewing the map
-        if (mMapFragment != null && mMapFragment.isVisible()) {
-            //return to home screen
-            finish();
 
-            //map fragment is active but not currently shown
-        } else if (mMapFragment != null && !mMapFragment.isVisible()) {
+        //map fragment is active but not currently shown
+        if (mMapFragment != null && !mMapFragment.isVisible()) {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
             transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
@@ -915,11 +909,19 @@ public class MainActivity extends AuthBaseActivity
             mCreateEvent.setVisibility(View.VISIBLE);
 
         } else {
-            finish();
+
+            //currently viewing the map, go back to android home screen
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+
+
         }
     }
 
-    // To keep track of the view the event page was clicked on
+        // To keep track of the view the event page was clicked on
+
     public static void setEventPageClickedFrom(int from) {
         eventPageClickedFrom = from;
     }
@@ -1023,9 +1025,7 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     *
      * TODO THIS COULD POSSIBLY BE REFACTORED ??
-     *
      */
 
     public class InfoWindow implements GoogleMap.InfoWindowAdapter {

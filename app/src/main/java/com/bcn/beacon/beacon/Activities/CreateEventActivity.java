@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -361,6 +362,12 @@ public class CreateEventActivity extends AuthBaseActivity implements
         // for temporary fix on back pressed
         MainActivity.setEventPageClickedFrom(from);
 
+        //display toast to user to confirm that an event was uploaded
+        Toast toast = Toast.makeText(this,
+                getString(R.string.upload_event_confirmation),
+                Toast.LENGTH_SHORT);
+
+        toast.show();
         kill_activity();
 
     }

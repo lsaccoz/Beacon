@@ -58,6 +58,9 @@
     <string name="no_internet_create_event_message">
         Beacon requires a stable internet connection for event creation </string>
 
+    <!-- CreateEventActivity strings -->
+    <string name="upload_event_confirmation">Event Uploaded!</string>
+
 
 
 

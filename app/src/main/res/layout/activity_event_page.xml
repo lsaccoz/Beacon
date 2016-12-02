@@ -20,6 +20,7 @@
         android:id="@+id/event_page_root"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:visibility="gone"
         android:orientation="vertical">
 
         <!-- Linear layout to order views vertically within card view -->

@@ -403,9 +403,6 @@ public class EventPageActivity extends AppCompatActivity {
 
     private void populateUI() {
 
-        //initially hide the layout
-        mContentView.setVisibility(View.GONE);
-
         mDescription.setText(mEvent.getDescription());
         mTitle.setText(mEvent.getName());
 
