@@ -61,6 +61,15 @@ public class ListEvent {
 
     public void delete() {
         this.setTimestamp(new Long(0));
+        upload();
+    }
+
+    public void removeHosting(String hostId) {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        DatabaseReference hosting = users.child(hostId).child("hosting");
+
+        hosting.child(eventId).removeValue();
     }
 
     /**

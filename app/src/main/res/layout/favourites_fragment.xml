@@ -7,65 +7,58 @@
 
 
     <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/scrollojt"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:id="@+id/scrollojt"
-        android:fillViewport="true" >
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:fillViewport="true">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/hosting_title"
-        android:text="Your Events"
-        android:textSize="18sp" />
-
-    <ListView
-        android:id="@+id/hostingView"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:drawSelectorOnTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:elevation="1dp"
-        />
-
-        <TextView
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:id="@+id/favourites_title"
-            android:text="Favourited Events"
-            android:textSize="18sp" />
+            android:layout_height="match_parent"
+            android:orientation="vertical">
 
-        <ListView
-        android:id="@+id/favouritesView"
-        android:layout_width="wrap_content"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:drawSelectorOnTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:elevation="1dp"
-        />
+            <TextView
+                android:id="@+id/hosting_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Your Events"
+                android:textSize="18sp" />
 
-    </LinearLayout>
+            <ListView
+                android:id="@+id/hostingView"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:drawSelectorOnTop="true"
+                android:elevation="1dp" />
+
+            <TextView
+                android:id="@+id/favourites_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5dp"
+                android:text="Favourite Events"
+                android:textSize="18sp" />
+
+            <ListView
+                android:id="@+id/favouritesView"
+                android:layout_width="wrap_content"
+                android:layout_height="0dp"
+                android:layout_alignParentLeft="true"
+                android:layout_alignParentStart="true"
+                android:drawSelectorOnTop="true"
+                android:elevation="1dp" />
+
+        </LinearLayout>
     </ScrollView>
 
     <TextView
         android:id="@+id/empty_fav"
-        android:text="You don't have any favourited events. [insert cheeky banter here]"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"
-        android:gravity="center" />
-    <TextView
-        android:id="@+id/empty_host"
-        android:text="You're not hosting any events."
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:gravity="center" />
+        android:gravity="center"
+        android:text="Events you host and favourite will appear here" />
 
 </FrameLayout>

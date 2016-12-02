@@ -53,6 +53,12 @@ public class Event {
 
     public void delete(){
         new ListEvent(this).delete();
+
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        DatabaseReference hosting = users.child(hostId).child("hosting");
+
+        hosting.child(eventId).removeValue();
     }
 
     public String getEventId() {

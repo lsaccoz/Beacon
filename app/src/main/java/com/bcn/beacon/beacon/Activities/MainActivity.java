@@ -264,11 +264,6 @@ public class MainActivity extends AuthBaseActivity
 
         // get events from firebase
         getNearbyEvents();
-        // get user favourite ids from firebase
-        getIds(FAVOURITES, favouriteIds);
-        //get user hosting ids from firebase
-        getIds(HOSTING, hostingIds);
-        // get the user location
         getUserLocation();
 
     }
@@ -595,6 +590,7 @@ public class MainActivity extends AuthBaseActivity
                 if (!events.isEmpty()) {
                     events.clear();
                 }
+
                 double distance;
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
@@ -656,7 +652,7 @@ public class MainActivity extends AuthBaseActivity
     /**
      * Function to get the event ids of user's favourites
      */
-    public void getIds(String eventType, final ArrayList<String> idList ) {
+    public void getIds(final String eventType, final ArrayList<String> idList ) {
         try {
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             FirebaseDatabase database = FirebaseDatabase.getInstance();

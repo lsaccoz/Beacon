@@ -65,6 +65,8 @@ import java.util.Locale;
 
 import java.util.ArrayList;
 
+import static android.R.attr.delay;
+
 public class EventPageActivity extends AuthBaseActivity {
 
     private static final int COMMENT_CHARACTER_LIMIT = 2;
@@ -255,9 +257,8 @@ public class EventPageActivity extends AuthBaseActivity {
         switch (item.getItemId()) {
             case R.id.delete:
                 AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
-                alert.setIcon(R.drawable.fire) ;
-                alert.setTitle("NOT LIT ENOUGH?");
-                alert.setMessage("Delete your event '" + mEvent.getName() + "'?");
+
+                alert.setTitle("Delete Event?");
 
                 alert.setNegativeButton("No", new DialogInterface.OnClickListener() {
 
@@ -275,6 +276,9 @@ public class EventPageActivity extends AuthBaseActivity {
                         // remove event from favourites view and user favourites
                         mEvent.delete();
                         dialog.dismiss();
+                        confirmDeleteAlert();
+
+
                     }
                 });
 
@@ -308,6 +312,22 @@ public class EventPageActivity extends AuthBaseActivity {
             mWriteComment.setEnabled(false);
             mWriteComment.clearFocus();
         }
+    }
+
+
+    void confirmDeleteAlert(){
+        AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+        alert.setTitle("Your event has been deleted");
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            // check for android.view.WindowLeaked: exception!
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        });
+
+        alert.show();
     }
 
     /**
