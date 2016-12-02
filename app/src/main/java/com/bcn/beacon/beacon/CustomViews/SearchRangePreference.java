@@ -107,11 +107,9 @@ public class SearchRangePreference extends Preference implements SeekBar.OnSeekB
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
 
-        //set minimum search radius to 1 km
-        if (seekBar.getProgress() == 0) {
-            seekBar.setProgress(1);
-            //if user picks a value that is not a multiple of 5, scale up or down
-        } else if (seekBar.getProgress() % 5 != 0) {
+
+        //if user picks a value that is not a multiple of 5, scale up or down
+        if (seekBar.getProgress() % 5 != 0) {
 
             if ((seekBar.getProgress() % 5 < 3)) {
                 seekBar.setProgress(seekBar.getProgress() - (seekBar.getProgress() % 5));
@@ -121,26 +119,31 @@ public class SearchRangePreference extends Preference implements SeekBar.OnSeekB
 
         }
 
-
-        //set the preference value once the user has picked a range value
-        getEditor().putInt(getContext().getString(R.string.pref_range_key), seekBar.getProgress()).commit();
-        //manually call this preferences on preference change listener
-        OnPreferenceChangeListener listener = this.getOnPreferenceChangeListener();
-        if (listener != null) {
-            listener.onPreferenceChange(this, null);
+        //set minimum search radius to 1 km
+        if (seekBar.getProgress() == 0) {
+            seekBar.setProgress(1);
         }
 
 
-        mRangeText.setText(seekBar.getProgress() + " km");
+            //set the preference value once the user has picked a range value
+            getEditor().putInt(getContext().getString(R.string.pref_range_key), seekBar.getProgress()).commit();
+            //manually call this preferences on preference change listener
+            OnPreferenceChangeListener listener = this.getOnPreferenceChangeListener();
+            if (listener != null) {
+                listener.onPreferenceChange(this, null);
+            }
 
 
-        //display a toast to notify user that their search range was updated
-        Toast toast = Toast.makeText(getContext(),
-                getContext().getString(R.string.updated_pref_range),
-                Toast.LENGTH_SHORT);
+            mRangeText.setText(seekBar.getProgress() + " km");
 
-        toast.show();
+
+            //display a toast to notify user that their search range was updated
+            Toast toast = Toast.makeText(getContext(),
+                    getContext().getString(R.string.updated_pref_range),
+                    Toast.LENGTH_SHORT);
+
+            toast.show();
+
+        }
 
     }
-
-}

@@ -4,6 +4,9 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class User {
 
     private String uuid;
@@ -25,15 +28,24 @@ public class User {
 
     public void upload(){
 
-        DatabaseReference users = FirebaseDatabase.getInstance().getReference("Users");
-        if (FirebaseAuth.getInstance().getCurrentUser() != null &&
-                users.equalTo(this.getId()) == null) {
-            String uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            setId(FirebaseAuth.getInstance().getCurrentUser().getUid());
             setName(FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
             setEmail(FirebaseAuth.getInstance().getCurrentUser().getEmail());
 
-            users.child(uid).setValue(this);
+            uploadName();
+            uploadEmail();
         }
+    }
+
+    public void uploadName(){
+        DatabaseReference users = FirebaseDatabase.getInstance().getReference("Users");
+        users.child(getId()).child("name").setValue(getName());
+    }
+
+    public void uploadEmail(){
+        DatabaseReference users = FirebaseDatabase.getInstance().getReference("Users");
+        users.child(getId()).child("email").setValue(getEmail());
     }
 
     public String getId(){

@@ -92,6 +92,7 @@ public class AuthBaseActivity extends AppCompatActivity implements
         if (result.isSuccess()) {
             GoogleSignInAccount acct = result.getSignInAccount();
             if (acct != null) {
+                updloadUser();
                 startActivity(intent);
             }
         } else {

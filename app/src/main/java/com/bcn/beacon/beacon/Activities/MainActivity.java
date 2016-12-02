@@ -1,10 +1,13 @@
 package com.bcn.beacon.beacon.Activities;
 
 import android.Manifest;
+import android.app.AlertDialog;
+import android.app.Application;
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -22,6 +25,7 @@ import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,6 +37,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.BeaconApplication;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
@@ -46,6 +51,7 @@ import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.DataUtil;
 import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
+import com.firebase.client.Firebase;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -142,12 +148,17 @@ public class MainActivity extends AuthBaseActivity
 
     private double userLng, userLat, eventLng, eventLat;
     private static final double maxRadius = 100.0;
+    private static final String FAVOURITES = "favourites";
+    private static final String HOSTING = "hosting";
+
+
     // tracker for the temporary fix
     private static int tracker = 0; // -1
 
     private ArrayList<ListEvent> events = new ArrayList<>();
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
     private ArrayList<String> favouriteIds = new ArrayList<>();
+    private ArrayList<String> hostingIds = new ArrayList<>();
     private ArrayList<ListEvent> favourites = new ArrayList<>();
 
     private ValueEventListener mCurrentListener;
@@ -306,7 +317,7 @@ public class MainActivity extends AuthBaseActivity
         getFavouriteIds();
         // get the user location
         Location location = LocationUtil.getUserLocation(this);
-        if(location != null) {
+        if (location != null) {
             userLat = location.getLatitude();
             userLng = location.getLongitude();
         }
@@ -321,7 +332,11 @@ public class MainActivity extends AuthBaseActivity
         mAuth.addAuthStateListener(mAuthListener);
 
         // get user favourite ids from firebase
-        getFavouriteIds();
+        getIds(FAVOURITES, favouriteIds);
+
+        // get user hosting ids from firebase
+        getIds(HOSTING, hostingIds);
+
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
         if (getFragmentManager().getBackStackEntryCount() == 0) {
@@ -453,8 +468,8 @@ public class MainActivity extends AuthBaseActivity
                 mFavourites.setBackgroundResource(R.color.currentTabColor);
 
                 //hide create event button on this page
-                mCreateEvent.setEnabled(false);
-                mCreateEvent.setVisibility(View.GONE);
+                mCreateEvent.setEnabled(true);
+                mCreateEvent.setVisibility(View.VISIBLE);
 
                 searchButton.setEnabled(false);
                 searchButton.setVisibility(View.GONE);
@@ -526,24 +541,52 @@ public class MainActivity extends AuthBaseActivity
 
             //if the user presses the floating button, launch the create event activity
             case (R.id.create_event_fab): {
-                Intent intent = new Intent(this, CreateEventActivity.class);
-                intent.putExtra("userlat", userLat);
-                intent.putExtra("userlng", userLng);
-                // for temporary fix
-                if (mActiveFragment != null && mActiveFragment == mListFragment) {
-                    intent.putExtra("from", 1);
-                } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
-                    // don't really need this, but keep for now
-                    //Log.i("ACTIVE", "MAP");
-                    intent.putExtra("from", 0);
-                } else if (tracker == 1) {
-                    //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
-                    intent.putExtra("from", 1);
-                }
 
-                // startActivity(intent);
-                // start activity for result using same code for now
-                startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
+                //check if the user has a stable internet connection, if not
+                //display an alert dialog
+                if (!BeaconApplication.isNetworkAvailable(this)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    //set message notifying user that the create event feature is unavailable
+                    //with no internet connection
+                    builder.setMessage(getString(R.string.no_internet_create_event_message))
+                            .setTitle(getString(R.string.no_internet_title))
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    AlertDialog signInDialog = builder.create();
+
+                    //allow user to dismiss dialog by touching outside it's scope
+                    signInDialog.setCanceledOnTouchOutside(true);
+
+                    signInDialog.show();
+
+                    UI_Util.setDialogStyle(signInDialog, this);
+
+                } else {
+                    Intent intent = new Intent(this, CreateEventActivity.class);
+                    intent.putExtra("userlat", userLat);
+                    intent.putExtra("userlng", userLng);
+                    // for temporary fix
+                    if (mActiveFragment != null && mActiveFragment == mListFragment) {
+                        intent.putExtra("from", 1);
+                    } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
+                        // don't really need this, but keep for now
+                        //Log.i("ACTIVE", "MAP");
+                        intent.putExtra("from", 0);
+                    } else if (tracker == 1) {
+                        //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
+                        intent.putExtra("from", 1);
+                    }
+
+                    // startActivity(intent);
+                    // start activity for result using same code for now
+                    startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
+                }
             }
         }
 
@@ -580,7 +623,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     *
      * TODO THIS CAN BE REFACTORED
      */
     public void getNearbyEvents() {
@@ -592,7 +634,7 @@ public class MainActivity extends AuthBaseActivity
         Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
                 .startAt(DataUtil.getExpiredDate());
 
-        if(mCurrentListener != null){
+        if (mCurrentListener != null) {
             searchParams.removeEventListener(mCurrentListener);
         }
         mCurrentListener = new ValueEventListener() {
@@ -600,15 +642,17 @@ public class MainActivity extends AuthBaseActivity
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
                     events.clear();
+                    eventsMap.clear();
                 }
+
                 double distance;
-                
+
                 PhotoManager photoManager = PhotoManager.getInstance();
 
                 //get the searchRangeLimit for this user
-              SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-              int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
+                int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
 
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
@@ -676,7 +720,37 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
+    /**
+     * Function to get the event ids of user's favourites
+     */
+    public void getIds(final String eventType, final ArrayList<String> idList ) {
+        try {
+            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            FirebaseDatabase database = FirebaseDatabase.getInstance();
+            DatabaseReference users = database.getReference("Users");
+            users.child(userId).child(eventType).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                    if (!idList.isEmpty()) {
+                        idList.clear();
+                    }
+                    //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
+                    for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
+                        //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
+                        idList.add(fav_snapshot.getKey());
+                    }
 
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+            });
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+    }
 
     /**
      * Getter method for that returns the events list
@@ -704,12 +778,15 @@ public class MainActivity extends AuthBaseActivity
     public ArrayList<String> getFavouriteIdsList() {
         return favouriteIds;
     }
+    public ArrayList<String> getHostIdsList() {
+        return hostingIds;
+    }
 
 
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Location location = LocationUtil.getUserLocation(this);
-        if(location != null) {
+        if (location != null) {
             userLat = location.getLatitude();
             userLng = location.getLongitude();
         }
@@ -833,11 +910,16 @@ public class MainActivity extends AuthBaseActivity
 
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
+//        if (event != null) {
+//            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
+//        } else {
+//            pinAddress = localUtil.getLocationName(userLat, userLng, this);
+//
+//        }
         if (event != null) {
-            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
+            pinAddress = event.getLocation().getAddress();
         } else {
-            pinAddress = localUtil.getLocationName(userLat, userLng, this);
-
+            pinAddress = "";
         }
 
         float zoom = mMap.getCameraPosition().zoom;
@@ -882,7 +964,7 @@ public class MainActivity extends AuthBaseActivity
 
     /**
      * This method overrides the default back button functionality
-     * <p/>
+     * <p>
      * If the user is looking at a different tab the world tab will be loaded,
      * otherwise the activity will end and the user will return to the android home screen
      */
@@ -895,13 +977,9 @@ public class MainActivity extends AuthBaseActivity
             searchBar.setVisibility(View.GONE);
         }
 
-        //currently viewing the map
-        if (mMapFragment != null && mMapFragment.isVisible()) {
-            //return to home screen
-            finish();
 
-            //map fragment is active but not currently shown
-        } else if (mMapFragment != null && !mMapFragment.isVisible()) {
+        //map fragment is active but not currently shown
+        if (mMapFragment != null && !mMapFragment.isVisible()) {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
             transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
@@ -924,11 +1002,19 @@ public class MainActivity extends AuthBaseActivity
             mCreateEvent.setVisibility(View.VISIBLE);
 
         } else {
-            finish();
+
+            //currently viewing the map, go back to android home screen
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+
+
         }
     }
 
-    // To keep track of the view the event page was clicked on
+        // To keep track of the view the event page was clicked on
+
     public static void setEventPageClickedFrom(int from) {
         eventPageClickedFrom = from;
     }
@@ -981,8 +1067,8 @@ public class MainActivity extends AuthBaseActivity
                 case (2): {
                     resetTabColours();
                     mFavourites.setBackgroundResource(R.color.currentTabColor);
-                    mCreateEvent.setEnabled(false);
-                    mCreateEvent.setVisibility(View.GONE);
+                    mCreateEvent.setEnabled(true);
+                    mCreateEvent.setVisibility(View.VISIBLE);
 
                     searchButton.setEnabled(false);
                     searchButton.setVisibility(View.GONE);
@@ -1032,9 +1118,7 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     *
      * TODO THIS COULD POSSIBLY BE REFACTORED ??
-     *
      */
 
     public class InfoWindow implements GoogleMap.InfoWindowAdapter {
@@ -1080,15 +1164,23 @@ public class MainActivity extends AuthBaseActivity
                 assert Address != null;
                 Address.setText(pinAddress);
 
+                //this is a shoddy solution as we are relying on user names being unique
+                if (FirebaseAuth.getInstance().getCurrentUser()
+                        .getDisplayName().equals(e.getHost())) {
 
-                ArrayList favs = getFavouriteIdsList();
+                    fav.setText("{fa-user}");
+                } else {
 
-                if (favs.contains(e.getEventId()))
-                    fav.setText("{fa-star}");
-                else
-                    fav.setText("{fa-star-o}");
+                    ArrayList favs = getFavouriteIdsList();
+
+                    if (favs.contains(e.getEventId()))
+                        fav.setText("{fa-star}");
+                    else
+                        fav.setText("{fa-star-o}");
+                }
 
                 return v;
+
             } else {
 
                 lp.gravity = Gravity.CENTER;
@@ -1101,8 +1193,8 @@ public class MainActivity extends AuthBaseActivity
 
                 return v;
             }
-
         }
+
 
         @Override
         public View getInfoContents(Marker marker) {

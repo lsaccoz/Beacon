@@ -66,6 +66,7 @@
                     android:text="The Calendar"
                     android:textAppearance="?android:attr/textAppearanceListItem" />
 
+                <!--
                 <com.joanzapata.iconify.widget.IconTextView
                     android:id="@+id/favourite"
                     android:layout_width="match_parent"
@@ -75,6 +76,7 @@
                     android:text="{fa-star-o}"
                     android:textColor="@color/colorPrimary"
                     android:textSize="20sp" />
+                    -->
 
                 <RelativeLayout
                     android:layout_width="match_parent"
