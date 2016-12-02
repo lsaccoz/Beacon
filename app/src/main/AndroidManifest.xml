@@ -54,11 +54,13 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
             android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"
             android:label="@string/title_activity_event_page">
-            android:label="@string/title_activity_event_page"></activity>
+        </activity>
         <activity android:name="com.android.camera.CropImage" />
         <activity android:name=".Activities.SelectLocationActivity"
             android:screenOrientation="portrait">
         </activity>
+
+        <activity android:name=".Activities.EditEventActivity"></activity>
     </application>
 
 </manifest>
