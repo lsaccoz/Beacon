@@ -37,6 +37,7 @@ import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Data.Models.PhotoManager;
+import com.bcn.beacon.beacon.Data.Search;
 import com.bcn.beacon.beacon.Data.StringAlgorithms;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
@@ -216,6 +217,14 @@ public class MainActivity extends AuthBaseActivity
                 return false;
             }
         });
+
+        /*searchBar. lksfh sejfherfgh lskhjg r
+                f sfldkjgh rdslkjgh sr
+                g srlkjgh sdrlkjgh ser
+                g srlghj rlhjg sreg
+                sergj hserghjl er
+        */
+
 
 
         //set the onClickListener to this activity
@@ -655,22 +664,7 @@ public class MainActivity extends AuthBaseActivity
     }
 
     public ArrayList<ListEvent> searchEvents(String query) {
-        ArrayList<ListEvent> queries = new ArrayList<>();
-        for (ListEvent e : events)
-            if (e.getName().toLowerCase().contains(query))
-                queries.add(e);
-
-        // if query doesn't find an exact match, look for typos
-        if (queries.isEmpty()) {
-
-            for (ListEvent e : events)
-                for (String typos : StringAlgorithms.getStringTypos(query))
-                    if (e.getName().toLowerCase().contains(typos)) {
-                        queries.add(e);
-                        break;
-                    }
-        }
-        return queries;
+        return Search.searchEvents(query, getEventList());
     }
 
     public ArrayList<String> getFavouriteIdsList() {
