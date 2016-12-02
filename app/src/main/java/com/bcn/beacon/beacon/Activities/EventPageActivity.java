@@ -386,6 +386,9 @@ public class EventPageActivity extends AppCompatActivity {
         comments.child(comment.getId()).removeValue();
         commentsList.remove(position);
         mAdapter.notifyDataSetChanged();
+        String text = "Comment deleted";
+        Toast toast = Toast.makeText(mContext, text, Toast.LENGTH_SHORT);
+        toast.show();
         return true;
     }
 

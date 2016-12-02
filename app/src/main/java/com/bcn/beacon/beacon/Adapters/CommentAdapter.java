@@ -34,6 +34,7 @@ import java.util.Calendar;
 public class CommentAdapter extends ArrayAdapter<Comment> {
     private Context mContext;
     private ArrayList<Comment> mComments;
+    private String mUserId;
 
     // view lookup cache for faster item loading
     private static class ViewHolder {
@@ -49,6 +50,7 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         super(context, resourceId, comments);
         this.mContext = context;
         this.mComments = comments;
+        this.mUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
     }
 
 
@@ -74,6 +76,12 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
         else {
             // view recycled, retrieve view holder object
             viewHolder = (ViewHolder) convertView.getTag();
+            if (!comment.getUserId().equals(mUserId)) {
+                viewHolder.edit.setVisibility(View.GONE);
+                viewHolder.edit.setEnabled(false);
+                viewHolder.delete.setVisibility(View.GONE);
+                viewHolder.delete.setEnabled(false);
+            }
         }
 
         String timeSpan = DateUtils.getRelativeTimeSpanString(comment.getDate(), Calendar.getInstance().getTimeInMillis(), DateUtils.MINUTE_IN_MILLIS).toString();
@@ -86,14 +94,6 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
                 .load(comment.getImageUrl()) //URL/FILE
                 .into(viewHolder.userPic);
 
-        String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-
-        if (comment.getUserId().equals(userId)) {
-            viewHolder.edit.setVisibility(View.VISIBLE);
-            viewHolder.edit.setEnabled(true);
-            viewHolder.delete.setVisibility(View.VISIBLE);
-            viewHolder.delete.setEnabled(true);
-        }
         final IconTextView mEdit = viewHolder.edit;
         final IconTextView mDelete = viewHolder.delete;
 
@@ -137,6 +137,14 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
                 alert.show();
             }
         });
+
+        if (comment.getUserId().equals(mUserId)) {
+            viewHolder.edit.setVisibility(View.VISIBLE);
+            viewHolder.edit.setEnabled(true);
+            viewHolder.delete.setVisibility(View.VISIBLE);
+            viewHolder.delete.setEnabled(true);
+            //viewHolder.comment.getLayoutParams().width = viewHolder.edit.getWidth()
+        }
 
         // Return the completed view
         return convertView;
