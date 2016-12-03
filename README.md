@@ -1,5 +1,5 @@
 #Beacon
-*Shinning a Light on the Action*
+*Shining a Light on the Action*
 
 ##Motivation/Opportunity
 
@@ -24,43 +24,41 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/List_View.jpg" width="200">
    </div>
 
-2. Create events and hangouts and make them private/public 
+2. Create events and hangouts and make them public 
 
-  * Make Public events that are visible to anyone nearby
-  * Make Private events that are only visible to friends
-  * Set Location and time
-  * Set tags and related media
+  * Make events that are visible to anyone nearby
+  * Set name and description
+  * Set location
+  * Set date and time
+  * Set event photos
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Create_Event_View.jpg" width="200">
    </div>
-  
 
 3. Search and Sort events
 
-  * By keyphrase
   * By Name
+  * By Description
   * By Distance
-  * By Tags
-  * By Relevance
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Empty_Fav_View.jpg" width="200">
    </div>
 
-4. Post comments and photos on event pages
+4. Post comments and ask questions on event pages
 
-5. Favourite events and receive notifications for favourited events
+5. Favourite events to remember events of interest
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
    </div>
 
-6. Edit how large the search radius is for finding events, and whether or not you want notifications
+6. Edit how large the search radius is for finding events
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Settings_View.jpg" width="200">
    </div>
  
-##Installation Guide (For Developpers)
-In order to be able to fork off of this repository to make your own changes to Beacon, we highly suggest that you download and install  Android Studio as your IDE for developement. If you do, the process of getting the Beacon's source code onto your own local machine should be relatively seamless and straightforward. 
+##Installation Guide (For Developers)
+In order to be able to fork off of this repository to make your own changes to Beacon, we highly suggest that you download and install  Android Studio as your IDE for developement. If you do, the process of getting the Beacon's source code onto your own local machine should be relatively seamless and straightforward. The following steps describe how to install Beacon.
 
 ###Dependencies
 1. Beacon utilizes Google's Firebase for all the following services:
