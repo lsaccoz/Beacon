@@ -1,8 +1,8 @@
 package com.bcn.beacon.beacon;
 
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
-import com.bcn.beacon.beacon.Data.Search;
-import com.bcn.beacon.beacon.Data.StringAlgorithms;
+import com.bcn.beacon.beacon.Utility.SearchUtil;
+import com.bcn.beacon.beacon.Utility.StringAlgorithms;
 
 import org.junit.Test;
 
@@ -71,41 +71,41 @@ public class StringSearchTest {
             eventList.add(le1); eventList.add(le2);
             eventList.add(le3); eventList.add(le4);
 
-        ArrayList<ListEvent> Query1 = Search.searchEvents("Poker", eventList);
-        ArrayList<ListEvent> Query2 = Search.searchEvents("Pokr", eventList);
-        ArrayList<ListEvent> Query3 = Search.searchEvents("pojer", eventList);
+        ArrayList<ListEvent> Query1 = SearchUtil.searchEvents("Poker", eventList);
+        ArrayList<ListEvent> Query2 = SearchUtil.searchEvents("Pokr", eventList);
+        ArrayList<ListEvent> Query3 = SearchUtil.searchEvents("pojer", eventList);
 
         assert(Query1 != null && Query2 != null && Query3 != null);
         assert(containsUnique(Query1, le1));
         assert(containsUnique(Query2, le1));
         assert(containsUnique(Query3, le1));
 
-        ArrayList<ListEvent> Query4 = Search.searchEvents("halloweem", eventList);
-        ArrayList<ListEvent> Query5 = Search.searchEvents("October", eventList);
+        ArrayList<ListEvent> Query4 = SearchUtil.searchEvents("halloweem", eventList);
+        ArrayList<ListEvent> Query5 = SearchUtil.searchEvents("October", eventList);
 
         assert(Query4 != null && Query5 != null);
         assert(containsUnique(Query4, le2));
         assert(containsUnique(Query5, le2));
 
-        ArrayList<ListEvent> Query6 = Search.searchEvents("socxer", eventList);
+        ArrayList<ListEvent> Query6 = SearchUtil.searchEvents("socxer", eventList);
 
         assert(Query6 != null);
         assert(containsUnique(Query6, le3));
 
-        ArrayList<ListEvent> Query7 = Search.searchEvents("fun", eventList);
+        ArrayList<ListEvent> Query7 = SearchUtil.searchEvents("fun", eventList);
 
         assert(Query7 != null);
         assert(contains(Query7,le3) && contains(Query7,le4)); // fun is in both descriptions
 
-        ArrayList<ListEvent> Query8 = Search.searchEvents("place", eventList);
+        ArrayList<ListEvent> Query8 = SearchUtil.searchEvents("place", eventList);
 
         assert(Query8 != null);
         assert(containsUnique(Query8, le2)); // note how le4 is not included here because
                                              // title gets priority over description
 
-        ArrayList<ListEvent> Query9  = Search.searchEvents("pokexx", eventList);
-        ArrayList<ListEvent> Query10  = Search.searchEvents("", eventList);
-        ArrayList<ListEvent> Query11 = Search.searchEvents("nothing", eventList);
+        ArrayList<ListEvent> Query9  = SearchUtil.searchEvents("pokexx", eventList);
+        ArrayList<ListEvent> Query10  = SearchUtil.searchEvents("", eventList);
+        ArrayList<ListEvent> Query11 = SearchUtil.searchEvents("nothing", eventList);
 
         assert(Query9 != null && Query10 != null && Query11 != null);
         assert(Query9.isEmpty());

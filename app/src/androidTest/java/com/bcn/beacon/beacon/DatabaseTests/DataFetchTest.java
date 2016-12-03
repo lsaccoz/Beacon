@@ -145,7 +145,7 @@ public class DataFetchTest {
 //        //get the searchRangeLimit for this user
 //        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(instrumentationContext);
 //
-//        final int searchRangeLimit = prefs.getInt("Search Range", 0);
+//        final int searchRangeLimit = prefs.getInt("SearchUtil Range", 0);
 
 
         mDatabase.child("ListEvents").addListenerForSingleValueEvent(new ValueEventListener() {
