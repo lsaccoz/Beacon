@@ -35,6 +35,7 @@ public class LocationUtilTest {
         Assert.assertEquals(util.distFrom(180, 90, -180, -90), util.distFrom(360, 270, -360, -270));
     }
 
+    /*
     @Test
     public void get_location_name(){
         MockApplication mock = new MockApplication();
@@ -42,4 +43,5 @@ public class LocationUtilTest {
 
         Assert.assertEquals("", util.getLocationName(0, 0, mock));
     }
+    */
 }
