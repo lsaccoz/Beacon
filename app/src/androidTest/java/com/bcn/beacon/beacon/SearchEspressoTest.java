@@ -6,18 +6,22 @@ import android.support.test.runner.AndroidJUnit4;
 
 import com.bcn.beacon.beacon.Activities.MainActivity;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static android.support.test.espresso.Espresso.onData;
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
 import static android.support.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static android.support.test.espresso.action.ViewActions.typeText;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
+import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static android.support.test.espresso.matcher.ViewMatchers.withId;
 import static android.support.test.espresso.matcher.ViewMatchers.withText;
+import static org.hamcrest.Matchers.allOf;
 
 /**
  * Created by neema on 2016-12-02.
@@ -63,6 +67,18 @@ public class SearchEspressoTest {
 
     @Test
     public void SearchOnListTest(){
+
+        onData(withText(TEST_EVENT1_NAME)).check(matches(isDisplayed()));
+
+        onData(withText(TEST_EVENT2_NAME)).check(matches(isDisplayed()));
+
+    }
+
+    @After
+    public void deleteTestEvents(){
+
+
+
 
     }
 
