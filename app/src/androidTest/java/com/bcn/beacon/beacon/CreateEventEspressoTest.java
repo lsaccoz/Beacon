@@ -116,6 +116,18 @@ public class CreateEventEspressoTest {
         location_items_not_viewable();
     }
 
+    @Test
+    public void set_location_to_userlocale(){
+        onView(withId(R.id.input_address)).perform(click());
+        items_are_not_viewable();
+        location_items_viewable();
+
+        onView(withId(R.id.reset_location_fab)).perform(click());
+        onView(withId(R.id.set_location_fab)).perform(click());
+        items_are_viewable();
+        location_items_not_viewable();
+    }
+
 /* TODO: set location in google map API (not possible with espresso framework
     @Test
     public void set_location_pin(){
@@ -127,6 +139,8 @@ public class CreateEventEspressoTest {
         items_are_viewable();
         location_items_not_viewable();
     }
+
+
 */
 
     /* TODO: set location using place auto complete fragment (not possible with espresso framework
@@ -141,18 +155,6 @@ public class CreateEventEspressoTest {
         location_items_not_viewable();
     }
 */
-    @Test
-    public void set_location_to_userlocale(){
-        onView(withId(R.id.input_address)).perform(click());
-        items_are_not_viewable();
-        location_items_viewable();
-
-        onView(withId(R.id.reset_location_fab)).perform(click());
-        onView(withId(R.id.set_location_fab)).perform(click());
-        items_are_viewable();
-        location_items_not_viewable();
-    }
-
 
     public void items_are_viewable(){
         onView(withId(R.id.input_description)).check(matches(isDisplayed()));
