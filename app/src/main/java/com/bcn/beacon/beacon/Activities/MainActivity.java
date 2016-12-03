@@ -663,7 +663,6 @@ public class MainActivity extends AuthBaseActivity
                         //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
                         idList.add(fav_snapshot.getKey());
                     }
-
                 }
 
                 @Override
@@ -780,7 +779,7 @@ public class MainActivity extends AuthBaseActivity
 
             LatLngBounds Bound = new LatLngBounds(
                     new LatLng(userLat - (pref / 110.574), userLng - (pref / 111.320 * cos(pref / 110.574))),
-                    new LatLng(userLat + (pref / 110.575), userLng + (pref / 111.320 * cos(pref / 110.574))));
+                    new LatLng(userLat + (pref / 110.574), userLng + (pref / 111.320 * cos(pref / 110.574))));
 
             mMap.setLatLngBoundsForCameraTarget(Bound);
 
