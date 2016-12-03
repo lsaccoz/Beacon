@@ -1,4 +1,4 @@
-package com.bcn.beacon.beacon.Data;
+package com.bcn.beacon.beacon.Utility;
 
 import java.util.ArrayList;
 import java.util.HashMap;

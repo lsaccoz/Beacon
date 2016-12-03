@@ -1,11 +1,11 @@
-package com.bcn.beacon.beacon.Data;
+package com.bcn.beacon.beacon.Utility;
 
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Search {
+public class SearchUtil {
 
     public static ArrayList<ListEvent> searchEvents(String query, List<ListEvent> events) {
         ArrayList<ListEvent> queries = new ArrayList<>();

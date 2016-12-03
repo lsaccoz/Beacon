@@ -1,8 +1,6 @@
 package com.bcn.beacon.beacon.Activities;
 
-import android.Manifest;
 import android.app.AlertDialog;
-import android.app.Application;
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
@@ -15,35 +13,27 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
 import android.preference.PreferenceManager;
 
 import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.view.Window;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bcn.beacon.beacon.BeaconApplication;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
-import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Data.Models.PhotoManager;
-import com.bcn.beacon.beacon.Data.Search;
-import com.bcn.beacon.beacon.Data.StringAlgorithms;
+import com.bcn.beacon.beacon.Utility.SearchUtil;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
@@ -51,7 +41,6 @@ import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.DataUtil;
 import com.bcn.beacon.beacon.Utility.LocationUtil;
 import com.bcn.beacon.beacon.Utility.UI_Util;
-import com.firebase.client.Firebase;
 import com.firebase.client.annotations.Nullable;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -77,7 +66,6 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
@@ -88,8 +76,6 @@ import java.util.Locale;
 //import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.list;
 import static com.bcn.beacon.beacon.R.id.time;
-import static com.bcn.beacon.beacon.R.id.range;
-import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;
 import static java.lang.Math.cos;
 
@@ -211,7 +197,7 @@ public class MainActivity extends AuthBaseActivity
                     fragment.updateListForSearch(query);
                 } else if (tracker == 0){ // map
                     searchedMap = true;
-                    searchedEventsCache = Search.searchEvents(query, getEventList());
+                    searchedEventsCache = SearchUtil.searchEvents(query, getEventList());
                     putEventPinsOnMap(searchedEventsCache);
                 }
                 return false;
@@ -221,7 +207,7 @@ public class MainActivity extends AuthBaseActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                searchedEventsCache = Search.searchEvents(newText, getEventList());
+                searchedEventsCache = SearchUtil.searchEvents(newText, getEventList());
                 if (tracker == 1) { // list
                     searchedList = newText.length() != 0; // if not empty
                     ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
@@ -772,7 +758,7 @@ public class MainActivity extends AuthBaseActivity
     }
 
     public ArrayList<ListEvent> searchEvents(String query) {
-        return Search.searchEvents(query, getEventList());
+        return SearchUtil.searchEvents(query, getEventList());
     }
 
     public ArrayList<String> getFavouriteIdsList() {
