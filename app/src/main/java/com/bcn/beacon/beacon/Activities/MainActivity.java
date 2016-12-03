@@ -1,10 +1,11 @@
 package com.bcn.beacon.beacon.Activities;
 
-import android.Manifest;
+import android.app.AlertDialog;
 import android.app.Fragment;
 
 import android.app.FragmentTransaction;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -12,32 +13,27 @@ import android.content.pm.PackageManager;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.location.LocationManager;
 import android.preference.PreferenceManager;
 
 import android.support.annotation.NonNull;
-import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.app.ActivityCompat;
 import android.os.Bundle;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.Gravity;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.view.Window;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.bcn.beacon.beacon.BeaconApplication;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
-import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Data.Models.PhotoManager;
-import com.bcn.beacon.beacon.Data.StringAlgorithms;
+import com.bcn.beacon.beacon.Utility.SearchUtil;
 import com.bcn.beacon.beacon.Fragments.FavouritesFragment;
 import com.bcn.beacon.beacon.Fragments.ListFragment;
 import com.bcn.beacon.beacon.Fragments.SettingsFragment;
@@ -70,7 +66,6 @@ import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.joanzapata.iconify.widget.IconTextView;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Collections;
@@ -81,8 +76,6 @@ import java.util.Locale;
 //import static com.bcn.beacon.beacon.R.id.container_current;
 import static com.bcn.beacon.beacon.R.id.list;
 import static com.bcn.beacon.beacon.R.id.time;
-import static com.bcn.beacon.beacon.R.id.range;
-import static com.bcn.beacon.beacon.R.id.text;
 import static com.bcn.beacon.beacon.R.id.world;
 import static java.lang.Math.cos;
 
@@ -129,7 +122,10 @@ public class MainActivity extends AuthBaseActivity
     private static final int PERMISSION_ACCESS_FINE_LOCATION = 816;
 
 
-    private boolean showBarInMap = false;
+    //private boolean showBarInMap = false;
+    public boolean searchedMap = false;
+    public boolean searchedList = false;
+    public ArrayList<ListEvent> searchedEventsCache = new ArrayList<ListEvent>();
 
     /**
      * Copied over from BeaconListView
@@ -143,7 +139,7 @@ public class MainActivity extends AuthBaseActivity
 
 
     // tracker for the temporary fix
-    private static int tracker = -1;
+    private static int tracker = 0; // -1
 
     private ArrayList<ListEvent> events = new ArrayList<>();
     private HashMap<String, ListEvent> eventsMap = new HashMap<>();
@@ -191,12 +187,19 @@ public class MainActivity extends AuthBaseActivity
         searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                //Toast.makeText(getApplicationContext(), "searched?", Toast.LENGTH_LONG).show();
+
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
                 searchBar.clearFocus();
-                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                fragment.updateListForSearch(query);
+                if (tracker == 1) { // list
+                    searchedList = true;
+                    ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                    fragment.updateListForSearch(query);
+                } else if (tracker == 0){ // map
+                    searchedMap = true;
+                    searchedEventsCache = SearchUtil.searchEvents(query, getEventList());
+                    putEventPinsOnMap(searchedEventsCache);
+                }
                 return false;
             }
 
@@ -204,9 +207,17 @@ public class MainActivity extends AuthBaseActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
-                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                if (fragment != null) {
-                    fragment.updateListForSearch(newText);
+                searchedEventsCache = SearchUtil.searchEvents(newText, getEventList());
+                if (tracker == 1) { // list
+                    searchedList = newText.length() != 0; // if not empty
+                    ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                    if (fragment != null) {
+                        fragment.updateListForSearch(newText);
+                    }
+
+                } else if (tracker == 0) { // world
+                    searchedMap = newText.length() != 0; // if not empty
+                    putEventPinsOnMap(searchedEventsCache);
                 }
                 return false;
             }
@@ -215,12 +226,32 @@ public class MainActivity extends AuthBaseActivity
         searchBar.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
-                //resetEventList();
-                ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                fragment.updateListAllEvents();
+                if (tracker == 1) { // list
+                    searchedList = false;
+                    ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                    fragment.updateListAllEvents();
+                } else if (tracker == 0) { // world
+                    searchedMap = false;
+                    initMap(); // reset the map with all the events
+                    searchBar.setEnabled(false);
+                    searchBar.setVisibility(View.GONE);
+                    searchButton.setEnabled(true);
+                    searchButton.setVisibility(View.VISIBLE);
+                }
                 return false;
             }
         });
+
+        searchButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                searchBar.setEnabled(true);
+                searchBar.setVisibility(View.VISIBLE);
+                searchButton.setEnabled(false);
+                searchButton.setVisibility(View.GONE);
+            }
+        });
+
 
 
         //set the onClickListener to this activity
@@ -272,7 +303,7 @@ public class MainActivity extends AuthBaseActivity
         getFavouriteIds();
         // get the user location
         Location location = LocationUtil.getUserLocation(this);
-        if(location != null) {
+        if (location != null) {
             userLat = location.getLatitude();
             userLng = location.getLongitude();
         }
@@ -382,8 +413,11 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
 
-                searchButton.setEnabled(true);
-                searchButton.setVisibility(View.VISIBLE);
+                searchButton.setEnabled(!searchedMap);
+                searchButton.setVisibility(!searchedMap ? View.VISIBLE : View.GONE);
+
+                searchBar.setEnabled(searchedMap);
+                searchBar.setVisibility(searchedMap ? View.VISIBLE : View.GONE);
 
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
 
@@ -409,8 +443,6 @@ public class MainActivity extends AuthBaseActivity
                     mMapFragment.getMapAsync(this);
                 }
                 tracker = 0;
-                searchBar.setEnabled(showBarInMap ? true : false);
-                searchBar.setVisibility(showBarInMap ? View.VISIBLE : View.GONE);
 
                 break;
             }
@@ -422,8 +454,8 @@ public class MainActivity extends AuthBaseActivity
                 mFavourites.setBackgroundResource(R.color.currentTabColor);
 
                 //hide create event button on this page
-                mCreateEvent.setEnabled(false);
-                mCreateEvent.setVisibility(View.GONE);
+                mCreateEvent.setEnabled(true);
+                mCreateEvent.setVisibility(View.VISIBLE);
 
                 searchButton.setEnabled(false);
                 searchButton.setVisibility(View.GONE);
@@ -451,7 +483,10 @@ public class MainActivity extends AuthBaseActivity
 
                     transaction.commit();
                 }
-                //searchBar.setVisibility(View.VISIBLE);
+
+                searchBar.setEnabled(false);
+                searchBar.setVisibility(View.GONE);
+
                 tracker = 2;
                 break;
             }
@@ -492,24 +527,52 @@ public class MainActivity extends AuthBaseActivity
 
             //if the user presses the floating button, launch the create event activity
             case (R.id.create_event_fab): {
-                Intent intent = new Intent(this, CreateEventActivity.class);
-                intent.putExtra("userlat", userLat);
-                intent.putExtra("userlng", userLng);
-                // for temporary fix
-                if (mActiveFragment != null && mActiveFragment == mListFragment) {
-                    intent.putExtra("from", 1);
-                } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
-                    // don't really need this, but keep for now
-                    //Log.i("ACTIVE", "MAP");
-                    intent.putExtra("from", 0);
-                } else if (tracker == 1) {
-                    //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
-                    intent.putExtra("from", 1);
-                }
 
-                // startActivity(intent);
-                // start activity for result using same code for now
-                startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
+                //check if the user has a stable internet connection, if not
+                //display an alert dialog
+                if (!BeaconApplication.isNetworkAvailable(this)) {
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    //set message notifying user that the create event feature is unavailable
+                    //with no internet connection
+                    builder.setMessage(getString(R.string.no_internet_create_event_message))
+                            .setTitle(getString(R.string.no_internet_title))
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    AlertDialog signInDialog = builder.create();
+
+                    //allow user to dismiss dialog by touching outside it's scope
+                    signInDialog.setCanceledOnTouchOutside(true);
+
+                    signInDialog.show();
+
+                    UI_Util.setDialogStyle(signInDialog, this);
+
+                } else {
+                    Intent intent = new Intent(this, CreateEventActivity.class);
+                    intent.putExtra("userlat", userLat);
+                    intent.putExtra("userlng", userLng);
+                    // for temporary fix
+                    if (mActiveFragment != null && mActiveFragment == mListFragment) {
+                        intent.putExtra("from", 1);
+                    } else if (mActiveFragment != null && mActiveFragment == mMapFragment) {
+                        // don't really need this, but keep for now
+                        //Log.i("ACTIVE", "MAP");
+                        intent.putExtra("from", 0);
+                    } else if (tracker == 1) {
+                        //Log.i("ACTIVE", "NOT MAP AND MAP NOT NULL");
+                        intent.putExtra("from", 1);
+                    }
+
+                    // startActivity(intent);
+                    // start activity for result using same code for now
+                    startActivityForResult(intent, REQUEST_CODE_EVENTPAGE);
+                }
             }
         }
 
@@ -546,7 +609,6 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     *
      * TODO THIS CAN BE REFACTORED
      */
     public void getNearbyEvents() {
@@ -558,7 +620,7 @@ public class MainActivity extends AuthBaseActivity
         Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
                 .startAt(DataUtil.getExpiredDate());
 
-        if(mCurrentListener != null){
+        if (mCurrentListener != null) {
             searchParams.removeEventListener(mCurrentListener);
         }
         mCurrentListener = new ValueEventListener() {
@@ -570,13 +632,13 @@ public class MainActivity extends AuthBaseActivity
                 }
 
                 double distance;
-                
+
                 PhotoManager photoManager = PhotoManager.getInstance();
 
                 //get the searchRangeLimit for this user
-              SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-              int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
+                int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
 
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
@@ -663,7 +725,6 @@ public class MainActivity extends AuthBaseActivity
                         //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
                         idList.add(fav_snapshot.getKey());
                     }
-
                 }
 
                 @Override
@@ -674,34 +735,6 @@ public class MainActivity extends AuthBaseActivity
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
-    }
-
-    /**
-     * Java implementation of the Haversine formula for calculating the distance between two locations.
-     * Taken from http://stackoverflow.com/questions/120283
-     * /how-can-i-measure-distance-and-create-a-bounding-box-based-on-two-latitudelongi/123305#123305
-     *
-     * @param userLat  - latitude of the user's location
-     * @param userLng  - longitude of the user's location
-     * @param eventLat - latitude of the event's location
-     * @param eventLng - longitude of the event's location
-     * @return dist - distance between the two locations
-     */
-    private static double distFrom(double userLat, double userLng, double eventLat,
-                                   double eventLng) {
-        double earthRadius = 6371.0; // kilometers (or 3958.75 miles)
-        double dLat = Math.toRadians(eventLat - userLat);
-        double dLng = Math.toRadians(eventLng - userLng);
-        double sindLat = Math.sin(dLat / 2);
-        double sindLng = Math.sin(dLng / 2);
-        double a = Math.pow(sindLat, 2) + Math.pow(sindLng, 2)
-                * cos(Math.toRadians(userLat)) * cos(Math.toRadians(eventLat));
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        double dist = earthRadius * c;
-        // for rounding to 3 decimal places
-        dist = Math.floor(1000 * dist + 0.5) / 1000;
-
-        return dist; // in kilometers
     }
 
     /**
@@ -724,22 +757,7 @@ public class MainActivity extends AuthBaseActivity
     }
 
     public ArrayList<ListEvent> searchEvents(String query) {
-        ArrayList<ListEvent> queries = new ArrayList<>();
-        for (ListEvent e : events)
-            if (e.getName().toLowerCase().contains(query))
-                queries.add(e);
-
-        // if query doesn't find an exact match, look for typos
-        if (queries.isEmpty()) {
-
-            for (ListEvent e : events)
-                for (String typos : StringAlgorithms.getStringTypos(query))
-                    if (e.getName().toLowerCase().contains(typos)) {
-                        queries.add(e);
-                        break;
-                    }
-        }
-        return queries;
+        return SearchUtil.searchEvents(query, getEventList());
     }
 
     public ArrayList<String> getFavouriteIdsList() {
@@ -753,7 +771,7 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onConnected(@Nullable Bundle bundle) {
         Location location = LocationUtil.getUserLocation(this);
-        if(location != null) {
+        if (location != null) {
             userLat = location.getLatitude();
             userLng = location.getLongitude();
         }
@@ -775,12 +793,19 @@ public class MainActivity extends AuthBaseActivity
         if (mMap != null) {
             mMap.clear();
 
+            ArrayList<ListEvent> toPopulate = new ArrayList<ListEvent>(events);
+
+            if (searchedMap) {
+                toPopulate = searchedEventsCache;
+            }
+
+
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
             int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
 
             LatLngBounds Bound = new LatLngBounds(
                     new LatLng(userLat - (pref / 110.574), userLng - (pref / 111.320 * cos(pref / 110.574))),
-                    new LatLng(userLat + (pref / 110.575), userLng + (pref / 111.320 * cos(pref / 110.574))));
+                    new LatLng(userLat + (pref / 110.574), userLng + (pref / 111.320 * cos(pref / 110.574))));
 
             mMap.setLatLngBoundsForCameraTarget(Bound);
 
@@ -789,33 +814,19 @@ public class MainActivity extends AuthBaseActivity
 
             if (mAuth != null && mAuth.getCurrentUser() != null) {
 
-                //add marker for user
-                mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
-                        .position(new LatLng(userLat, userLng)));
-
                 mMap.setInfoWindowAdapter(new InfoWindow());
                 mMap.setOnMarkerClickListener(this);
                 mMap.setOnInfoWindowClickListener(this);
 
-                if (!events.isEmpty()) {
-                    for (int i = 0; i < events.size(); i++) {
+                if (!toPopulate.isEmpty()) {
+                    putEventPinsOnMap(toPopulate);
 
-                        ListEvent e = events.get(i);
-
-                        double latitude = e.getLocation().getLatitude();
-                        double longitude = e.getLocation().getLongitude();
-
-                        Marker marker = mMap.addMarker(new MarkerOptions()
-                                .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
-                                .position(new LatLng(latitude, longitude)));
-
-                        m.put(marker.getId(), e.getEventId());
-                        events_list.put(marker.getId(), e);
-
-                    }
-
-                } else {
+                    //add marker for user
+                    mMap.addMarker(new MarkerOptions()
+                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .position(new LatLng(userLat, userLng)));
+                }
+                 else {
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                             .position(new LatLng(userLat, userLng))
@@ -835,6 +846,32 @@ public class MainActivity extends AuthBaseActivity
 
             }
 
+        }
+    }
+
+    public void putEventPinsOnMap(List<ListEvent> events) {
+        if (events.isEmpty()) return;
+        if (mMap != null) {
+            mMap.clear();
+
+            //add marker for user
+            mMap.addMarker(new MarkerOptions()
+                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                    .position(new LatLng(userLat, userLng)));
+
+            for (ListEvent e : events) {
+
+                double latitude = e.getLocation().getLatitude();
+                double longitude = e.getLocation().getLongitude();
+
+                Marker marker = mMap.addMarker(new MarkerOptions()
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .position(new LatLng(latitude, longitude)));
+
+                m.put(marker.getId(), e.getEventId());
+                events_list.put(marker.getId(), e);
+
+            }
         }
     }
 
@@ -858,11 +895,16 @@ public class MainActivity extends AuthBaseActivity
 
         Geocoder geocoder = new Geocoder(this, Locale.getDefault());
 
+//        if (event != null) {
+//            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
+//        } else {
+//            pinAddress = localUtil.getLocationName(userLat, userLng, this);
+//
+//        }
         if (event != null) {
-            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
+            pinAddress = event.getLocation().getAddress();
         } else {
-            pinAddress = localUtil.getLocationName(userLat, userLng, this);
-
+            pinAddress = "";
         }
 
         float zoom = mMap.getCameraPosition().zoom;
@@ -907,7 +949,7 @@ public class MainActivity extends AuthBaseActivity
 
     /**
      * This method overrides the default back button functionality
-     * <p/>
+     * <p>
      * If the user is looking at a different tab the world tab will be loaded,
      * otherwise the activity will end and the user will return to the android home screen
      */
@@ -920,13 +962,9 @@ public class MainActivity extends AuthBaseActivity
             searchBar.setVisibility(View.GONE);
         }
 
-        //currently viewing the map
-        if (mMapFragment != null && mMapFragment.isVisible()) {
-            //return to home screen
-            finish();
 
-            //map fragment is active but not currently shown
-        } else if (mMapFragment != null && !mMapFragment.isVisible()) {
+        //map fragment is active but not currently shown
+        if (mMapFragment != null && !mMapFragment.isVisible()) {
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
             transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
@@ -949,11 +987,19 @@ public class MainActivity extends AuthBaseActivity
             mCreateEvent.setVisibility(View.VISIBLE);
 
         } else {
-            finish();
+
+            //currently viewing the map, go back to android home screen
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+
+
         }
     }
 
-    // To keep track of the view the event page was clicked on
+        // To keep track of the view the event page was clicked on
+
     public static void setEventPageClickedFrom(int from) {
         eventPageClickedFrom = from;
     }
@@ -1006,8 +1052,8 @@ public class MainActivity extends AuthBaseActivity
                 case (2): {
                     resetTabColours();
                     mFavourites.setBackgroundResource(R.color.currentTabColor);
-                    mCreateEvent.setEnabled(false);
-                    mCreateEvent.setVisibility(View.GONE);
+                    mCreateEvent.setEnabled(true);
+                    mCreateEvent.setVisibility(View.VISIBLE);
 
                     searchButton.setEnabled(false);
                     searchButton.setVisibility(View.GONE);
@@ -1057,9 +1103,7 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
-     *
      * TODO THIS COULD POSSIBLY BE REFACTORED ??
-     *
      */
 
     public class InfoWindow implements GoogleMap.InfoWindowAdapter {
@@ -1105,15 +1149,23 @@ public class MainActivity extends AuthBaseActivity
                 assert Address != null;
                 Address.setText(pinAddress);
 
+                //this is a shoddy solution as we are relying on user names being unique
+                if (FirebaseAuth.getInstance().getCurrentUser()
+                        .getDisplayName().equals(e.getHost())) {
 
-                ArrayList favs = getFavouriteIdsList();
+                    fav.setText("{fa-user}");
+                } else {
 
-                if (favs.contains(e.getEventId()))
-                    fav.setText("{fa-star}");
-                else
-                    fav.setText("{fa-star-o}");
+                    ArrayList favs = getFavouriteIdsList();
+
+                    if (favs.contains(e.getEventId()))
+                        fav.setText("{fa-star}");
+                    else
+                        fav.setText("{fa-star-o}");
+                }
 
                 return v;
+
             } else {
 
                 lp.gravity = Gravity.CENTER;
@@ -1126,8 +1178,8 @@ public class MainActivity extends AuthBaseActivity
 
                 return v;
             }
-
         }
+
 
         @Override
         public View getInfoContents(Marker marker) {

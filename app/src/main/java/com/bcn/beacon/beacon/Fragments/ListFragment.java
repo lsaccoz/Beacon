@@ -41,6 +41,8 @@ public class ListFragment extends Fragment {
     EventListAdapter adapter;
     public Parcelable state;
 
+    ArrayList<ListEvent> searchedEventsCache = new ArrayList<ListEvent>();
+
     public static ListFragment newInstance() {
         return new ListFragment();
     }
@@ -123,6 +125,7 @@ public class ListFragment extends Fragment {
             @Override
             public void onRefresh() {
                 //events.clear();
+                // TODO LOGIC FOR SEARCH HERE
                 updateListAllEvents();
                 swipeContainer.setRefreshing(false);
             }
@@ -152,6 +155,7 @@ public class ListFragment extends Fragment {
         ArrayList<ListEvent> results = ((MainActivity) getActivity()).searchEvents(queryString);
         events.clear();
         events.addAll(results);
+        searchedEventsCache = results;
         adapter.notifyDataSetChanged();
     }
 
@@ -197,9 +201,18 @@ public class ListFragment extends Fragment {
 
     @Override
     public void onResume() {
-        updateListAllEvents();
+        boolean searched = ((MainActivity) getActivity()).searchedList;
+        if (searched) {
+            events.clear();
+            events.addAll(searchedEventsCache);
+            adapter.notifyDataSetChanged();
+        }
+        else {
+            updateListAllEvents();
+        }
         ((MainActivity) getActivity()).getSearchBar().setEnabled(true);
         ((MainActivity) getActivity()).getSearchBar().setVisibility(View.VISIBLE);
+
         //adapter.notifyDataSetChanged();
         /*if (state != null) {
             listView.onRestoreInstanceState(state);

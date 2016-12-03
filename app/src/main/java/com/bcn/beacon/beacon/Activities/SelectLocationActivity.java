@@ -1,7 +1,9 @@
 package com.bcn.beacon.beacon.Activities;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -27,6 +29,7 @@ import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.Status;
+import com.google.android.gms.location.places.AutocompleteFilter;
 import com.google.android.gms.location.places.Place;
 import com.google.android.gms.location.places.Places;
 import com.google.android.gms.location.places.ui.PlaceAutocompleteFragment;
@@ -37,12 +40,15 @@ import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
+
+import static java.lang.Math.cos;
 
 
 public class SelectLocationActivity extends AuthBaseActivity implements OnMapReadyCallback,
@@ -63,6 +69,7 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
     double currentLng;
     private String currentName;
     private Marker marker;
+    LatLngBounds Bounds;
 
     private LocationUtil localUtil = new LocationUtil();
 
@@ -83,6 +90,11 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
             currentLat = extras.getDouble("curlat");
         }
 
+        Bounds = new LatLngBounds(
+                new LatLng(userLat - (100 / 110.574), userLng - (100 / 111.320 * cos(100 / 110.574))),
+                new LatLng(userLat + (100 / 110.575), userLng + (100 / 111.320 * cos(100 / 110.574))));
+
+
         resetLocationButton = (FloatingActionButton) findViewById(R.id.reset_location_fab);
         setLocationButton = (FloatingActionButton) findViewById(R.id.set_location_fab);
 
@@ -100,10 +112,18 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
                 getFragmentManager().findFragmentById(R.id.place_autocomplete_fragment);
 
 
+        autocompleteFragment.setBoundsBias(Bounds);
+
+
         autocompleteFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(Place place) {
                 //Log.i(TAG, "Place: " + place.getName());
+                if (!Bounds.contains(place.getLatLng())) {
+                    locationOutOfBounds();
+                    return;
+                }
+
                 currentLat = place.getLatLng().latitude;
                 currentLng = place.getLatLng().longitude;
                 currentName = place.getName().toString();
@@ -205,10 +225,31 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
                     .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
                     .position(new LatLng(currentLat, currentLng)));
 
+            mMap.setLatLngBoundsForCameraTarget(Bounds);
+            mMap.setMaxZoomPreference(17);
+            mMap.setMinZoomPreference(12);
+
             marker.setDraggable(true);
             localUtil.setPinLocation(currentLat, currentLng, marker, mMap, true, this);
             currentName = localUtil.getLocationName(currentLat, currentLng, getApplicationContext());
         }
+    }
+
+    private void locationOutOfBounds(){
+        AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.Theme_DeviceDefault_Light_Dialog_Alert);
+        alert.setTitle("Location Out of Bounds");
+        alert.setMessage("Try hosting an event closer to your location.");
+
+        alert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+            // check for android.view.WindowLeaked: exception!
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+            }
+        });
+
+        alert.show();
+        return;
     }
 
     @Override

@@ -69,27 +69,6 @@ public class LocationUtil {
         return name;
     }
 
-    /**
-     * Method to filter events based on the user's set search radius
-     *
-     *
-     * @param eventList
-     * @param distanceLimit
-     */
-//    public static void filterEventsByDistance(ArrayList<ListEvent> eventList, int distanceLimit){
-//
-//        //find the first index for which an events distance is greater than the distanceLimit and
-//        //remove the sublist for all array items afterwards since the list is already sorted
-//        for(int i = 0; i < eventList.size(); i++){
-//            ListEvent event = eventList.get(i);
-//            if(event.distance > distanceLimit){
-//                eventList.removeAll(eventList.subList(i, eventList.size()));
-//                break;
-//            }
-//        }
-//
-//
-//    }
 
     /**
      * Java implementation of the Haversine formula for calculating the distance between two locations.

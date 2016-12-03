@@ -1,4 +1,4 @@
-package com.bcn.beacon.beacon.Data;
+package com.bcn.beacon.beacon.Utility;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +30,7 @@ public class StringAlgorithms {
      */
     public static List<String> getStringTypos(String word) {
         List<String> typos = new ArrayList<String>();
+        if (word == null) return typos;
         typos.addAll(getSwitchTypos(word));
         typos.addAll(getKeyboardTypos(word));
         typos.addAll(getMissingCharTypos(word));
