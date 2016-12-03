@@ -2,15 +2,19 @@ package com.bcn.beacon.beacon.Activities;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.support.v7.view.ContextThemeWrapper;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.*;
 
+import com.bcn.beacon.beacon.BeaconApplication;
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.firebase.client.Firebase;
@@ -105,9 +109,31 @@ public class SignInActivity extends AuthBaseActivity implements View.OnClickList
     @Override
     public void onClick(View v) {
         switch (v.getId()){
-            case R.id.GoogleSignInButton:
-                signIn();
+            case R.id.GoogleSignInButton: {
+                if(BeaconApplication.isNetworkAvailable(this)) {
+                    signIn();
+                }else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    builder.setMessage(getString(R.string.no_internet_message))
+                            .setTitle(getString(R.string.no_internet_title))
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    AlertDialog signInDialog = builder.create();
+                    signInDialog.setCanceledOnTouchOutside(true);
+
+                    signInDialog.show();
+
+                    UI_Util.setDialogStyle(signInDialog, this);
+
+                }
                 break;
+            }
         }
     }
 

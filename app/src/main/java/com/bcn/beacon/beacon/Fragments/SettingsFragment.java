@@ -40,6 +40,8 @@ public class SettingsFragment extends PreferenceFragment
         Preference signOut = findPreference(getActivity().getString(R.string.sign_out));
         Preference searchRange = findPreference(getActivity().getString(R.string.pref_range_key));
 
+
+
         //set on preference change listener so that we can update our UI when necessary
         searchRange.setOnPreferenceChangeListener(this);
 

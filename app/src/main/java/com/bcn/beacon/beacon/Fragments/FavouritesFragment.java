@@ -163,8 +163,8 @@ public class FavouritesFragment extends Fragment
         populate(hosting, hostingIds);
         favAdapter.notifyDataSetChanged();
         hostingAdapter.notifyDataSetChanged();
-        ((MainActivity) getActivity()).getSearchBar().setEnabled(true);
-        ((MainActivity) getActivity()).getSearchBar().setVisibility(View.VISIBLE);
+        //((MainActivity) getActivity()).getSearchBar().setEnabled(true);
+        //((MainActivity) getActivity()).getSearchBar().setVisibility(View.VISIBLE);
         super.onResume();
 
         resizeListView();

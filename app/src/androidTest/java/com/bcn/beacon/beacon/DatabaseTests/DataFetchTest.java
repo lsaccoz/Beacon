@@ -78,14 +78,13 @@ public class DataFetchTest {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 for (DataSnapshot eventSnapshot : dataSnapshot.getChildren()) {
-                    System.out.println("I'm in here");
                     ListEvent event = eventSnapshot.getValue(ListEvent.class);
                     events.add(event);
                 }
 
-                if(events.size() == 0){
-                    System.out.println("this also failed");
-                }
+//                if(events.size() == 0){
+//                    System.out.println("this also failed");
+//                }
 
                 success();
 
@@ -139,7 +138,7 @@ public class DataFetchTest {
     public void outOfRangeHelper(final int searchRangeLimit){
 
 
-        System.out.println("this was called");
+//        System.out.println("this was called");
         //get firebase reference
         DatabaseReference mDatabase = FirebaseDatabase.getInstance().getReference();
         final ArrayList<ListEvent> events = new ArrayList<ListEvent>();
@@ -162,7 +161,7 @@ public class DataFetchTest {
 
                     double userLat;
                     double userLng;
-                    System.out.println("I did this");
+//                    System.out.println("I did this");
 
                     MainActivity activity = mActivityRule.getActivity();
                     Location userLocation = LocationUtil.getUserLocation(activity);

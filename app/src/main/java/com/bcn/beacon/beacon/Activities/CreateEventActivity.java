@@ -36,6 +36,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.File;
 import java.io.IOException;
@@ -136,6 +137,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
             location.setLatitude(userLat);
             location.setLongitude(userLng);
             eAddress.setText(localUtil.getLocationName(userLat, userLng, getApplicationContext()));
+            location.setAddress(eAddress.getText().toString());
             //The key argument here must match that used in the other activity
         }
     }
@@ -307,6 +309,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
                     eAddress.setText(name);
                     location.setLatitude(currentLat);
                     location.setLongitude(currentLng);
+                    location.setAddress(eAddress.getText().toString());
                 }
             }
         }
@@ -343,8 +346,10 @@ public class CreateEventActivity extends AuthBaseActivity implements
         if (location == null) {
             location.setLatitude(49.2765);
             location.setLongitude(-123.2177);
+            location.setAddress("");
         }
         Event toUpload = new Event();
+
 
         toUpload.setName(eName.getText().toString());
         toUpload.setDescription(eDescription.getText().toString());
@@ -356,6 +361,12 @@ public class CreateEventActivity extends AuthBaseActivity implements
         // for temporary fix on back pressed
         MainActivity.setEventPageClickedFrom(from);
 
+        //display toast to user to confirm that an event was uploaded
+        Toast toast = Toast.makeText(this,
+                getString(R.string.upload_event_confirmation),
+                Toast.LENGTH_SHORT);
+
+        toast.show();
         kill_activity();
 
     }
