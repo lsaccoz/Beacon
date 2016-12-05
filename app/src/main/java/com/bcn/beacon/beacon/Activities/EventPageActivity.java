@@ -24,8 +24,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -228,6 +230,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     toast.show();
                     commentsList.add(0, comment);
                     mAdapter.notifyDataSetChanged();
+                    resizeCommentsView();
 
                 } else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
@@ -757,8 +760,35 @@ public class EventPageActivity extends AuthBaseActivity {
             mCommentsList.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
         }
+        resizeCommentsView();
 
         showUI();
+    }
+
+    // method to resize comments card view
+    // TODO: make this better, read notes below
+    // NOTES: tried resizing as in FavouritesFragment, did not work,
+    // this seems to be the best solution, but it is kinda weird if you play around with it
+    public void resizeCommentsView() {
+        if (commentsList != null && !commentsList.isEmpty()) {
+            ListAdapter listAdapter = mCommentsList.getAdapter();
+            if (listAdapter == null) {
+                return;
+            }
+
+            int totalHeight = 0;
+            for (int i = 0; i < listAdapter.getCount(); i++) {
+                View listItem = listAdapter.getView(i, null, mCommentsList);
+                listItem.measure(0, 0);
+                totalHeight += listItem.getMeasuredHeight();
+                Log.i("Total height", Integer.toString(totalHeight));
+            }
+            ViewGroup.LayoutParams params = mCommentsList.getLayoutParams();
+            params.height = totalHeight;
+            //Log.i("Params height", Integer.toString(params.height));
+            mCommentsList.setLayoutParams(params);
+            mCommentsList.requestLayout();
+        }
     }
 
 
