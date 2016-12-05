@@ -12,7 +12,19 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
 ##Features
 
-1. Find events and hangouts occurring within a local vicinity
+1. Sign in using your google account
+   
+Getting started couldn't be simpler, simply launch the application and sign in with a registered google account and you're ready to go, no extra details required.
+   
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/splash.png" width="200">
+   </div>
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/sign_in_photo.png" width="200">
+   </div>
+
+
+2. Find events and hangouts occurring within a local vicinity
 
   * Search events on a map view 
    <div style="text-align:center">
@@ -24,7 +36,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/list_view.png" width="200">
    </div>
 
-2. Create events and hangouts and make them public 
+3. Create events and hangouts and make them public 
 
   * Make events that are visible to anyone nearby
   * Set name and description
@@ -35,7 +47,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/create_event_page.jpg" width="200">
    </div>
 
-3. Search and Sort events
+4. Search and Sort events
 
   * By Name
   * By Description
@@ -44,14 +56,17 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/search_feature.png" width="200">
    </div>
 
-4. Post comments and ask questions on event pages
+5. Post comments and ask questions on event pages
+   <div style="text-align:center">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/comments_example.png" width="200">
+   </div>
 
-5. Favourite events to remember events of interest
+6. Favourite events to remember events of interest
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/favourites_page.png" width="200">
    </div>
 
-6. Edit how large the search radius is for finding events
+7. Edit how large the search radius is for finding events
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/settings_page.png" width="200">
    </div>
