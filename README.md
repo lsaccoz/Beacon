@@ -56,7 +56,12 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Settings_View.jpg" width="200">
    </div>
- 
+
+##Installation Guide (For Users)
+If you wish to become a tester for the initial alpha release of Beacon on the Google Play Store, follow the link bellow to install Beacon on your android device:
+
+https://play.google.com/apps/testing/com.bcn.beacon.beacon
+
 ##Installation Guide (For Developers)
 In order to be able to fork off of this repository to make your own changes to Beacon, we highly suggest that you download and install  Android Studio as your IDE for developement. If you do, the process of getting the Beacon's source code onto your own local machine should be relatively seamless and straightforward. The following steps describe how to install Beacon.
 
