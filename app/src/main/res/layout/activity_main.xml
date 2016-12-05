@@ -53,7 +53,7 @@
             android:layout_weight="1"
             android:background="@color/otherTabColor"
             android:gravity="center"
-            android:text="{fa-user}"
+            android:text="{fa-star-o}"
             android:textColor="@color/custom_white"
             android:textSize="30sp" />
 

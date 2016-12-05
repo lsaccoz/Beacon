@@ -16,12 +16,12 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
   * Search events on a map view 
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Map_View.jpg" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/world_view.png" width="200">
    </div>
    
   * Search events on a list view
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/List_View.jpg" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/list_view.png" width="200">
    </div>
 
 2. Create events and hangouts and make them public 
@@ -32,7 +32,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
   * Set date and time
   * Set event photos
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Create_Event_View.jpg" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/create_event_page.jpg" width="200">
    </div>
 
 3. Search and Sort events
@@ -41,20 +41,19 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
   * By Description
   * By Distance
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Empty_Fav_View.jpg" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/search_feature.png" width="200">
    </div>
 
 4. Post comments and ask questions on event pages
 
 5. Favourite events to remember events of interest
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Fav_View.jpg" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/favourites_page.png" width="200">
    </div>
 
 6. Edit how large the search radius is for finding events
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/Settings_View.jpg" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/settings_page.png" width="200">
    </div>
 
 ##Installation Guide (For Users)
