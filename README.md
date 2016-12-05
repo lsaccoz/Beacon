@@ -14,12 +14,10 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
 1. Sign in using your google account
    
-Getting started couldn't be simpler, simply launch the application and sign in with a registered google account and you're ready to go, no extra details required.
-   
+  Getting started couldn't be simpler, simply launch the application and sign in with a registered google account and you're ready to     go, no extra details required.
+    
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/splash.png" width="200">
-   </div>
-   <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/sign_in_photo.png" width="200">
    </div>
 
@@ -27,11 +25,13 @@ Getting started couldn't be simpler, simply launch the application and sign in w
 2. Find events and hangouts occurring within a local vicinity
 
   * Search events on a map view 
+  
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/world_view.png" width="200">
    </div>
    
   * Search events on a list view
+  
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/list_view.png" width="200">
    </div>
@@ -43,6 +43,7 @@ Getting started couldn't be simpler, simply launch the application and sign in w
   * Set location
   * Set date and time
   * Set event photos
+  
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/create_event_page.jpg" width="200">
    </div>
@@ -52,21 +53,25 @@ Getting started couldn't be simpler, simply launch the application and sign in w
   * By Name
   * By Description
   * By Distance
+  
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/search_feature.png" width="200">
    </div>
 
 5. Post comments and ask questions on event pages
+
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/comments_example.png" width="200">
    </div>
 
 6. Favourite events to remember events of interest
+
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/favourites_page.png" width="200">
    </div>
 
 7. Edit how large the search radius is for finding events
+
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/settings_page.png" width="200">
    </div>
