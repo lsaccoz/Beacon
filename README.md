@@ -14,8 +14,8 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 
 1. Sign in using your google account
    
-Getting started couldn't be simpler, simply launch the application and sign in with a registered google account and you're ready to go, no extra details required.
-   
+  Getting started couldn't be simpler, simply launch the application and sign in with a registered google account and you're ready to     go, no extra details required.
+    
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/splash.png" width="200">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/sign_in_photo.png" width="200">
