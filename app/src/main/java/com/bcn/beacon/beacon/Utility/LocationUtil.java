@@ -80,7 +80,7 @@ public class LocationUtil {
      * @param userLng  - longitude of the user's location
      * @param eventLat - latitude of the event's location
      * @param eventLng - longitude of the event's location
-     * @return dist - distance between the two locations
+     * @return dist - distance between the two locations in kilometers
      */
     public static double distFrom(double userLat, double userLng, double eventLat,
                                    double eventLng) {

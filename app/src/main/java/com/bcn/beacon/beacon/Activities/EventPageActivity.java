@@ -103,6 +103,7 @@ public class EventPageActivity extends AuthBaseActivity {
     private int currentCommentPos;
     private static boolean discarded = false;
     private static boolean edited = false;
+    private static boolean back_discarded = false;
 
     private static int RETURN_FROM_EDIT = 0;
 
@@ -305,12 +306,13 @@ public class EventPageActivity extends AuthBaseActivity {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus && (!mEditConfirm.isPressed() && !mPostComment.isPressed())) {
                     //hideCommentTab();
-                    if (!discarded) {
+                    if (!discarded && !back_discarded) {
                         hideKeyboard(v);
                         showDiscardAlert();
                     }
                     else {
                         discarded = false;
+                        back_discarded = false;
                     }
                 }
             }
@@ -558,6 +560,7 @@ public class EventPageActivity extends AuthBaseActivity {
                 // this listener is for if the user presses back button when the dialog is visible
                 @Override
                 public void onCancel(DialogInterface dialog) {
+                    back_discarded = true;
                     hideCommentTab();
                     dialog.dismiss();
                 }
