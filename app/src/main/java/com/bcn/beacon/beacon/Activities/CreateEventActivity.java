@@ -17,6 +17,7 @@ import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
+import android.support.v7.view.ContextThemeWrapper;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
@@ -42,6 +43,7 @@ import java.io.File;
 import java.io.IOException;
 
 import com.android.camera.CropImageIntentBuilder;
+import com.bcn.beacon.beacon.BeaconApplication;
 import com.bcn.beacon.beacon.Data.Models.Date;
 import com.bcn.beacon.beacon.Data.Models.Event;
 import com.bcn.beacon.beacon.Data.Models.Location;
@@ -136,8 +138,14 @@ public class CreateEventActivity extends AuthBaseActivity implements
             from = extras.getInt("from");
             location.setLatitude(userLat);
             location.setLongitude(userLng);
-            eAddress.setText(localUtil.getLocationName(userLat, userLng, getApplicationContext()));
-            location.setAddress(eAddress.getText().toString());
+
+            //since editEventActivity calls this method we don't want the activity to hang if the user
+            //is offline so do nothing here if so
+            if(BeaconApplication.isNetworkAvailable(this)) {
+                eAddress.setText(localUtil.getLocationName(userLat, userLng, getApplicationContext()));
+                location.setAddress(eAddress.getText().toString());
+            }
+
             //The key argument here must match that used in the other activity
         }
     }
@@ -202,12 +210,33 @@ public class CreateEventActivity extends AuthBaseActivity implements
                 break;
             }
             case (R.id.input_address): {
-                Intent intent = new Intent(this, SelectLocationActivity.class);
-                intent.putExtra("userlat", userLat);
-                intent.putExtra("userlng", userLng);
-                intent.putExtra("curlat", currentLat);
-                intent.putExtra("curlng", currentLng);
-                startActivityForResult(intent, LOCATION_SELECTED);
+                if(BeaconApplication.isNetworkAvailable(this)) {
+                    Intent intent = new Intent(this, SelectLocationActivity.class);
+                    intent.putExtra("userlat", userLat);
+                    intent.putExtra("userlng", userLng);
+                    intent.putExtra("curlat", currentLat);
+                    intent.putExtra("curlng", currentLng);
+                    startActivityForResult(intent, LOCATION_SELECTED);
+                }else{
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            new ContextThemeWrapper(this, R.style.DialogTheme));
+
+                    builder.setMessage(getString(R.string.no_internet_feature))
+                            .setTitle(getString(R.string.no_internet_title))
+                            .setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+                                @Override
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    AlertDialog signInDialog = builder.create();
+                    signInDialog.setCanceledOnTouchOutside(true);
+
+                    signInDialog.show();
+
+                    UI_Util.setDialogStyle(signInDialog, this);
+
+                }
 
                 break;
             }

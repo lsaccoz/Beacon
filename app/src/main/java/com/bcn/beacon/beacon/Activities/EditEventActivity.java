@@ -23,7 +23,7 @@ public class EditEventActivity extends CreateEventActivity {
             currentLng = userLng;
             location.setLatitude(userLat);
             location.setLongitude(userLng);
-            eAddress.setText(localUtil.getLocationName(userLat, userLng, getApplicationContext()));
+            eAddress.setText(extras.getString("address"));
 
             eName.setText(extras.getString("name"));
             eDescription.setText(extras.getString("description"));

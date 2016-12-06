@@ -404,6 +404,7 @@ public class EventPageActivity extends AuthBaseActivity {
                 intent.putExtra("lat", mEvent.getLocation().getLatitude());
                 intent.putExtra("lng", mEvent.getLocation().getLongitude());
                 intent.putExtra("name", mTitle.getText());
+                intent.putExtra("address", mAddress.getText());
                 intent.putExtra("description", mDescription.getText());
                 intent.putExtra("time", mStartTime.getText());
                 intent.putExtra("date", mEvent.getDate().getDay() + "/" +
