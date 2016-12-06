@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -20,11 +21,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
+import android.widget.RelativeLayout;
 
 
 import com.bcn.beacon.beacon.R;
 import com.bcn.beacon.beacon.Utility.LocationUtil;
+import com.bcn.beacon.beacon.Utility.UI_Util;
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -61,6 +65,7 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
     private ActionBar actionBar;
     private FloatingActionButton resetLocationButton;
     private FloatingActionButton setLocationButton;
+    private RelativeLayout mContentView;
 
 
     private double userLat;
@@ -79,6 +84,11 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_location);
 
+        Window window = getWindow();
+
+        //set the status bar color if the API version is high enough
+        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
+
         actionBar = getSupportActionBar();
         actionBar.hide();
 
@@ -94,6 +104,9 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
                 new LatLng(userLat - (100 / 110.574), userLng - (100 / 111.320 * cos(100 / 110.574))),
                 new LatLng(userLat + (100 / 110.575), userLng + (100 / 111.320 * cos(100 / 110.574))));
 
+
+        mContentView = (RelativeLayout) findViewById(R.id.activity_select_location);
+        mContentView.setPadding(0, UI_Util.getStatusBarHeight(this), 0, 0);
 
         resetLocationButton = (FloatingActionButton) findViewById(R.id.reset_location_fab);
         setLocationButton = (FloatingActionButton) findViewById(R.id.set_location_fab);

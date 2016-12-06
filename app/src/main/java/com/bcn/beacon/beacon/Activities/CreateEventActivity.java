@@ -8,6 +8,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.location.Address;
 import android.location.Geocoder;
@@ -18,15 +19,18 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.ActionBar;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.Toolbar;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.widget.RelativeLayout;
 import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TimePicker;
@@ -69,6 +73,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
     protected EditText eName;
     protected EditText eDescription;
     protected EditText eAddress;
+    protected RelativeLayout mContentView;
 
     private ArrayList photos = new ArrayList<Bitmap>();
 
@@ -98,14 +103,25 @@ public class CreateEventActivity extends AuthBaseActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
 
-        ActionBar actionBar = getSupportActionBar();
+        final ActionBar actionBar = getSupportActionBar();
         //actionBar.setDisplayHomeAsUpEnabled(true);
 
         Window window = this.getWindow();
         //set the status bar color if the API version is high enough
-        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
+        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
 
         actionBar.setTitle("Create Event");
+
+        mContentView = (RelativeLayout) findViewById(R.id.create_event);
+        //set on global layout listener so that we can add appropriate padding to the top of the content view
+        mContentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+
+                mContentView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                mContentView.setPadding(0, UI_Util.getStatusBarHeight(getApplicationContext()) + actionBar.getHeight(), 0, 0);
+            }
+        });
 
         eTime = (EditText) findViewById(R.id.event_time);
         eDate = (EditText) findViewById(R.id.event_date);

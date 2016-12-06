@@ -11,6 +11,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
@@ -24,6 +25,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListView;
@@ -115,9 +117,10 @@ public class EventPageActivity extends AuthBaseActivity {
         Intent intent = getIntent();
         from = intent.getIntExtra("from", -1);
 
-        Window window = this.getWindow();
+        final ActionBar actionBar = getSupportActionBar();
+
         //set the status bar color if the API version is high enough
-        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
+        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
 
         //initialize array of image drawables, we will retrieve this from the event
         mImageDrawables = new ArrayList<>();
@@ -128,7 +131,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
         // Retrieve and cache the system's default "medium" animation time.
         mAnimDuration = getResources().getInteger
-                (android.R.integer.config_shortAnimTime);
+                (android.R.integer.config_mediumAnimTime);
 
 
         //get the event id
@@ -147,6 +150,17 @@ public class EventPageActivity extends AuthBaseActivity {
 
         //retrieve all the views from the view hierarchy
         mContentView = findViewById(R.id.event_page_root);
+
+        //set on global layout listener so that we can add appropriate padding to the top of the content view
+        mContentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+
+                mContentView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                mContentView.setPadding(0, UI_Util.getStatusBarHeight(getApplicationContext()) + actionBar.getHeight(), 0, 0);
+            }
+        });
+
 
         mTitle = (TextView) findViewById(R.id.event_title);
         mDescription = (TextView) findViewById(R.id.event_description);

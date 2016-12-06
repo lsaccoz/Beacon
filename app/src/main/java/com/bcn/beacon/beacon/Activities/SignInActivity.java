@@ -5,6 +5,7 @@ import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -55,7 +56,7 @@ public class SignInActivity extends AuthBaseActivity implements View.OnClickList
 
         Window window = this.getWindow();
         //set the status bar color if the API version is high enough
-        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
+        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
 
         signInButton = (SignInButton) findViewById(R.id.GoogleSignInButton);
         signInButton.setOnClickListener(this);

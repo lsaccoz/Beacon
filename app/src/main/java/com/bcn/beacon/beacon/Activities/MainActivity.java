@@ -10,6 +10,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 
+import android.graphics.Color;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -26,6 +27,7 @@ import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.view.Window;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -97,6 +99,7 @@ public class MainActivity extends AuthBaseActivity
     private ListFragment mListFragment;
     private SettingsFragment mSettingsFragment;
     private FavouritesFragment mFavouritesFragment;
+    private RelativeLayout mContentLayout;
     private List<IconTextView> mTabs;
     private TextView mTitle;
     private Fragment mActiveFragment;
@@ -161,9 +164,6 @@ public class MainActivity extends AuthBaseActivity
         //hide the action bar
         getSupportActionBar().hide();
 
-        Window window = this.getWindow();
-        //set the status bar color if the API version is high enough
-        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
 
 //set default values for preferences if they haven't been modified yet
         PreferenceManager.setDefaultValues(this, R.xml.settings_fragment, false);
@@ -172,12 +172,18 @@ public class MainActivity extends AuthBaseActivity
 
 
         //retrieve all the Views that we would want to modify here
+        mContentLayout = (RelativeLayout) findViewById(R.id.activity_main);
         mList = (IconTextView) findViewById(list);
         mWorld = (IconTextView) findViewById(world);
         mFavourites = (IconTextView) findViewById(R.id.favourites);
         mSettings = (IconTextView) findViewById(R.id.settings);
         mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
         searchButton = (FloatingActionButton) findViewById(R.id.search_test);
+
+
+        Window window = this.getWindow();
+        //set the status bar color if the API version is high enough
+        mContentLayout.setPadding(0, UI_Util.getStatusBarHeight(this), 0, 0);
 
 //        searchButton.setOnClickListener(new View.OnClickListener() {
 //            @Override
@@ -369,7 +375,7 @@ public class MainActivity extends AuthBaseActivity
             case (list): {
                 //change tab colour
                 resetTabColours();
-                mList.setBackgroundResource(R.color.currentTabColor);
+                mList.setTextColor(getResources().getColor(R.color.colorPrimary));
 
                 //show create event button on this page
                 mCreateEvent.setEnabled(true);
@@ -410,7 +416,7 @@ public class MainActivity extends AuthBaseActivity
 
                 //change tab colours
                 resetTabColours();
-                mWorld.setBackgroundResource(R.color.currentTabColor);
+                mWorld.setTextColor(getResources().getColor(R.color.colorPrimary));
 
                 //show create event button on this page
                 mCreateEvent.setEnabled(true);
@@ -454,7 +460,7 @@ public class MainActivity extends AuthBaseActivity
             case (R.id.favourites): {
 
                 resetTabColours();
-                mFavourites.setBackgroundResource(R.color.currentTabColor);
+                mFavourites.setTextColor(getResources().getColor(R.color.colorPrimary));
 
                 //hide create event button on this page
                 mCreateEvent.setEnabled(true);
@@ -496,7 +502,7 @@ public class MainActivity extends AuthBaseActivity
             case (R.id.settings): {
                 //change tab colours
                 resetTabColours();
-                mSettings.setBackgroundResource(R.color.currentTabColor);
+                mSettings.setTextColor(getResources().getColor(R.color.colorPrimary));
 
                 //hide create event button on this page
                 mCreateEvent.setEnabled(false);
@@ -949,7 +955,7 @@ public class MainActivity extends AuthBaseActivity
 
             //set the world tab as being selected
             resetTabColours();
-            mWorld.setBackgroundResource(R.color.currentTabColor);
+            mWorld.setTextColor(getResources().getColor(R.color.colorPrimary));
 
             mMapFragment.getMapAsync(this);
             mActiveFragment = mMapFragment;
@@ -1004,7 +1010,7 @@ public class MainActivity extends AuthBaseActivity
             switch (eventPageClickedFrom) {
                 case (1): {
                     resetTabColours();
-                    mList.setBackgroundResource(R.color.currentTabColor);
+                    mList.setTextColor(getResources().getColor(R.color.colorPrimary));
                     //eventPageClickedFrom = 0;
                     searchButton.setEnabled(false);
                     searchButton.setVisibility(View.GONE);
@@ -1015,7 +1021,7 @@ public class MainActivity extends AuthBaseActivity
                 }
                 case (2): {
                     resetTabColours();
-                    mFavourites.setBackgroundResource(R.color.currentTabColor);
+                    mFavourites.setTextColor(getResources().getColor(R.color.colorPrimary));
                     mCreateEvent.setEnabled(true);
                     mCreateEvent.setVisibility(View.VISIBLE);
 
@@ -1173,7 +1179,7 @@ public class MainActivity extends AuthBaseActivity
      */
     private void resetTabColours() {
         for (IconTextView itv : mTabs) {
-            itv.setBackgroundResource(R.color.otherTabColor);
+            itv.setTextColor(getResources().getColor(R.color.dark_gray));
         }
     }
 

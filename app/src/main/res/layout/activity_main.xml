@@ -19,7 +19,7 @@
         android:layout_width="match_parent"
         android:layout_height="55dp"
         android:elevation="10dp"
-        android:background="@color/otherTabColor"
+        android:background="@color/white"
         android:layout_alignParentTop="true"
         android:orientation="horizontal">
 
@@ -29,10 +29,10 @@
             android:layout_height="match_parent"
             android:layout_gravity="center"
             android:layout_weight="1"
-            android:background="@color/currentTabColor"
+            android:background="@color/white"
             android:gravity="center"
-            android:text="{fa-globe}"
-            android:textColor="@color/custom_white"
+            android:text="{fa-map}"
+            android:textColor="@color/colorPrimary"
             android:textSize="30sp" />
 
         <com.joanzapata.iconify.widget.IconTextView
@@ -40,10 +40,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/otherTabColor"
+            android:background="@color/white"
             android:gravity="center"
             android:text="{fa-list-ul}"
-            android:textColor="@color/custom_white"
+            android:textColor="@color/dark_gray"
             android:textSize="30sp" />
 
         <com.joanzapata.iconify.widget.IconTextView
@@ -51,10 +51,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/otherTabColor"
+            android:background="@color/white"
             android:gravity="center"
             android:text="{fa-user}"
-            android:textColor="@color/custom_white"
+            android:textColor="@color/dark_gray"
             android:textSize="30sp" />
 
         <com.joanzapata.iconify.widget.IconTextView
@@ -62,10 +62,10 @@
             android:layout_width="0dp"
             android:layout_height="match_parent"
             android:layout_weight="1"
-            android:background="@color/otherTabColor"
+            android:background="@color/white"
             android:gravity="center"
             android:text="{fa-gear}"
-            android:textColor="@color/custom_white"
+            android:textColor="@color/dark_gray"
             android:textSize="30sp" />
 
     </LinearLayout>
