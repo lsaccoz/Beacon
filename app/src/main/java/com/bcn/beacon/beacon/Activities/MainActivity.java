@@ -108,6 +108,8 @@ public class MainActivity extends AuthBaseActivity
     private FloatingActionButton searchButton;
     private SearchView searchBar;
 
+    private boolean isAuthorized = false;
+
     private IconTextView mList;
     private IconTextView mWorld;
     private IconTextView mFavourites;
@@ -147,7 +149,9 @@ public class MainActivity extends AuthBaseActivity
     private ArrayList<String> hostingIds = new ArrayList<>();
     private ArrayList<ListEvent> favourites = new ArrayList<>();
 
-    private ValueEventListener mCurrentListener;
+    private ValueEventListener mEventsListener;
+    private ValueEventListener mFavouritesListener;
+    private ValueEventListener mHostingListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -195,7 +199,7 @@ public class MainActivity extends AuthBaseActivity
                     searchedList = true;
                     ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
                     fragment.updateListForSearch(query);
-                } else if (tracker == 0){ // map
+                } else if (tracker == 0) { // map
                     searchedMap = true;
                     searchedEventsCache = SearchUtil.searchEvents(query, getEventList());
                     putEventPinsOnMap(searchedEventsCache);
@@ -253,7 +257,6 @@ public class MainActivity extends AuthBaseActivity
         });
 
 
-
         //set the onClickListener to this activity
         mList.setOnClickListener(this);
         mWorld.setOnClickListener(this);
@@ -286,9 +289,9 @@ public class MainActivity extends AuthBaseActivity
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 FirebaseUser user = firebaseAuth.getCurrentUser();
-                if (user != null) {
+                if (user != null && !isAuthorized) {
+                    setDataListeners();
                     mFirebaseUser = user;
-                    initMap();
                     Log.d(TAG, "onAuthStateChanged_Main:signed_in:" + mFirebaseUser.getUid());
                 } else {
                     // User is signed out
@@ -298,9 +301,9 @@ public class MainActivity extends AuthBaseActivity
         };
 
         // get events from firebase
-        getNearbyEvents();
+//        getNearbyEvents();
         // get user favourite ids from firebase
-        getFavouriteIds();
+//        getFavouriteIds();
         // get the user location
         Location location = LocationUtil.getUserLocation(this);
         if (location != null) {
@@ -317,11 +320,11 @@ public class MainActivity extends AuthBaseActivity
 
         mAuth.addAuthStateListener(mAuthListener);
 
-        // get user favourite ids from firebase
-        getIds(FAVOURITES, favouriteIds);
-
-        // get user hosting ids from firebase
-        getIds(HOSTING, hostingIds);
+//        // get user favourite ids from firebase
+//        getIds(FAVOURITES, favouriteIds);
+//
+//        // get user hosting ids from firebase
+//        getIds(HOSTING, hostingIds);
 
 
         // added a condition to avoid creating a new instance of map fragment everytime we go back to main activity
@@ -609,6 +612,17 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
+     * method to set all our data listeners for main activity, this includes
+     * nearby events, favourited events and hosting events
+     */
+    private void setDataListeners() {
+
+        getNearbyEvents();
+        getIds(FAVOURITES, favouriteIds);
+        getIds(HOSTING, hostingIds);
+    }
+
+    /**
      * TODO THIS CAN BE REFACTORED
      */
     public void getNearbyEvents() {
@@ -620,10 +634,10 @@ public class MainActivity extends AuthBaseActivity
         Query searchParams = mDatabase.child("ListEvents").orderByChild("timestamp")
                 .startAt(DataUtil.getExpiredDate());
 
-        if (mCurrentListener != null) {
-            searchParams.removeEventListener(mCurrentListener);
+        if (mEventsListener != null) {
+            searchParams.removeEventListener(mEventsListener);
         }
-        mCurrentListener = new ValueEventListener() {
+        mEventsListener = new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
                 if (!events.isEmpty()) {
@@ -657,11 +671,10 @@ public class MainActivity extends AuthBaseActivity
                 }
                 Collections.sort(events, new DistanceComparator());
 
-
-//
-//                //filter events obtained from firebase query based on their distance
-//
-//                LocationUtil.filterEventsByDistance(events, searchRangeLimit);
+                // if this listener is triggered we know that the user is authorized so we don't
+                // need to try and set the listener anymore
+                isAuthorized = true;
+                initMap();
 
             }
 
@@ -669,102 +682,79 @@ public class MainActivity extends AuthBaseActivity
             public void onCancelled(DatabaseError databaseError) {
             }
         };
-        searchParams.addValueEventListener(mCurrentListener);
+        searchParams.addValueEventListener(mEventsListener);
 
     }
 
     /**
      * Function to get the event ids of user's favourites
-     * TODO THIS CAN BE REFACTORED
      */
-    public void getFavouriteIds() {
+    private void getIds(final String eventType, final ArrayList<String> idList) {
         try {
             String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
             FirebaseDatabase database = FirebaseDatabase.getInstance();
             DatabaseReference users = database.getReference("Users");
-            users.child(userId).child("favourites").addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (!favouriteIds.isEmpty()) {
-                        favouriteIds.clear();
-                    }
-                    //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
-                    for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
-                        //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
-                        favouriteIds.add(fav_snapshot.getKey());
-                    }
 
+            if (eventType.equals(HOSTING)) {
+                if (mHostingListener != null) {
+                    users.child(userId).child(eventType).removeEventListener(mHostingListener);
                 }
+                mHostingListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!idList.isEmpty()) {
+                            idList.clear();
+                        }
+                        //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
+                        for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
+                            //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
+                            idList.add(fav_snapshot.getKey());
+                        }
+                        // if this listener is triggered we know that the user is authorized so we don't
+                        // need to try and set the listener anymore
+                        isAuthorized = true;
+                    }
 
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
+                    }
+                };
+
+                users.child(userId).child(eventType).addValueEventListener(mHostingListener);
+            } else if (eventType.equals(FAVOURITES)) {
+                if (mFavouritesListener != null) {
+                    users.child(userId).child(eventType).removeEventListener(mFavouritesListener);
                 }
-            });
+                mFavouritesListener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        if (!idList.isEmpty()) {
+                            idList.clear();
+                        }
+                        //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
+                        for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
+                            //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
+                            idList.add(fav_snapshot.getKey());
+                        }
+                        // if this listener is triggered we know that the user is authorized so we don't
+                        // need to try and set the listener anymore
+                        isAuthorized = true;
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+
+                    }
+                };
+                users.child(userId).child(eventType).addValueEventListener(mFavouritesListener);
+            }
+
+
         } catch (NullPointerException e) {
             e.printStackTrace();
         }
-    }
 
-    /**
-     * Function to get the event ids of user's favourites
-     */
-    public void getIds(final String eventType, final ArrayList<String> idList ) {
-        try {
-            String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-            FirebaseDatabase database = FirebaseDatabase.getInstance();
-            DatabaseReference users = database.getReference("Users");
-            users.child(userId).child(eventType).addValueEventListener(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (!idList.isEmpty()) {
-                        idList.clear();
-                    }
-                    //HashMap<String, ListEvent> eventsMap = MainActivity.getEventsMap();
-                    for (DataSnapshot fav_snapshot : dataSnapshot.getChildren()) {
-                        //Log.i("FAV_SNAPSHOT", fav_snapshot.getKey());
-                        idList.add(fav_snapshot.getKey());
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
-        } catch (NullPointerException e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * Getter method for that returns the events list
-     *
-     * @return list of nearby events
-     */
-    public ArrayList<ListEvent> getEventList() {
-        ArrayList<ListEvent> allEvents = new ArrayList<>(events);
-        return allEvents;
-    }
-
-    public ArrayList<ListEvent> getRefreshedEventList() {
-        getNearbyEvents();
-        return events;
-    }
-
-    public HashMap<String, ListEvent> getEventsMap() {
-        return eventsMap;
-    }
-
-    public ArrayList<ListEvent> searchEvents(String query) {
-        return SearchUtil.searchEvents(query, getEventList());
-    }
-
-    public ArrayList<String> getFavouriteIdsList() {
-        return favouriteIds;
-    }
-    public ArrayList<String> getHostIdsList() {
-        return hostingIds;
     }
 
 
@@ -825,8 +815,7 @@ public class MainActivity extends AuthBaseActivity
                     mMap.addMarker(new MarkerOptions()
                             .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                             .position(new LatLng(userLat, userLng)));
-                }
-                 else {
+                } else {
                     Marker marker = mMap.addMarker(new MarkerOptions()
                             .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
                             .position(new LatLng(userLat, userLng))
@@ -893,14 +882,6 @@ public class MainActivity extends AuthBaseActivity
 
         ListEvent event = events_list.get(marker.getId());
 
-        Geocoder geocoder = new Geocoder(this, Locale.getDefault());
-
-//        if (event != null) {
-//            pinAddress = localUtil.getLocationName(event.getLocation().getLatitude(), event.getLocation().getLongitude(), this);
-//        } else {
-//            pinAddress = localUtil.getLocationName(userLat, userLng, this);
-//
-//        }
         if (event != null) {
             pinAddress = event.getLocation().getAddress();
         } else {
@@ -932,15 +913,6 @@ public class MainActivity extends AuthBaseActivity
 
     }
 
-    /**
-     * resets all the tabs to the unselected color
-     */
-    private void resetTabColours() {
-        for (IconTextView itv : mTabs) {
-            itv.setBackgroundResource(R.color.otherTabColor);
-        }
-    }
-
 
     @Override
     public void onMapClick(LatLng latLng) {
@@ -949,7 +921,7 @@ public class MainActivity extends AuthBaseActivity
 
     /**
      * This method overrides the default back button functionality
-     * <p>
+     * <p/>
      * If the user is looking at a different tab the world tab will be loaded,
      * otherwise the activity will end and the user will return to the android home screen
      */
@@ -998,7 +970,7 @@ public class MainActivity extends AuthBaseActivity
         }
     }
 
-        // To keep track of the view the event page was clicked on
+    // To keep track of the view the event page was clicked on
 
     public static void setEventPageClickedFrom(int from) {
         eventPageClickedFrom = from;
@@ -1012,14 +984,6 @@ public class MainActivity extends AuthBaseActivity
 
     @Override
     public void onResume() {
-        // Temporary fix for going back to list view from event page
-        // it actually shows fragment but the action bar goes back to map view
-        /*if (eventPageClickedFrom == 1) {
-            //set the world tab as being selected
-            resetTabColours();
-            mList.setBackgroundResource(R.color.currentTabColor);
-            eventPageClickedFrom = 0;
-        }*/
         super.onResume();
     }
 
@@ -1059,14 +1023,8 @@ public class MainActivity extends AuthBaseActivity
                     searchButton.setVisibility(View.GONE);
                     searchBar.setEnabled(true);
                     searchBar.setVisibility(View.VISIBLE);
-                    //eventPageClickedFrom = 0;
                     break;
                 }
-                /*default: {
-                    resetTabColours();
-                    mWorld.setBackgroundResource(R.color.currentTabColor);
-                    break;
-                }*/
             }
 
         }
@@ -1076,8 +1034,6 @@ public class MainActivity extends AuthBaseActivity
     @Override
     public void onSaveInstanceState(Bundle outState) {
         Log.i("SAVE STATE", "YES");
-        //outState.putParcelable("lastFragment", getFragmentManager().saveFragmentInstanceState(mActiveFragment));
-        //getFragmentManager().putFragment(outState, "lastFragment", mActiveFragment);
         outState.putInt("tracker", tracker);
 
         super.onSaveInstanceState(outState);
@@ -1088,9 +1044,6 @@ public class MainActivity extends AuthBaseActivity
         super.onRestoreInstanceState(savedInstanceState);
 
         tracker = savedInstanceState.getInt("tracker");
-
-        //getFragmentManager().getFragment(savedInstanceState, "lastFragment");
-        //savedInstanceState.getParcelable("lastFragment");
 
     }
 
@@ -1213,6 +1166,42 @@ public class MainActivity extends AuthBaseActivity
                         MainActivity.this.finish();
                     }
                 });
+    }
+
+    /**
+     * resets all the tabs to the unselected color
+     */
+    private void resetTabColours() {
+        for (IconTextView itv : mTabs) {
+            itv.setBackgroundResource(R.color.otherTabColor);
+        }
+    }
+
+    /**
+     * Getter method for that returns the events list
+     *
+     * @return list of nearby events
+     */
+    public ArrayList<ListEvent> getEventList() {
+        ArrayList<ListEvent> allEvents = new ArrayList<>(events);
+        return allEvents;
+    }
+
+
+    public HashMap<String, ListEvent> getEventsMap() {
+        return eventsMap;
+    }
+
+    public ArrayList<ListEvent> searchEvents(String query) {
+        return SearchUtil.searchEvents(query, getEventList());
+    }
+
+    public ArrayList<String> getFavouriteIdsList() {
+        return favouriteIds;
+    }
+
+    public ArrayList<String> getHostIdsList() {
+        return hostingIds;
     }
 }
 

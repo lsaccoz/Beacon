@@ -102,8 +102,8 @@ public class FavouritesFragment extends Fragment
         super.onCreate(savedInstanceState);
         favouriteIds = ((MainActivity) getActivity()).getFavouriteIdsList();
         hostingIds = ((MainActivity) getActivity()).getHostIdsList();
-        populate(favourites, favouriteIds);
-        populate(hosting, hostingIds);
+//        populate(favourites, favouriteIds);
+//        populate(hosting, hostingIds);
 
         favAdapter = new EventListAdapter(appContext, 0, favourites, favouriteIds);
         hostingAdapter = new EventListAdapter(appContext, 0, hosting, hostingIds);
