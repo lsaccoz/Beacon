@@ -51,7 +51,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
 4. Search and Sort events
 
   * By Name
-  * By Description
+  * By Date
   * By Distance
   
    <div style="text-align:center">
