@@ -162,7 +162,7 @@ public class MainActivity extends AuthBaseActivity
         setContentView(R.layout.activity_main);
 
         //hide the action bar
-        getSupportActionBar().hide();
+       // getSupportActionBar().hide();
 
 
 //set default values for preferences if they haven't been modified yet

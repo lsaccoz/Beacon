@@ -100,10 +100,10 @@
         app:elevation="6dp"
         android:layout_weight="1"
         android:contextClickable="false"
-        app:backgroundTint="@color/colorPrimary"
+        app:backgroundTint="@color/white"
         android:baselineAlignBottom="false"
         android:clickable="true"
-        android:tint="@color/white" />
+        android:tint="@color/colorPrimary" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/create_event_fab"
@@ -114,9 +114,9 @@
         android:layout_alignParentRight="true"
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
-        android:tint="@android:color/white"
+        android:tint="@color/colorPrimary"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/colorPrimary" />
+        app:backgroundTint="@color/white" />
 
 
 

@@ -16,6 +16,7 @@ import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -28,6 +29,7 @@ import android.view.View;
 import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -117,10 +119,8 @@ public class EventPageActivity extends AuthBaseActivity {
         Intent intent = getIntent();
         from = intent.getIntExtra("from", -1);
 
-        final ActionBar actionBar = getSupportActionBar();
-
-        //set the status bar color if the API version is high enough
-        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
 
         //initialize array of image drawables, we will retrieve this from the event
         mImageDrawables = new ArrayList<>();
@@ -150,6 +150,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
         //retrieve all the views from the view hierarchy
         mContentView = findViewById(R.id.event_page_root);
+//        toolbar.setPadding(0, UI_Util.getStatusBarHeight(getApplicationContext()), 0, 0);
 
         //set on global layout listener so that we can add appropriate padding to the top of the content view
         mContentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
@@ -157,7 +158,10 @@ public class EventPageActivity extends AuthBaseActivity {
             public void onGlobalLayout() {
 
                 mContentView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                mContentView.setPadding(0, UI_Util.getStatusBarHeight(getApplicationContext()) + actionBar.getHeight(), 0, 0);
+
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
+                params.setMargins(0, UI_Util.getStatusBarHeight(getApplicationContext()), 0, 0);
+                toolbar.setLayoutParams(params);
             }
         });
 
