@@ -193,7 +193,19 @@ public class MainActivity extends AuthBaseActivity
 //        });
 
 
+        //customize the search bar
         searchBar = (SearchView) findViewById(R.id.searchBar);
+        searchBar.setQueryHint(getString(R.string.query_string));
+
+        SearchView.SearchAutoComplete searchAutoComplete =
+                (SearchView.SearchAutoComplete)searchBar
+                        .findViewById(android.support.v7.appcompat.R.id.search_src_text);
+
+        searchBar.setIconifiedByDefault(true);
+
+        searchAutoComplete.setHintTextColor(getResources().getColor(R.color.light_gray));
+        searchAutoComplete.setTextSize(20);
+
         searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -381,8 +393,8 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
 
-                searchButton.setEnabled(false);
-                searchButton.setVisibility(View.GONE);
+//                searchButton.setEnabled(false);
+//                searchButton.setVisibility(View.GONE);
 
                 //get List fragment if exists
                 Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
@@ -422,9 +434,6 @@ public class MainActivity extends AuthBaseActivity
                 mCreateEvent.setEnabled(true);
                 mCreateEvent.setVisibility(View.VISIBLE);
 
-                searchButton.setEnabled(!searchedMap);
-                searchButton.setVisibility(!searchedMap ? View.VISIBLE : View.GONE);
-
                 searchBar.setEnabled(searchedMap);
                 searchBar.setVisibility(searchedMap ? View.VISIBLE : View.GONE);
 
@@ -452,6 +461,9 @@ public class MainActivity extends AuthBaseActivity
                     mMapFragment.getMapAsync(this);
                 }
                 tracker = 0;
+
+                searchButton.setEnabled(!searchedMap);
+                searchButton.setVisibility(!searchedMap ? View.VISIBLE : View.GONE);
 
                 break;
             }

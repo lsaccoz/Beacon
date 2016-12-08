@@ -87,7 +87,7 @@ public class EventPageActivity extends AuthBaseActivity {
     private TextView mStartMonth;
     private TextView mStartDay;
     private TextView mAddress;
-    private TextView mTags;
+//    private TextView mTags;
     private TextView mIconText;
     private ListView mCommentsList;
     private IconTextView mCommentButton;
@@ -165,7 +165,7 @@ public class EventPageActivity extends AuthBaseActivity {
         mStartDay = (TextView) findViewById(R.id.start_day);
         mStartMonth = (TextView) findViewById(R.id.start_month);
         mAddress = (TextView) findViewById(R.id.address);
-        mTags = (TextView) findViewById(R.id.tags);
+//        mTags = (TextView) findViewById(R.id.tags);
         mCommentsList = (ListView) findViewById(R.id.comments_list);
         mCommentButton = (IconTextView) findViewById(R.id.comment_button);
         mEditConfirm = (IconTextView) findViewById(R.id.edit_confirm);
@@ -751,7 +751,7 @@ public class EventPageActivity extends AuthBaseActivity {
         Date date = mEvent.getDate();
 
         //display the tags for this event
-        mTags.setText(" #Party\n #Music\n #Fun");
+//        mTags.setText(" #Party\n #Music\n #Fun");
 
         //retrieve and set the address
         mAddress.setText(mEvent.getLocation().getAddress());

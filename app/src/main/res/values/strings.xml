@@ -71,6 +71,9 @@
     <string name="delete_event_message">Are you sure you want to delete this event?</string>
     <string name="delete_event_confirmation">Event Deleted</string>
 
+    <!-- Search Strings -->
+    <string name="query_string">Search For Events</string>
+
 
 
 </resources>

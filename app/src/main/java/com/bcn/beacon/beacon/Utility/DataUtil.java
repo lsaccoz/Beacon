@@ -130,7 +130,7 @@ public class DataUtil {
         com.bcn.beacon.beacon.Data.Models.Date d = e.getDate();
 
         String s = String.format(Locale.US, "%02d:%02d %s",
-                (d.getHour() == 12 || d.getMinute() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
+                (d.getHour() == 12 || d.getHour() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
                 time_of_day ? "PM" : "AM");
 
         StringBuilder sb = new StringBuilder(s);

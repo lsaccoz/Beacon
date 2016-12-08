@@ -73,11 +73,13 @@
     <android.support.v7.widget.SearchView
         android:id="@+id/searchBar"
         android:layout_width="match_parent"
+        android:layout_margin="16dp"
         android:layout_height="35dp"
+        android:queryHint="@string/query_string"
         android:layout_below="@+id/tabs"
         android:background="@color/black"
         android:visibility="gone"
-        android:backgroundTint="@color/colorSecondary">
+        android:backgroundTint="@color/very_light_gray">
 
     </android.support.v7.widget.SearchView>
 
