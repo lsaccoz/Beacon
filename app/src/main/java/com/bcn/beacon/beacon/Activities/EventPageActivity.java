@@ -758,8 +758,8 @@ public class EventPageActivity extends AuthBaseActivity {
 
         //set the time and day fields
         mStartDay.setText("" + date.getDay());
-        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
-        mStartTime.setText(date.formatted());
+        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth(), DataUtil.UPPER_CASE));
+        mStartTime.setText(date.formattedTime());
 
         mAdapter = new CommentAdapter(mContext, 0, commentsList);
         if (commentsList != null) {
@@ -873,7 +873,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     mTitle.setText(mEvent.getName().toString());
                     mDescription.setText(mEvent.getDescription().toString());
                     mStartDay.setText("" + extras.getInt("day"));
-                    mStartMonth.setText(("" + DataUtil.convertMonthToString(extras.getInt("month"))));
+                    mStartMonth.setText(("" + DataUtil.convertMonthToString(extras.getInt("month"), DataUtil.UPPER_CASE)));
                     mStartTime.setText(extras.getString("time"));
                     mAddress.setText(extras.getString("address"));
 

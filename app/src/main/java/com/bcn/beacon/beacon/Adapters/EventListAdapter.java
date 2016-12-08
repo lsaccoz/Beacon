@@ -80,7 +80,7 @@ public class EventListAdapter extends ArrayAdapter<ListEvent> {
         UI_Util.truncateText(viewHolder.title, 30);
 
         viewHolder.distance.setText(String.format("%.1f", event.distance) + " km");
-        viewHolder.start.setText(event.getDate().formatted());
+        viewHolder.start.setText(event.getDate().formattedDate());
 
         Bitmap thumb = PhotoManager.getInstance().getThumb(event.getEventId());
         if(thumb != null) {

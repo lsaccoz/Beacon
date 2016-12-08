@@ -227,7 +227,7 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
 
 
             marker = mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker))
                     .position(new LatLng(currentLat, currentLng)));
 
             mMap.setLatLngBoundsForCameraTarget(Bounds);
