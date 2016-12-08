@@ -103,25 +103,13 @@ public class CreateEventActivity extends AuthBaseActivity implements
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_create_event);
 
-        final ActionBar actionBar = getSupportActionBar();
-        //actionBar.setDisplayHomeAsUpEnabled(true);
-
-        Window window = this.getWindow();
-        //set the status bar color if the API version is high enough
-        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
-
-        actionBar.setTitle("Create Event");
-
         mContentView = (RelativeLayout) findViewById(R.id.create_event);
-        //set on global layout listener so that we can add appropriate padding to the top of the content view
-        mContentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
 
-                mContentView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                mContentView.setPadding(0, UI_Util.getStatusBarHeight(getApplicationContext()) + actionBar.getHeight(), 0, 0);
-            }
-        });
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+
+        //style the toolbar
+        UI_Util.styleToolBar(toolbar, this, mContentView);
 
         eTime = (EditText) findViewById(R.id.event_time);
         eDate = (EditText) findViewById(R.id.event_date);

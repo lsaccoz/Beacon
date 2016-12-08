@@ -35,7 +35,9 @@
             android:name=".Activities.MainActivity"
             android:screenOrientation="portrait" />
         <activity
-            android:name=".Activities.SignInActivity" />
+            android:name=".Activities.SignInActivity"
+            android:label="@string/sign_in"
+            android:screenOrientation="portrait"/>
 
         <!--
 ATTENTION: This was auto-generated to add Google Play services to your project for
@@ -46,7 +48,8 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".Activities.CreateEventActivity"
-            android:screenOrientation="portrait">
+            android:screenOrientation="portrait"
+            android:label="@string/title_activity_create_event">
 
             <!-- android:theme="@style/CreateEventTheme"> -->
         </activity>
@@ -61,7 +64,11 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
             android:screenOrientation="portrait">
         </activity>
 
-        <activity android:name=".Activities.EditEventActivity"></activity>
+        <activity android:name=".Activities.EditEventActivity"
+            android:label="@string/title_activity_edit_event"
+            android:screenOrientation="portrait">
+
+        </activity>
     </application>
 
 </manifest>

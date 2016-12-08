@@ -84,14 +84,6 @@ public class SelectLocationActivity extends AuthBaseActivity implements OnMapRea
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_select_location);
 
-        Window window = getWindow();
-
-        //set the status bar color if the API version is high enough
-        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
-
-        actionBar = getSupportActionBar();
-        actionBar.hide();
-
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             userLat = extras.getDouble("userlat");

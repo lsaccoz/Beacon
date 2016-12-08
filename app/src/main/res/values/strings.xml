@@ -25,6 +25,8 @@
     <string name="title_activity_alsdfjlk">Alsdfjlk</string>
     <string name="title_activity_list_view">ListView</string>
     <string name="title_activity_event_page">Event Page</string>
+    <string name="title_activity_create_event">Create Event</string>
+    <string name="title_activity_edit_event">Edit Event</string>
 
     <!-- SettingsFragment strings -->
     <string name="pref_range_label">Search Range</string>
@@ -51,6 +53,7 @@
 
     <!-- Sign out Strings -->
     <string name="sign_out">Sign Out</string>
+    <string name="sign_in">Sign In</string>
     <string name="sign_out_confirmation">Are you sure you want to sign out?</string>
 
     <!-- No Internet Connection -->

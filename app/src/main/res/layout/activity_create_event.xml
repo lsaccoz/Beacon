@@ -7,17 +7,26 @@
     android:focusableInTouchMode="true"
     android:background="@color/custom_white">
 
+    <android.support.v7.widget.Toolbar
+        android:id="@+id/my_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/small_action_bar_height"
+        android:theme="@style/customToolbarStyle"
+        android:background="@color/white"
+        android:elevation="10dp">
+
+    </android.support.v7.widget.Toolbar>
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_alignParentBottom="true"
+        android:layout_below="@id/my_toolbar"
         android:id="@+id/scroll_view">
 
         <LinearLayout
             android:orientation="vertical"
             android:layout_width="match_parent"
             android:weightSum="1"
-            android:layout_alignParentTop="true"
             android:layout_height="wrap_content">
 
 
@@ -148,7 +157,8 @@
         android:layout_alignParentRight="true"
         android:layout_gravity="end|bottom"
         android:layout_margin="@dimen/fab_margin"
+        android:tint="@color/colorPrimary"
         android:src="@android:drawable/ic_dialog_map"
-        app:backgroundTint="@color/colorPrimary" />
+        app:backgroundTint="@color/very_light_gray" />
 
 </RelativeLayout>

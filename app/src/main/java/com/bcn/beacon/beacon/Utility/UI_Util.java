@@ -5,10 +5,14 @@ import android.app.Dialog;
 import android.content.Context;
 import android.os.Build;
 import android.support.annotation.Nullable;
+import android.support.v7.widget.Toolbar;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.bcn.beacon.beacon.R;
@@ -84,5 +88,22 @@ public class UI_Util {
             result = context.getResources().getDimensionPixelSize(resourceId);
         }
         return result;
+    }
+
+    // A method to fix the toolbar layout due to status bar changes
+    public static void styleToolBar(Toolbar toolbar, Context context, View layout){
+
+        if(layout instanceof LinearLayout) {
+            LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
+            params.setMargins(0, getStatusBarHeight(context), 0, 0);
+            toolbar.setLayoutParams(params);
+
+        }else if(layout instanceof RelativeLayout){
+
+            RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) toolbar.getLayoutParams();
+            params.setMargins(0, getStatusBarHeight(context), 0, 0);
+            toolbar.setLayoutParams(params);
+        }
+
     }
 }

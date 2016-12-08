@@ -119,9 +119,6 @@ public class EventPageActivity extends AuthBaseActivity {
         Intent intent = getIntent();
         from = intent.getIntExtra("from", -1);
 
-        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
-        setSupportActionBar(toolbar);
-
         //initialize array of image drawables, we will retrieve this from the event
         mImageDrawables = new ArrayList<>();
 
@@ -150,20 +147,13 @@ public class EventPageActivity extends AuthBaseActivity {
 
         //retrieve all the views from the view hierarchy
         mContentView = findViewById(R.id.event_page_root);
+
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+
+        //style the toolbar
+        UI_Util.styleToolBar(toolbar, this, mContentView);
 //        toolbar.setPadding(0, UI_Util.getStatusBarHeight(getApplicationContext()), 0, 0);
-
-        //set on global layout listener so that we can add appropriate padding to the top of the content view
-        mContentView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-
-                mContentView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-
-                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) toolbar.getLayoutParams();
-                params.setMargins(0, UI_Util.getStatusBarHeight(getApplicationContext()), 0, 0);
-                toolbar.setLayoutParams(params);
-            }
-        });
 
 
         mTitle = (TextView) findViewById(R.id.event_title);

@@ -11,16 +11,6 @@
     tools:context="com.bcn.beacon.beacon.Activities.EventPageActivity">
 
 
-    <android.support.v7.widget.Toolbar
-        android:id="@+id/my_toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="@dimen/small_action_bar_height"
-        android:theme="@style/customToolbarStyle"
-        android:background="@color/white"
-        android:elevation="10dp">
-
-    </android.support.v7.widget.Toolbar>
-
 
     <LinearLayout
         android:id="@+id/event_page_root"
@@ -28,6 +18,16 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:visibility="gone">
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/my_toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/small_action_bar_height"
+            android:theme="@style/customToolbarStyle"
+            android:background="@color/white"
+            android:elevation="10dp">
+
+        </android.support.v7.widget.Toolbar>
 
         <!-- Linear layout to order views vertically within card view -->
         <LinearLayout

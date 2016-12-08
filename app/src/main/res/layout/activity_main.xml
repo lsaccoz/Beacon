@@ -100,7 +100,7 @@
         app:elevation="6dp"
         android:layout_weight="1"
         android:contextClickable="false"
-        app:backgroundTint="@color/white"
+        app:backgroundTint="@color/very_light_gray"
         android:baselineAlignBottom="false"
         android:clickable="true"
         android:tint="@color/colorPrimary" />
@@ -116,7 +116,7 @@
         android:layout_margin="@dimen/fab_margin"
         android:tint="@color/colorPrimary"
         android:src="@android:drawable/ic_input_add"
-        app:backgroundTint="@color/white" />
+        app:backgroundTint="@color/very_light_gray" />
 
 
 

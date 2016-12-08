@@ -819,11 +819,11 @@ public class MainActivity extends AuthBaseActivity
 
                     //add marker for user
                     mMap.addMarker(new MarkerOptions()
-                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.custom_location_icon))
                             .position(new LatLng(userLat, userLng)));
                 } else {
                     Marker marker = mMap.addMarker(new MarkerOptions()
-                            .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.custom_location_icon))
                             .position(new LatLng(userLat, userLng))
                             .title("Your Location"));
 
@@ -851,7 +851,7 @@ public class MainActivity extends AuthBaseActivity
 
             //add marker for user
             mMap.addMarker(new MarkerOptions()
-                    .icon(BitmapDescriptorFactory.fromResource(R.mipmap.beacon_icon))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.custom_location_icon))
                     .position(new LatLng(userLat, userLng)));
 
             for (ListEvent e : events) {
@@ -860,7 +860,7 @@ public class MainActivity extends AuthBaseActivity
                 double longitude = e.getLocation().getLongitude();
 
                 Marker marker = mMap.addMarker(new MarkerOptions()
-                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.pin))
+                        .icon(BitmapDescriptorFactory.fromResource(R.drawable.map_marker))
                         .position(new LatLng(latitude, longitude)));
 
                 m.put(marker.getId(), e.getEventId());
