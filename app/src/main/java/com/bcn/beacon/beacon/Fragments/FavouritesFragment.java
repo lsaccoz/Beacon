@@ -213,11 +213,13 @@ public class FavouritesFragment extends Fragment
                 if(event.getTimestamp() + 2*DateUtils.DAY_IN_MILLIS > mcurrentDate.getTimeInMillis()) {
                     events.add(event);
                 } else {
+                    removeHosting(ids.get(i));
                     removeFav(ids.get(i));
                     events.remove(event);
                     break;
                 }
             }else{
+                removeHosting(ids.get(i));
                 removeFav(ids.get(i));
                 break;
             }
@@ -266,6 +268,15 @@ public class FavouritesFragment extends Fragment
         resizeListView();
     }
 
+    public void removeHosting(String eventId) {
+        userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference users = database.getReference("Users");
+        users.child(userId).child("hosting").child(eventId).removeValue();
+        hostingIds.remove(eventId);
+        hosting.clear();
+        populate(hosting, hostingIds);
+    }
 
     @Override
     public boolean onItemLongClick(AdapterView<?> parent, View view, int position, long id) {
