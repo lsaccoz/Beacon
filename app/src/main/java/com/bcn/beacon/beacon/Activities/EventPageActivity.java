@@ -784,8 +784,7 @@ public class EventPageActivity extends AuthBaseActivity {
             Comment comment;
             int offset;
             int totalHeight = 0;
-            int totalLines = 0;
-            int numLines = 0;
+            int numLines;
             for (int i = 0; i < listAdapter.getCount(); i++) {
                 comment = (Comment) listAdapter.getItem(i);
                 offset = comment.getText().length();
@@ -795,7 +794,6 @@ public class EventPageActivity extends AuthBaseActivity {
                 else {
                     numLines = offset/AVG_CHARS_PER_LINE + 1;
                 }
-                totalLines += numLines;
                 totalHeight += 210 + 50*numLines + (offset/((numLines+1)/2));
             }
             ViewGroup.LayoutParams params = mCommentsList.getLayoutParams();
