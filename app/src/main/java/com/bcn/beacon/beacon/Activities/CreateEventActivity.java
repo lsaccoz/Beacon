@@ -56,8 +56,7 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-public class CreateEventActivity extends AuthBaseActivity implements
-        AdapterView.OnItemSelectedListener, View.OnClickListener {
+public class CreateEventActivity extends AuthBaseActivity implements View.OnClickListener {
 
     protected LocationUtil localUtil = new LocationUtil();
 
@@ -75,7 +74,7 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
     protected Location location = new Location();
     protected ImageButton eAddImage;
-    protected Uri picUri;
+    protected ImageView eventImage;
     protected FloatingActionButton myFab;
     protected Spinner categorySpinner;
     protected ImageUtil imgUtil = new ImageUtil();
@@ -110,11 +109,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
         eName = (EditText) findViewById(R.id.input_name);
         eDescription = (EditText) findViewById(R.id.input_description);
         eAddImage = (ImageButton) findViewById(R.id.addImageButton);
-        categorySpinner = (Spinner) findViewById(R.id.spinner);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
-                R.array.categories_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        categorySpinner.setAdapter(adapter);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
         eAddress = (EditText) findViewById(R.id.input_address);
 
@@ -122,7 +116,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
         eTime.setOnClickListener(this);
         eAddImage.setOnClickListener(this);
         eAddress.setOnClickListener(this);
-        categorySpinner.setOnItemSelectedListener(this);
         myFab.setOnClickListener(this);
 
         initialzieDateandTime();
@@ -282,6 +275,8 @@ public class CreateEventActivity extends AuthBaseActivity implements
                 startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
             } else if (requestCode == PIC_CROP) {
                 eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                eAddImage.getLayoutParams().height = 1000;
+                eAddImage.requestLayout();
                 Bitmap photo = BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath());
                 photos.add(photo);
                 eAddImage.setImageBitmap(photo);
@@ -330,15 +325,6 @@ public class CreateEventActivity extends AuthBaseActivity implements
 
             return;
         }
-    }
-
-    public void onItemSelected(AdapterView<?> parent, View view,
-                               int pos, long id) {
-        //parent.getItemAtPosition(pos)
-    }
-
-    public void onNothingSelected(AdapterView<?> parent) {
-        // Another interface callback
     }
 
     protected void upload() {
