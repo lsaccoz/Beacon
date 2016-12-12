@@ -62,6 +62,9 @@ import java.util.List;
 
 import java.util.ArrayList;
 
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
+
 
 public class EventPageActivity extends AuthBaseActivity {
 
@@ -765,6 +768,8 @@ public class EventPageActivity extends AuthBaseActivity {
         showUI();
     }
 
+    private static final int AVG_CHARS_PER_LINE = 27;
+
     // method to resize comments card view
     // TODO: make this better, read notes below
     // NOTES: tried resizing as in FavouritesFragment, did not work,
@@ -776,16 +781,25 @@ public class EventPageActivity extends AuthBaseActivity {
                 return;
             }
 
+            Comment comment;
+            int offset;
             int totalHeight = 0;
+            int totalLines = 0;
+            int numLines = 0;
             for (int i = 0; i < listAdapter.getCount(); i++) {
-                View listItem = listAdapter.getView(i, null, mCommentsList);
-                listItem.measure(0, 0);
-                totalHeight += listItem.getMeasuredHeight();
-                Log.i("Total height", Integer.toString(totalHeight));
+                comment = (Comment) listAdapter.getItem(i);
+                offset = comment.getText().length();
+                if (offset <= AVG_CHARS_PER_LINE) {
+                    numLines = 1;
+                }
+                else {
+                    numLines = offset/AVG_CHARS_PER_LINE + 1;
+                }
+                totalLines += numLines;
+                totalHeight += 210 + 50*numLines + (offset/((numLines+1)/2));
             }
             ViewGroup.LayoutParams params = mCommentsList.getLayoutParams();
             params.height = totalHeight;
-            //Log.i("Params height", Integer.toString(params.height));
             mCommentsList.setLayoutParams(params);
             mCommentsList.requestLayout();
         }
