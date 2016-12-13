@@ -91,7 +91,7 @@
         android:background="@color/white"
         android:layout_below="@+id/tabs">
 
-        <android.support.v7.widget.CardView
+        <com.bcn.beacon.beacon.CustomViews.CustomCardView
             xmlns:card_view="http://schemas.android.com/apk/res-auto"
             android:id="@+id/searchBar"
             android:layout_width="match_parent"
@@ -121,7 +121,7 @@
                 android:layout_gravity="center_vertical"
                 android:layout_marginLeft="50dp"/>
 
-        </android.support.v7.widget.CardView>
+        </com.bcn.beacon.beacon.CustomViews.CustomCardView>
 
         <FrameLayout
             android:id="@+id/events_view"

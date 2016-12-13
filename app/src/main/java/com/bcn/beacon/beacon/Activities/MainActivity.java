@@ -24,6 +24,7 @@ import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.view.Window;
@@ -33,6 +34,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bcn.beacon.beacon.BeaconApplication;
+import com.bcn.beacon.beacon.CustomViews.CustomCardView;
 import com.bcn.beacon.beacon.Data.DistanceComparator;
 import com.bcn.beacon.beacon.Data.Models.ListEvent;
 import com.bcn.beacon.beacon.Data.Models.PhotoManager;
@@ -209,16 +211,21 @@ public class MainActivity extends AuthBaseActivity
         searchAutoComplete.setTextSize(20);
 
         //set listener so whenever search bar clicked the search view is expanded
-        searchBar.setOnClickListener(new View.OnClickListener(){
-
+        searchBar.setOnTouchListener(new View.OnTouchListener() {
             @Override
-            public void onClick(View view){
+            public boolean onTouch(View v, MotionEvent event) {
+
                 searchView.setIconified(false);
+
+                ((CustomCardView) searchBar).setIsActive(true);
 
                 //hide the hint text when the user starts typing
                 searchBar.findViewById(R.id.hint_text).setVisibility(View.GONE);
+
+                return true;
             }
         });
+
 
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
@@ -264,6 +271,8 @@ public class MainActivity extends AuthBaseActivity
             @Override
             public boolean onClose() {
                 searchBar.findViewById(R.id.hint_text).setVisibility(View.VISIBLE);
+
+                ((CustomCardView) searchBar).setIsActive(false);
                 if (tracker == 1) { // list
                     searchedList = false;
                     ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
