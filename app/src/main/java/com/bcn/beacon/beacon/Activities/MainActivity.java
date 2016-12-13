@@ -1088,8 +1088,8 @@ public class MainActivity extends AuthBaseActivity
 
 //                    searchButton.setEnabled(false);
 //                    searchButton.setVisibility(View.GONE);
-                    searchBar.setEnabled(true);
-                    searchBar.setVisibility(View.VISIBLE);
+                    searchBar.setEnabled(false);
+                    searchBar.setVisibility(View.GONE);
                     break;
                 }
             }
