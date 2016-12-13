@@ -31,8 +31,7 @@
                 android:layout_height="0dp"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:drawSelectorOnTop="false"
-                android:elevation="1dp" />
+                android:drawSelectorOnTop="false" />
 
             <TextView
                 android:id="@+id/favourites_title"
@@ -48,8 +47,7 @@
                 android:layout_height="0dp"
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true"
-                android:drawSelectorOnTop="false"
-                android:elevation="1dp" />
+                android:drawSelectorOnTop="false" />
 
         </LinearLayout>
     </ScrollView>

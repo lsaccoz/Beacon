@@ -115,11 +115,11 @@
                 android:id="@+id/hint_text"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Search For Events"
+                android:text="@string/query_string"
                 android:textSize="20sp"
                 android:textColor="@color/light_gray"
-                android:gravity="center"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center_vertical"
+                android:layout_marginLeft="50dp"/>
 
         </android.support.v7.widget.CardView>
 
