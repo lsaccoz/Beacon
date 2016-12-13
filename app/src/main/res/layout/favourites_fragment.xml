@@ -23,7 +23,7 @@
                 android:layout_height="wrap_content"
                 android:padding="5dp"
                 android:text="Your Events"
-                android:textSize="18sp" />
+                android:textSize="20sp" />
 
             <ListView
                 android:id="@+id/hostingView"
@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:padding="5dp"
                 android:text="Favourite Events"
-                android:textSize="18sp" />
+                android:textSize="20sp" />
 
             <ListView
                 android:id="@+id/favouritesView"

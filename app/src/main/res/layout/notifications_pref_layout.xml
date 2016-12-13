@@ -18,7 +18,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/title"
-        android:textColor="@color/dark_gray"
+        android:textColor="@color/light_gray"
         style="@android:style/TextAppearance.SearchResult.Subtitle"
         android:text="@string/pref_notifications_summary"/>
 
