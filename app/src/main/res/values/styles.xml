@@ -1,9 +1,10 @@
 <resources>
 
     <!-- Base application theme. -->
-    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
 
         <!-- Customize your theme here. -->
+        <item name="android:windowTranslucentStatus">true</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">@color/colorAccent</item>
@@ -50,19 +51,24 @@
     </style>
 
     <style name="AppTheme.ActionBar2" parent="android:Theme.Holo.Light.DarkActionBar">
+        <item name="android:background">@color/white</item>
+        <item name="android:textColor">@color/colorPrimary</item>
         <item name="android:height">@dimen/small_action_bar_height</item>
         <item name="height">@dimen/small_action_bar_height</item>
     </style>
 
     <style name="myPreferenceStyle">
         <item name="android:background">@color/custom_white</item>
-        <!--
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="textColor">@color/custom_white</item>
-        <item name="textSize">@dimens/preferences_text_size</item>
-        -->
 
     </style>
+
+    <style name="customToolbarStyle" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="android:textColorPrimary">@color/dark_gray</item>
+        <item name="android:textColorSecondary">@color/colorPrimary</item>
+        <item name="android:actionMenuTextColor">@color/dark_gray</item>
+
+    </style>
+
 
     <!-- list view style for the preferences page -->
     <style name="PreferencesListViewStyle" parent="@android:style/Widget.Holo.ListView">

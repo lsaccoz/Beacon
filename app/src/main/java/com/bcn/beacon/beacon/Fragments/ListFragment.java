@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.FrameLayout;
 import android.widget.ListView;
 
 import com.bcn.beacon.beacon.Activities.EventPageActivity;
@@ -33,6 +34,7 @@ import static android.provider.AlarmClock.EXTRA_MESSAGE;
  */
 public class ListFragment extends Fragment {
 
+    private FrameLayout mContentView;
     private ListView listView;
     private ArrayList<ListEvent> events;
     private ArrayList<String> favouritedEventIds;
@@ -80,6 +82,8 @@ public class ListFragment extends Fragment {
 
         //create our view from the xml doc
         View view = inflater.inflate(R.layout.list_fragment, container, false);
+
+        mContentView = (FrameLayout) view.findViewById(R.id.content_view);
 
         listView = (ListView) view.findViewById(R.id.listView);
 
@@ -172,11 +176,6 @@ public class ListFragment extends Fragment {
         favouritedEventIds.addAll(results);
         adapter.notifyDataSetChanged();
 
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
     }
 
 

@@ -1,5 +1,7 @@
 package com.bcn.beacon.beacon.Data.Models;
 
+import com.bcn.beacon.beacon.Utility.DataUtil;
+
 import java.util.Calendar;
 import java.util.Locale;
 
@@ -12,12 +14,27 @@ public class Date {
     private int minute;
 
 
-    public String formatted() {
+    public String formattedTime() {
         boolean isPM = 12 <= hour && hour < 24;
 
-        return String.format(Locale.US, "%02d:%02d %s",
+        String s = String.format(Locale.US, "%02d:%02d %s",
                 (hour == 12 || hour == 0) ? 12 : hour % 12, minute,
                 isPM ? "PM" : "AM");
+
+        StringBuilder sb = new StringBuilder(s);
+
+        if (s.charAt(0) == '0')
+            sb.deleteCharAt(0);
+
+        s = sb.toString();
+        return s;
+    }
+
+    public String formattedDate(){
+
+        return DataUtil.convertMonthToString(getMonth(), DataUtil.LOWER_CASE)
+                + " " + getDay()
+                + ", " + formattedTime();
     }
 
 

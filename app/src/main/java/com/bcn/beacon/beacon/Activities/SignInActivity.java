@@ -5,14 +5,17 @@ import android.accounts.AccountManager;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
 import android.support.annotation.NonNull;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.view.ContextThemeWrapper;
+import android.support.v7.widget.*;
 import android.util.Log;
 import android.view.View;
 import android.view.Window;
 import android.widget.*;
+import android.support.v7.widget.Toolbar;
 
 import com.bcn.beacon.beacon.BeaconApplication;
 import com.bcn.beacon.beacon.R;
@@ -47,18 +50,29 @@ public class SignInActivity extends AuthBaseActivity implements View.OnClickList
     //Class variables for authentication
     private SignInButton signInButton;
     private GoogleApiClient mGoogleApiClient;
+    private RelativeLayout mContentView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_sign_in);
 
-        Window window = this.getWindow();
+        mContentView = (RelativeLayout) findViewById(R.id.activity_sign_in);
+
+
+//        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+//        setSupportActionBar(toolbar);
+//
+//        //style the toolbar
+//        UI_Util.styleToolBar(toolbar, this, mContentView);
         //set the status bar color if the API version is high enough
-        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
+        //UI_Util.setStatusBarColor(window, Color.TRANSPARENT);
 
         signInButton = (SignInButton) findViewById(R.id.GoogleSignInButton);
         signInButton.setOnClickListener(this);
+
+        signInButton.setSize(SignInButton.SIZE_WIDE);
+        signInButton.setColorScheme(SignInButton.COLOR_DARK);
 
         mGoogleApiClient = new GoogleApiClient.Builder(this)
                 .enableAutoManage(this, this)
@@ -185,5 +199,15 @@ public class SignInActivity extends AuthBaseActivity implements View.OnClickList
                         }
                     }
                 });
+    }
+
+    @Override
+    public void onBackPressed(){
+
+        //go to home screen and clear back stack
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
     }
 }

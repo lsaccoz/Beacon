@@ -17,6 +17,9 @@ public class DataUtil {
     private static long EVENT_LIFETIME_IN_MILLIS = 172800000;
     private static String LOG_TAG = "DataUtil";
 
+    public static int UPPER_CASE = 1;
+    public static int LOWER_CASE = 0;
+
     /**
      * Static helper method that converts an int representation of a month
      * to a three character (ALL-CAPS) string representation of a month
@@ -24,33 +27,33 @@ public class DataUtil {
      * @param month
      * @return
      */
-    public static String convertMonthToString(int month) {
+    public static String convertMonthToString(int month, int textCase) {
         switch (month) {
 
             case 1:
-                return "JAN";
+                return textCase == 1 ? "JAN" : "Jan";
             case 2:
-                return "FEB";
+                return textCase == 1 ? "FEB" : "Feb";
             case 3:
-                return "MAR";
+                return textCase == 1 ? "MAR" : "Mar";
             case 4:
-                return "APR";
+                return textCase == 1 ? "APR" : "Apr";
             case 5:
-                return "MAY";
+                return textCase == 1 ? "MAY" : "May";
             case 6:
-                return "JUN";
+                return textCase == 1 ? "JUN" : "Jun";
             case 7:
-                return "JUL";
+                return textCase == 1 ? "JUL" : "Jul";
             case 8:
-                return "AUG";
+                return textCase == 1 ? "AUG" : "Aug";
             case 9:
-                return "SEP";
+                return textCase == 1 ? "SEP" : "Sep";
             case 10:
-                return "OCT";
+                return textCase == 1 ? "OCT" : "Oct";
             case 11:
-                return "NOV";
+                return textCase == 1 ? "NOV" : "Nov";
             case 12:
-                return "DEC";
+                return textCase == 1 ? "DEC" : "Dec";
         }
         return "";
     }
@@ -127,7 +130,7 @@ public class DataUtil {
         com.bcn.beacon.beacon.Data.Models.Date d = e.getDate();
 
         String s = String.format(Locale.US, "%02d:%02d %s",
-                (d.getHour() == 12 || d.getMinute() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
+                (d.getHour() == 12 || d.getHour() == 0) ? 12 : d.getHour() % 12, d.getMinute(),
                 time_of_day ? "PM" : "AM");
 
         StringBuilder sb = new StringBuilder(s);
@@ -137,7 +140,7 @@ public class DataUtil {
 
         s = sb.toString();
 
-        String date = DataUtil.convertMonthToString(d.getMonth()) + " " + d.getDay();
+        String date = DataUtil.convertMonthToString(d.getMonth(), DataUtil.LOWER_CASE) + " " + d.getDay();
 
         date = date + "," + " " + s;
 

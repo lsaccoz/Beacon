@@ -11,10 +11,12 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
 import android.support.v7.view.ContextThemeWrapper;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -25,6 +27,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -88,7 +91,7 @@ public class EventPageActivity extends AuthBaseActivity {
     private TextView mStartMonth;
     private TextView mStartDay;
     private TextView mAddress;
-    private TextView mTags;
+    //    private TextView mTags;
     private TextView mIconText;
     private ListView mCommentsList;
     private IconTextView mCommentButton;
@@ -120,10 +123,6 @@ public class EventPageActivity extends AuthBaseActivity {
         Intent intent = getIntent();
         from = intent.getIntExtra("from", -1);
 
-        Window window = this.getWindow();
-        //set the status bar color if the API version is high enough
-        UI_Util.setStatusBarColor(window, this.getResources().getColor(R.color.colorPrimary));
-
         //initialize array of image drawables, we will retrieve this from the event
         mImageDrawables = new ArrayList<>();
 
@@ -133,7 +132,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
         // Retrieve and cache the system's default "medium" animation time.
         mAnimDuration = getResources().getInteger
-                (android.R.integer.config_shortAnimTime);
+                (android.R.integer.config_mediumAnimTime);
 
 
         //get the event id
@@ -153,6 +152,14 @@ public class EventPageActivity extends AuthBaseActivity {
         //retrieve all the views from the view hierarchy
         mContentView = findViewById(R.id.event_page_root);
 
+        final Toolbar toolbar = (Toolbar) findViewById(R.id.my_toolbar);
+        setSupportActionBar(toolbar);
+
+        //style the toolbar
+        UI_Util.styleToolBar(toolbar, this, mContentView);
+//        toolbar.setPadding(0, UI_Util.getStatusBarHeight(getApplicationContext()), 0, 0);
+
+
         mTitle = (TextView) findViewById(R.id.event_title);
         mDescription = (TextView) findViewById(R.id.event_description);
         mFavourite = (IconTextView) findViewById(R.id.favourite_button);
@@ -162,7 +169,7 @@ public class EventPageActivity extends AuthBaseActivity {
         mStartDay = (TextView) findViewById(R.id.start_day);
         mStartMonth = (TextView) findViewById(R.id.start_month);
         mAddress = (TextView) findViewById(R.id.address);
-        mTags = (TextView) findViewById(R.id.tags);
+//        mTags = (TextView) findViewById(R.id.tags);
         mCommentsList = (ListView) findViewById(R.id.comments_list);
         mCommentButton = (IconTextView) findViewById(R.id.comment_button);
         mEditConfirm = (IconTextView) findViewById(R.id.edit_confirm);
@@ -265,8 +272,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     String t = "Comment edited";
                     Toast toast = Toast.makeText(mContext, t, Toast.LENGTH_SHORT);
                     toast.show();
-                }
-                else {
+                } else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
                     Toast toast = Toast.makeText(mContext, alert, Toast.LENGTH_SHORT);
                     toast.show();
@@ -315,8 +321,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     if (!discarded && !back_discarded) {
                         hideKeyboard(v);
                         showDiscardAlert();
-                    }
-                    else {
+                    } else {
                         discarded = false;
                         back_discarded = false;
                     }
@@ -360,7 +365,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
-        if(!hosting)
+        if (!hosting)
             menu.clear();
 
         return super.onPrepareOptionsMenu(menu);
@@ -395,7 +400,6 @@ public class EventPageActivity extends AuthBaseActivity {
                         confirmDelete();
 
 
-
                     }
                 });
                 AlertDialog dialog = alert.create();
@@ -406,7 +410,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
                 return true;
             case R.id.edit_event:
-                Intent intent = new Intent(this , EditEventActivity.class);
+                Intent intent = new Intent(this, EditEventActivity.class);
                 intent.putExtra("lat", mEvent.getLocation().getLatitude());
                 intent.putExtra("lng", mEvent.getLocation().getLongitude());
                 intent.putExtra("name", mTitle.getText());
@@ -434,8 +438,7 @@ public class EventPageActivity extends AuthBaseActivity {
             if (userId.equals(comment.getUserId())) {
                 menu.add(Menu.NONE, 0, 0, "Edit");
                 menu.add(Menu.NONE, 1, 1, "Delete");
-            }
-            else {
+            } else {
                 // do nothing
                 return;
             }
@@ -452,8 +455,7 @@ public class EventPageActivity extends AuthBaseActivity {
         if (index == 0) {
             editComment(comment);
             currentCommentPos = info.position;
-        }
-        else if (index == 1) {
+        } else if (index == 1) {
             deleteComment(comment, info.position);
         }
         super.onContextItemSelected(item);
@@ -484,6 +486,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
         return true;
     }
+
     // Method for deleting a comment
     public boolean deleteComment(Comment comment, int position) {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
@@ -556,8 +559,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     if (!mWriteComment.hasFocus()) {
                         mWriteComment.requestFocus();
                         ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).toggleSoftInput(InputMethodManager.SHOW_IMPLICIT, 0);
-                    }
-                    else {
+                    } else {
                         ((InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE)).showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
                     }
                     dialog.dismiss();
@@ -581,7 +583,7 @@ public class EventPageActivity extends AuthBaseActivity {
     }
 
     //show text to confirm that the event was deleted
-    private void confirmDelete(){
+    private void confirmDelete() {
         Toast toast = Toast.makeText(this,
                 getApplicationContext().getString(R.string.delete_event_confirmation),
                 Toast.LENGTH_SHORT);
@@ -608,10 +610,10 @@ public class EventPageActivity extends AuthBaseActivity {
                 String hostId = mEvent.getHostId();
                 String userId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-                Log.d("test", "host: "+ hostId);
+                Log.d("test", "host: " + hostId);
                 Log.d("test", "user: " + userId);
 
-                if (hostId.equals(userId)){
+                if (hostId.equals(userId)) {
                     hosting = true;
                     invalidateOptionsMenu();
                 }
@@ -749,15 +751,15 @@ public class EventPageActivity extends AuthBaseActivity {
         Date date = mEvent.getDate();
 
         //display the tags for this event
-        mTags.setText(" #Party\n #Music\n #Fun");
+//        mTags.setText(" #Party\n #Music\n #Fun");
 
         //retrieve and set the address
         mAddress.setText(mEvent.getLocation().getAddress());
 
         //set the time and day fields
         mStartDay.setText("" + date.getDay());
-        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth()));
-        mStartTime.setText(date.formatted());
+        mStartMonth.setText("" + DataUtil.convertMonthToString(date.getMonth(), DataUtil.UPPER_CASE));
+        mStartTime.setText(date.formattedTime());
 
         mAdapter = new CommentAdapter(mContext, 0, commentsList);
         if (commentsList != null) {
@@ -791,11 +793,10 @@ public class EventPageActivity extends AuthBaseActivity {
                 offset = comment.getText().length();
                 if (offset <= AVG_CHARS_PER_LINE) {
                     numLines = 1;
+                } else {
+                    numLines = offset / AVG_CHARS_PER_LINE + 1;
                 }
-                else {
-                    numLines = offset/AVG_CHARS_PER_LINE + 1;
-                }
-                totalHeight += 210 + 50*numLines + (offset/((numLines+1)/2));
+                totalHeight += 210 + 50 * numLines + (offset / ((numLines + 1) / 2));
             }
             ViewGroup.LayoutParams params = mCommentsList.getLayoutParams();
             params.height = totalHeight;
@@ -807,7 +808,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
     /**
      * Method to blur in the UI layout using an animation
-     * <p>
+     * <p/>
      * This is called after any relevant data is fetched from the network/local cache
      */
     private void showUI() {
@@ -829,12 +830,12 @@ public class EventPageActivity extends AuthBaseActivity {
 
         //if the current user is hosting this event display a different icon as favouriting
         //makes no sense for a host
-        if(mEvent.getHostId().equals(userId)){
+        if (mEvent.getHostId().equals(userId)) {
             mFavourite.setText("{fa-user}");
             mIconText.setText(getString(R.string.host));
 
             //set the favourite icon's listener
-        }else {
+        } else {
             if (mFavourited) {
                 mFavourite.setText("{fa-star}");
             } else {
@@ -883,8 +884,8 @@ public class EventPageActivity extends AuthBaseActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
         super.onActivityResult(requestCode, resultCode, data);
-        if(resultCode == RESULT_OK){
-            if (requestCode == RETURN_FROM_EDIT){
+        if (resultCode == RESULT_OK) {
+            if (requestCode == RETURN_FROM_EDIT) {
                 Bundle extras = data.getExtras();
                 if (extras != null) {
                     Location loc = new Location();
@@ -907,7 +908,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     mTitle.setText(mEvent.getName().toString());
                     mDescription.setText(mEvent.getDescription().toString());
                     mStartDay.setText("" + extras.getInt("day"));
-                    mStartMonth.setText(("" + DataUtil.convertMonthToString(extras.getInt("month"))));
+                    mStartMonth.setText(("" + DataUtil.convertMonthToString(extras.getInt("month"), DataUtil.UPPER_CASE)));
                     mStartTime.setText(extras.getString("time"));
                     mAddress.setText(extras.getString("address"));
 

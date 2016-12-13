@@ -10,7 +10,7 @@
     <color name="signInColor">#BA68C8</color>
     <color name="currentTabColor">#BA68C8</color>
     <color name="otherTabColor">#8E24AA</color>
-    <color name="custom_white">#F3E5F5</color>
+    <color name="custom_white">#FFFFFF</color>
     <color name="color_cardView">@color/custom_white</color>
 
     <!-- Generic Colors -->
@@ -18,6 +18,7 @@
     <color name="white">#FFFFFF</color>
     <color name="yellow">#FFEB3B</color>
     <color name="light_gray">#757575</color>
+    <color name="very_light_gray">#F5F5F5</color>
     <color name="dark_gray">#545454</color>
     <color name="dark_red">#C40000</color>
 
