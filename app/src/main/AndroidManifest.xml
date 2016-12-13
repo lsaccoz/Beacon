@@ -48,6 +48,7 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".Activities.CreateEventActivity"
+            android:windowSoftInputMode="adjustPan"
             android:screenOrientation="portrait"
             android:label="@string/title_activity_create_event">
 
@@ -65,6 +66,7 @@ ATTENTION: This was auto-generated to add Google Play services to your project f
         </activity>
 
         <activity android:name=".Activities.EditEventActivity"
+            android:windowSoftInputMode="adjustPan"
             android:label="@string/title_activity_edit_event"
             android:screenOrientation="portrait">
 
