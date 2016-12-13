@@ -24,8 +24,10 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -59,6 +61,9 @@ import java.util.Collections;
 import java.util.List;
 
 import java.util.ArrayList;
+
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 
 
 public class EventPageActivity extends AuthBaseActivity {
@@ -228,6 +233,7 @@ public class EventPageActivity extends AuthBaseActivity {
                     toast.show();
                     commentsList.add(0, comment);
                     mAdapter.notifyDataSetChanged();
+                    resizeCommentsView();
 
                 } else {
                     String alert = "You need to enter at least " + COMMENT_CHARACTER_LIMIT_MIN + " characters";
@@ -758,8 +764,44 @@ public class EventPageActivity extends AuthBaseActivity {
             mCommentsList.setAdapter(mAdapter);
             mAdapter.notifyDataSetChanged();
         }
+        resizeCommentsView();
 
         showUI();
+    }
+
+    private static final int AVG_CHARS_PER_LINE = 27;
+
+    // method to resize comments card view
+    // TODO: make this better, read notes below
+    // NOTES: tried resizing as in FavouritesFragment, did not work,
+    // this seems to be the best solution, but it is kinda weird if you play around with it
+    public void resizeCommentsView() {
+        if (commentsList != null && !commentsList.isEmpty()) {
+            ListAdapter listAdapter = mCommentsList.getAdapter();
+            if (listAdapter == null) {
+                return;
+            }
+
+            Comment comment;
+            int offset;
+            int totalHeight = 0;
+            int numLines;
+            for (int i = 0; i < listAdapter.getCount(); i++) {
+                comment = (Comment) listAdapter.getItem(i);
+                offset = comment.getText().length();
+                if (offset <= AVG_CHARS_PER_LINE) {
+                    numLines = 1;
+                }
+                else {
+                    numLines = offset/AVG_CHARS_PER_LINE + 1;
+                }
+                totalHeight += 210 + 50*numLines + (offset/((numLines+1)/2));
+            }
+            ViewGroup.LayoutParams params = mCommentsList.getLayoutParams();
+            params.height = totalHeight;
+            mCommentsList.setLayoutParams(params);
+            mCommentsList.requestLayout();
+        }
     }
 
 

@@ -124,6 +124,7 @@ public class CommentAdapter extends ArrayAdapter<Comment> {
                         mDelete.setVisibility(View.GONE);
                         mDelete.setEnabled(false);
                         dialog.dismiss();
+                        ((EventPageActivity) mContext).resizeCommentsView();
                     }
                 });
                 alert.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
