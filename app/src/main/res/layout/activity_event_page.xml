@@ -17,6 +17,10 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
     <LinearLayout
         android:id="@+id/event_page_root"
@@ -327,7 +331,7 @@
                     <ListView
                         android:id="@+id/comments_list"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" >
+                        android:layout_height="200dp" >
 
                     </ListView>
 
@@ -359,6 +363,8 @@
         />
 
     </LinearLayout>
+
+    </ScrollView>
 
 
 </LinearLayout>

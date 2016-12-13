@@ -26,12 +26,12 @@
                 app:srcCompat="@color/custom_white"
                 android:id="@+id/eventImage" />
 
+
             <ImageButton
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:srcCompat="@android:drawable/ic_menu_camera"
-                android:id="@+id/addImageButton"
-                android:scaleType="centerInside" />
+                android:id="@+id/addImageButton" />
 
             <android.support.design.widget.TextInputLayout
                 android:id="@+id/input_layout_name"
@@ -103,15 +103,6 @@
                 android:id="@+id/input_layout_category"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
-
-
-                <Spinner
-                    android:layout_width="match_parent"
-                    android:layout_height="51dp"
-                    android:id="@+id/spinner"
-                    android:textColorHint="@color/dark_gray"
-                    android:backgroundTint="@color/colorPrimary"
-                    style="@style/Widget.AppCompat.Spinner.Underlined"/>
 
 
             </android.support.design.widget.TextInputLayout>
