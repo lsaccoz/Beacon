@@ -19,6 +19,7 @@ import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.os.Bundle;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.SearchView;
 import android.util.Log;
 import android.view.ContextThemeWrapper;
@@ -100,6 +101,7 @@ public class MainActivity extends AuthBaseActivity
     private SettingsFragment mSettingsFragment;
     private FavouritesFragment mFavouritesFragment;
     private RelativeLayout mContentLayout;
+    private RelativeLayout mContentView;
     private List<IconTextView> mTabs;
     private TextView mTitle;
     private Fragment mActiveFragment;
@@ -108,8 +110,9 @@ public class MainActivity extends AuthBaseActivity
     private FloatingActionButton mCreateEvent;
     private MainActivity mContext;
 
-    private FloatingActionButton searchButton;
-    private SearchView searchBar;
+//    private FloatingActionButton searchButton;
+    private CardView searchBar;
+    private SearchView searchView;
 
     private boolean isAuthorized = false;
 
@@ -142,6 +145,8 @@ public class MainActivity extends AuthBaseActivity
     private static final String FAVOURITES = "favourites";
     private static final String HOSTING = "hosting";
 
+    private int mAnimDuration;
+
 
     // tracker for the temporary fix
     private static int tracker = 0; // -1
@@ -161,6 +166,9 @@ public class MainActivity extends AuthBaseActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        // Retrieve and cache the system's default "medium" animation time.
+        mAnimDuration = 250;
+
         //hide the action bar
        // getSupportActionBar().hide();
 
@@ -172,47 +180,53 @@ public class MainActivity extends AuthBaseActivity
 
 
         //retrieve all the Views that we would want to modify here
+        mContentView = (RelativeLayout) findViewById(R.id.content_view);
         mContentLayout = (RelativeLayout) findViewById(R.id.activity_main);
         mList = (IconTextView) findViewById(list);
         mWorld = (IconTextView) findViewById(world);
         mFavourites = (IconTextView) findViewById(R.id.favourites);
         mSettings = (IconTextView) findViewById(R.id.settings);
         mCreateEvent = (FloatingActionButton) findViewById(R.id.create_event_fab);
-        searchButton = (FloatingActionButton) findViewById(R.id.search_test);
+//        searchButton = (FloatingActionButton) findViewById(R.id.search_test);
 
 
         Window window = this.getWindow();
         //set the status bar color if the API version is high enough
         mContentLayout.setPadding(0, UI_Util.getStatusBarHeight(this), 0, 0);
 
-//        searchButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View v) {
-//                showBarInMap = true;
-//            }
-//        });
-
-
         //customize the search bar
-        searchBar = (SearchView) findViewById(R.id.searchBar);
-        searchBar.setQueryHint(getString(R.string.query_string));
+        searchBar = (CardView) findViewById(R.id.searchBar);
+        searchView = (SearchView) findViewById(R.id.searchView);
+//        searchView.setQueryHint(getString(R.string.query_string));
 
-        SearchView.SearchAutoComplete searchAutoComplete =
-                (SearchView.SearchAutoComplete)searchBar
+        final SearchView.SearchAutoComplete searchAutoComplete =
+                (SearchView.SearchAutoComplete)searchView
                         .findViewById(android.support.v7.appcompat.R.id.search_src_text);
 
-        searchBar.setIconifiedByDefault(true);
+//        searchView.setIconifiedByDefault(true);
 
         searchAutoComplete.setHintTextColor(getResources().getColor(R.color.light_gray));
         searchAutoComplete.setTextSize(20);
 
-        searchBar.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        //set listener so whenever search bar clicked the search view is expanded
+        searchBar.setOnClickListener(new View.OnClickListener(){
+
+            @Override
+            public void onClick(View view){
+                searchView.setIconified(false);
+
+                //hide the hint text when the user starts typing
+                searchBar.findViewById(R.id.hint_text).setVisibility(View.GONE);
+            }
+        });
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
 
                 InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-                imm.hideSoftInputFromWindow(searchBar.getWindowToken(), 0);
-                searchBar.clearFocus();
+                imm.hideSoftInputFromWindow(searchView.getWindowToken(), 0);
+                searchView.clearFocus();
                 if (tracker == 1) { // list
                     searchedList = true;
                     ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
@@ -229,6 +243,7 @@ public class MainActivity extends AuthBaseActivity
 
             @Override
             public boolean onQueryTextChange(String newText) {
+
                 searchedEventsCache = SearchUtil.searchEvents(newText, getEventList());
                 if (tracker == 1) { // list
                     searchedList = newText.length() != 0; // if not empty
@@ -245,9 +260,10 @@ public class MainActivity extends AuthBaseActivity
             }
         });
 
-        searchBar.setOnCloseListener(new SearchView.OnCloseListener() {
+        searchView.setOnCloseListener(new SearchView.OnCloseListener() {
             @Override
             public boolean onClose() {
+                searchBar.findViewById(R.id.hint_text).setVisibility(View.VISIBLE);
                 if (tracker == 1) { // list
                     searchedList = false;
                     ListFragment fragment = (ListFragment) getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
@@ -257,20 +273,10 @@ public class MainActivity extends AuthBaseActivity
                     initMap(); // reset the map with all the events
                     searchBar.setEnabled(false);
                     searchBar.setVisibility(View.GONE);
-                    searchButton.setEnabled(true);
-                    searchButton.setVisibility(View.VISIBLE);
+//                    searchButton.setEnabled(true);
+//                    searchButton.setVisibility(View.VISIBLE);
                 }
                 return false;
-            }
-        });
-
-        searchButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                searchBar.setEnabled(true);
-                searchBar.setVisibility(View.VISIBLE);
-                searchButton.setEnabled(false);
-                searchButton.setVisibility(View.GONE);
             }
         });
 
@@ -386,161 +392,192 @@ public class MainActivity extends AuthBaseActivity
         switch (v.getId()) {
             case (list): {
                 //change tab colour
-                resetTabColours();
-                mList.setTextColor(getResources().getColor(R.color.colorPrimary));
 
-                //show create event button on this page
-                mCreateEvent.setEnabled(true);
-                mCreateEvent.setVisibility(View.VISIBLE);
+                if(mActiveFragment != mListFragment) {
 
-//                searchButton.setEnabled(false);
-//                searchButton.setVisibility(View.GONE);
+                    //hide the fragment layout so we can blur it into view
+                    mContentView.setVisibility(View.GONE);
 
-                //get List fragment if exists
-                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
-                if (fragment == null || !fragment.isVisible()) {
-                    if (fragment == null) {
-                        //if fragment hasn't been created, get a new one
-                        mListFragment = ListFragment.newInstance();
-                    } else {
-                        //if fragment already exists, use it
-                        mListFragment = (ListFragment) fragment;
+                    resetTabColours();
+                    mList.setTextColor(getResources().getColor(R.color.colorPrimary));
+
+                    //show create event button on this page
+                    mCreateEvent.setEnabled(true);
+                    mCreateEvent.setVisibility(View.VISIBLE);
+
+//                    searchButton.setEnabled(false);
+//                    searchButton.setVisibility(View.GONE);
+
+                    //get List fragment if exists
+                    Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.list_fragment));
+                    if (fragment == null || !fragment.isVisible()) {
+                        if (fragment == null) {
+                            //if fragment hasn't been created, get a new one
+                            mListFragment = ListFragment.newInstance();
+                        } else {
+                            //if fragment already exists, use it
+                            mListFragment = (ListFragment) fragment;
+                        }
+
+                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                        //attach this fragment to the screen
+                        transaction.replace(R.id.events_view, mListFragment, getString(R.string.list_fragment));
+                        transaction.addToBackStack(null);
+                        mActiveFragment = mListFragment;
+
+                        //allows for smoother transitions between screens
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                        transaction.commit();
+                        showUI();
                     }
-
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
-
-                    //attach this fragment to the screen
-                    transaction.replace(R.id.events_view, mListFragment, getString(R.string.list_fragment));
-                    transaction.addToBackStack(null);
-                    mActiveFragment = mListFragment;
-
-                    //allows for smoother transitions between screens
-                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-
-                    transaction.commit();
+                    tracker = 1;
                 }
-                tracker = 1;
                 //searchBar.setVisibility(View.VISIBLE);
 
                 break;
             }
             case (world): {
 
-                //change tab colours
-                resetTabColours();
-                mWorld.setTextColor(getResources().getColor(R.color.colorPrimary));
+                if(mActiveFragment != mMapFragment) {
 
-                //show create event button on this page
-                mCreateEvent.setEnabled(true);
-                mCreateEvent.setVisibility(View.VISIBLE);
+                    //hide the fragment layout so we can blur it into view
+                    mContentView.setVisibility(View.GONE);
 
-                searchBar.setEnabled(searchedMap);
-                searchBar.setVisibility(searchedMap ? View.VISIBLE : View.GONE);
+//                    searchButton.setEnabled(!searchedMap);
+//                    searchButton.setVisibility(!searchedMap ? View.VISIBLE : View.GONE);
 
-                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
+                    //change tab colours
+                    resetTabColours();
+                    mWorld.setTextColor(getResources().getColor(R.color.colorPrimary));
 
-                if (fragment == null || !fragment.isVisible()) {
-                    //if fragment hasn't been created, create a new instance
-                    if (fragment == null) {
-                        mMapFragment = MapFragment.newInstance();
+                    //show create event button on this page
+                    mCreateEvent.setEnabled(true);
+                    mCreateEvent.setVisibility(View.VISIBLE);
 
-                        //else, set map fragment to retrieved fragment
-                    } else {
-                        mMapFragment = (MapFragment) fragment;
+                    searchBar.setEnabled(searchedMap);
+                    searchBar.setVisibility(searchedMap ? View.VISIBLE : View.GONE);
+
+                    Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.map_fragment));
+
+                    if (fragment == null || !fragment.isVisible()) {
+                        //if fragment hasn't been created, create a new instance
+                        if (fragment == null) {
+                            mMapFragment = MapFragment.newInstance();
+
+                            //else, set map fragment to retrieved fragment
+                        } else {
+                            mMapFragment = (MapFragment) fragment;
+                        }
+                        mActiveFragment = mMapFragment;
+
+                        FragmentTransaction fragmentTransaction =
+                                getFragmentManager().beginTransaction();
+                        fragmentTransaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
+                        fragmentTransaction.addToBackStack(null);
+
+                        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                        fragmentTransaction.commit();
+
+                        mMapFragment.getMapAsync(this);
+                        showUI();
                     }
-                    mActiveFragment = mMapFragment;
+                    tracker = 0;
 
-                    FragmentTransaction fragmentTransaction =
-                            getFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
-                    fragmentTransaction.addToBackStack(null);
-
-                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                    fragmentTransaction.commit();
-
-                    mMapFragment.getMapAsync(this);
                 }
-                tracker = 0;
-
-                searchButton.setEnabled(!searchedMap);
-                searchButton.setVisibility(!searchedMap ? View.VISIBLE : View.GONE);
-
                 break;
+
             }
 
 
             case (R.id.favourites): {
 
-                resetTabColours();
-                mFavourites.setTextColor(getResources().getColor(R.color.colorPrimary));
+                if(mActiveFragment != mFavouritesFragment ) {
 
-                //hide create event button on this page
-                mCreateEvent.setEnabled(true);
-                mCreateEvent.setVisibility(View.VISIBLE);
+                    //hide the fragment layout so we can blur it into view
+                    mContentView.setVisibility(View.GONE);
 
-                searchButton.setEnabled(false);
-                searchButton.setVisibility(View.GONE);
+                    searchBar.setEnabled(false);
+                    searchBar.setVisibility(View.GONE);
 
-                //get List fragment if exists
-                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
-                if (fragment == null || !fragment.isVisible()) {
-                    if (fragment == null) {
-                        //if fragment hasn't been created, get a new one
-                        mFavouritesFragment = FavouritesFragment.newInstance();
-                    } else {
-                        //if fragment already exists, use it
-                        mFavouritesFragment = (FavouritesFragment) fragment;
+                    resetTabColours();
+                    mFavourites.setTextColor(getResources().getColor(R.color.colorPrimary));
+
+                    //hide create event button on this page
+                    mCreateEvent.setEnabled(true);
+                    mCreateEvent.setVisibility(View.VISIBLE);
+
+//                    searchButton.setEnabled(false);
+//                    searchButton.setVisibility(View.GONE);
+
+                    //get List fragment if exists
+                    Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.favourites_fragment));
+                    if (fragment == null || !fragment.isVisible()) {
+                        if (fragment == null) {
+                            //if fragment hasn't been created, get a new one
+                            mFavouritesFragment = FavouritesFragment.newInstance();
+                        } else {
+                            //if fragment already exists, use it
+                            mFavouritesFragment = (FavouritesFragment) fragment;
+                        }
+
+                        FragmentTransaction transaction = getFragmentManager().beginTransaction();
+
+                        //attach this fragment to the screen
+                        transaction.replace(R.id.events_view, mFavouritesFragment, getString(R.string.favourites_fragment));
+                        transaction.addToBackStack(null);
+                        mActiveFragment = mFavouritesFragment;
+
+                        //allows for smoother transitions between screens
+                        transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+
+                        transaction.commit();
+                        showUI();
                     }
 
-                    FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
-                    //attach this fragment to the screen
-                    transaction.replace(R.id.events_view, mFavouritesFragment, getString(R.string.favourites_fragment));
-                    transaction.addToBackStack(null);
-                    mActiveFragment = mFavouritesFragment;
-
-                    //allows for smoother transitions between screens
-                    transaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-
-                    transaction.commit();
+                    tracker = 2;
                 }
-
-                searchBar.setEnabled(false);
-                searchBar.setVisibility(View.GONE);
-
-                tracker = 2;
                 break;
+
             }
             case (R.id.settings): {
                 //change tab colours
-                resetTabColours();
-                mSettings.setTextColor(getResources().getColor(R.color.colorPrimary));
+                if(mActiveFragment != mSettingsFragment) {
 
-                //hide create event button on this page
-                mCreateEvent.setEnabled(false);
-                mCreateEvent.setVisibility(View.GONE);
+                    mContentView.setVisibility(View.GONE);
+                    resetTabColours();
+                    mSettings.setTextColor(getResources().getColor(R.color.colorPrimary));
 
-                searchButton.setEnabled(false);
-                searchButton.setVisibility(View.GONE);
+                    //hide create event button on this page
+                    mCreateEvent.setEnabled(false);
+                    mCreateEvent.setVisibility(View.GONE);
 
-                //check if visible fragment is an instance of settings fragment already, if so do nothing
-                Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
+//                    searchButton.setEnabled(false);
+//                    searchButton.setVisibility(View.GONE);
 
-                if (fragment == null || !fragment.isVisible()) {
-                    if (fragment == null) {
-                        mSettingsFragment = SettingsFragment.getInstance();
-                    } else {
-                        mSettingsFragment = (SettingsFragment) fragment;
+                    //check if visible fragment is an instance of settings fragment already, if so do nothing
+                    Fragment fragment = getFragmentManager().findFragmentByTag(getString(R.string.settings_fragment));
+
+                    if (fragment == null || !fragment.isVisible()) {
+                        if (fragment == null) {
+                            mSettingsFragment = SettingsFragment.getInstance();
+                        } else {
+                            mSettingsFragment = (SettingsFragment) fragment;
+                        }
+
+                        FragmentTransaction fragmentTransaction =
+                                getFragmentManager().beginTransaction();
+                        fragmentTransaction.replace(R.id.events_view, mSettingsFragment, getString(R.string.settings_fragment));
+                        fragmentTransaction.addToBackStack(null);
+                        mActiveFragment = mSettingsFragment;
+
+                        fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
+                        fragmentTransaction.commit();
+                        showUI();
+
                     }
-
-                    FragmentTransaction fragmentTransaction =
-                            getFragmentManager().beginTransaction();
-                    fragmentTransaction.replace(R.id.events_view, mSettingsFragment, getString(R.string.settings_fragment));
-                    fragmentTransaction.addToBackStack(null);
-
-                    fragmentTransaction.setTransition(FragmentTransaction.TRANSIT_FRAGMENT_FADE);
-                    fragmentTransaction.commit();
-
                 }
                 //searchBar.setVisibility(View.GONE);
                 break;
@@ -955,6 +992,8 @@ public class MainActivity extends AuthBaseActivity
 
         //map fragment is active but not currently shown
         if (mMapFragment != null && !mMapFragment.isVisible()) {
+
+            mContentView.setVisibility(View.GONE);
             FragmentTransaction transaction = getFragmentManager().beginTransaction();
 
             transaction.replace(R.id.events_view, mMapFragment, getString(R.string.map_fragment));
@@ -970,6 +1009,7 @@ public class MainActivity extends AuthBaseActivity
             mWorld.setTextColor(getResources().getColor(R.color.colorPrimary));
 
             mMapFragment.getMapAsync(this);
+            showUI();
             mActiveFragment = mMapFragment;
 
             //ensure that the create event tab is visible again
@@ -995,7 +1035,7 @@ public class MainActivity extends AuthBaseActivity
     }
 
     // To set the visibility of search bar in fragments
-    public SearchView getSearchBar() {
+    public CardView getSearchBar() {
         return searchBar;
     }
 
@@ -1024,8 +1064,8 @@ public class MainActivity extends AuthBaseActivity
                     resetTabColours();
                     mList.setTextColor(getResources().getColor(R.color.colorPrimary));
                     //eventPageClickedFrom = 0;
-                    searchButton.setEnabled(false);
-                    searchButton.setVisibility(View.GONE);
+//                    searchButton.setEnabled(false);
+//                    searchButton.setVisibility(View.GONE);
                     searchBar.setEnabled(true);
                     searchBar.setVisibility(View.VISIBLE);
 
@@ -1037,8 +1077,8 @@ public class MainActivity extends AuthBaseActivity
                     mCreateEvent.setEnabled(true);
                     mCreateEvent.setVisibility(View.VISIBLE);
 
-                    searchButton.setEnabled(false);
-                    searchButton.setVisibility(View.GONE);
+//                    searchButton.setEnabled(false);
+//                    searchButton.setVisibility(View.GONE);
                     searchBar.setEnabled(true);
                     searchBar.setVisibility(View.VISIBLE);
                     break;
@@ -1187,6 +1227,26 @@ public class MainActivity extends AuthBaseActivity
     }
 
     /**
+     * Method to blur in the UI layout using an animation
+     * <p>
+     * This is called after any relevant data is fetched from the network/local cache
+     */
+    public void showUI() {
+
+        // Set the content view to 0% opacity but visible, so that it is visible
+        // (but fully transparent) during the animation.
+        mContentView.setAlpha(0f);
+        mContentView.setVisibility(View.VISIBLE);
+
+        // Animate the content view to 100% opacity, and clear any animation
+        // listener set on the view.
+        mContentView.animate()
+                .alpha(1f)
+                .setDuration(mAnimDuration)
+                .setListener(null);
+    }
+
+    /**
      * resets all the tabs to the unselected color
      */
     private void resetTabColours() {
@@ -1221,5 +1281,7 @@ public class MainActivity extends AuthBaseActivity
     public ArrayList<String> getHostIdsList() {
         return hostingIds;
     }
+
+
 }
 

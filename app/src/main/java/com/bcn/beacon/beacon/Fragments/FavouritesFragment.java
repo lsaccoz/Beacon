@@ -151,6 +151,13 @@ public class FavouritesFragment extends Fragment
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        ((MainActivity) getActivity()).showUI();
+
+    }
+
+    @Override
     public void onPause() {
         super.onPause();
     }
