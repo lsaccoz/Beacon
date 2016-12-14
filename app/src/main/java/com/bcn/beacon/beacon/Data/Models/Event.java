@@ -8,6 +8,7 @@ import com.google.firebase.database.DatabaseReference;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Event {
 
@@ -46,12 +47,19 @@ public class Event {
         uploadPhotos();
     }
 
-    //untested
     public void update() {
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference events = database.getReference("Events");
 
-        events.child(eventId).setValue(this);
+        DatabaseReference event = events.child(eventId);
+
+        Map updatedData = new HashMap();
+        updatedData.put("name", name);
+        updatedData.put("description", description);
+        updatedData.put("location", location);
+        updatedData.put("date", date);
+
+        event.updateChildren(updatedData);
 
         new ListEvent(this).upload();
     }
@@ -64,7 +72,7 @@ public class Event {
         PhotoManager.getInstance().upload(eventId, photos);
     }
 
-    public void delete(){
+    public void delete() {
         new ListEvent(this).delete();
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
