@@ -10,9 +10,9 @@
         android:defaultValue="@string/pref_range_default"
         android:key="@string/pref_range_key" />
 
-    <com.bcn.beacon.beacon.CustomViews.NotificationsPreference
-        android:defaultValue="true"
-        android:key="@string/pref_notifications_key" />
+    <!--<com.bcn.beacon.beacon.CustomViews.NotificationsPreference-->
+        <!--android:defaultValue="true"-->
+        <!--android:key="@string/pref_notifications_key" />-->
 
 
     <Preference

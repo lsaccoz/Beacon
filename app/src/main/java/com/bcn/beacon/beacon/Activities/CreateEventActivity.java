@@ -80,6 +80,7 @@ public class CreateEventActivity extends AuthBaseActivity implements View.OnClic
 
 
     protected Location location = new Location();
+    protected ImageButton eAddedImage;
     protected ImageButton eAddImage;
     protected ImageView eventImage;
     protected FloatingActionButton myFab;
@@ -114,6 +115,8 @@ public class CreateEventActivity extends AuthBaseActivity implements View.OnClic
         eDate = (EditText) findViewById(R.id.event_date);
         eName = (EditText) findViewById(R.id.input_name);
         eDescription = (EditText) findViewById(R.id.input_description);
+        eAddedImage = (ImageButton) findViewById(R.id.addedImage);
+        eAddedImage.setVisibility(View.GONE);
         eAddImage = (ImageButton) findViewById(R.id.addImageButton);
         myFab = (FloatingActionButton) findViewById(R.id.fab);
         eAddress = (EditText) findViewById(R.id.input_address);
@@ -307,12 +310,13 @@ public class CreateEventActivity extends AuthBaseActivity implements View.OnClic
 
                 startActivityForResult(cropImage.getIntent(getApplicationContext()), PIC_CROP);
             } else if (requestCode == PIC_CROP) {
-                eAddImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
-                eAddImage.getLayoutParams().height = 1000;
-                eAddImage.requestLayout();
+                eAddedImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                eAddedImage.getLayoutParams().height = 1000;
+                eAddedImage.requestLayout();
                 Bitmap photo = BitmapFactory.decodeFile(croppedImageFile.getAbsolutePath());
                 photos.add(photo);
-                eAddImage.setImageBitmap(photo);
+                eAddedImage.setImageBitmap(photo);
+                eAddedImage.setVisibility(View.VISIBLE);
 
             } else if (requestCode == REQUEST_IMAGE_CAPTURE) {
                 Uri croppedImage = Uri.fromFile(croppedImageFile);
