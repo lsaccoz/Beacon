@@ -18,7 +18,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
     
    <div style="text-align:center">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/splash.png" width="200">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/sign_in_photo.png" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/sign_in_photo.jpg" width="200">
    </div>
 
 
@@ -27,13 +27,13 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
   * Search events on a map view 
   
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/world_view.png" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/world_view.jpg" width="200">
    </div>
    
   * Search events on a list view
   
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/list_view.png" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/list_view.jpg" width="200">
    </div>
 
 3. Create events and hangouts and make them public 
@@ -55,25 +55,25 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
   * By Distance
   
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/search_feature.png" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/search_feature.jpg" width="200">
    </div>
 
 5. Post comments and ask questions on event pages
 
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/comments_example.png" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/comments_example.jpg" width="200">
    </div>
 
 6. Favourite events to remember events of interest
 
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/favourites_page.png" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/favourites_page.jpg" width="200">
    </div>
 
 7. Edit how large the search radius is for finding events
 
    <div style="text-align:center">
-   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/settings_page.png" width="200">
+   <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/settings_page.jpg" width="200">
    </div>
 
 ##Installation Guide (For Users)
