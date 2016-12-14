@@ -25,6 +25,7 @@ import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -33,6 +34,7 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.RelativeLayout;
+import android.widget.ScrollView;
 import android.widget.Toast;
 import android.view.Window;
 import android.widget.TextView;
@@ -100,6 +102,7 @@ public class EventPageActivity extends AuthBaseActivity {
     private CardView mCardViewComments;
     private CommentEditText mWriteComment;
     private TextView mCharacterCount;
+    private ScrollView mScrollView;
 
     private boolean mFavourited = false;
     private boolean commentTab = false;
@@ -112,6 +115,7 @@ public class EventPageActivity extends AuthBaseActivity {
     private static boolean discarded = false;
     private static boolean edited = false;
     private static boolean back_discarded = false;
+    private static boolean focusChanged = false;
 
     private static int RETURN_FROM_EDIT = 0;
 
@@ -177,6 +181,7 @@ public class EventPageActivity extends AuthBaseActivity {
         mWriteComment = (CommentEditText) findViewById(R.id.write_comment);
         mCharacterCount = (TextView) findViewById(R.id.character_count);
         mCardViewComments = (CardView) findViewById(R.id.card_view_comments);
+        mScrollView = (ScrollView) findViewById(R.id.scroll_view);
 
 
         // input manager for showing keyboard immediately
@@ -199,6 +204,9 @@ public class EventPageActivity extends AuthBaseActivity {
                     mWriteComment.requestFocus();
                     mCharacterCount.setEnabled(true);
                     mCharacterCount.setVisibility(View.VISIBLE);
+                    /*if (mWriteComment.getWidth() != RelativeLayout.LayoutParams.MATCH_PARENT) {
+                        mWriteComment.setLayoutParams(new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT, RelativeLayout.LayoutParams.WRAP_CONTENT));
+                    }*/
                     imm.showSoftInput(mWriteComment, InputMethodManager.SHOW_IMPLICIT);
                 } else {
                     showDiscardAlert();
@@ -249,6 +257,24 @@ public class EventPageActivity extends AuthBaseActivity {
                 }
             }
         });
+
+        // fix for the focus change listener for comment edit text
+        mScrollView.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (mWriteComment.hasFocus()) {
+                    mWriteComment.clearFocus();
+                    focusChanged = true;
+                    showDiscardAlert();
+                    imm.hideSoftInputFromWindow((null == getCurrentFocus()) ? null : getCurrentFocus().getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+                }
+                else {
+                    focusChanged = false;
+                }
+                return false;
+            }
+        });
+
 
         // Listener for edit button
         // TODO: Refactor some stuff, add whitespace check to here as well (make it a function)
@@ -318,12 +344,13 @@ public class EventPageActivity extends AuthBaseActivity {
             public void onFocusChange(View v, boolean hasFocus) {
                 if (!hasFocus && (!mEditConfirm.isPressed() && !mPostComment.isPressed())) {
                     //hideCommentTab();
-                    if (!discarded && !back_discarded) {
+                    if (!discarded && !back_discarded && focusChanged) {
                         hideKeyboard(v);
                         showDiscardAlert();
                     } else {
                         discarded = false;
                         back_discarded = false;
+                        focusChanged = false;
                     }
                 }
             }
@@ -536,7 +563,7 @@ public class EventPageActivity extends AuthBaseActivity {
 
     // Method for showing a discard alert
     public void showDiscardAlert() {
-        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT_MIN && edited) {
+        if (mWriteComment.getText().toString().length() >= COMMENT_CHARACTER_LIMIT_MIN && (edited || focusChanged)) {
             // show alert if the user entered more than required characters
             AlertDialog.Builder alert = new AlertDialog.Builder(this, android.R.style.ThemeOverlay_Material_Dialog_Alert);
             alert.setIcon(R.drawable.attention);
@@ -548,6 +575,7 @@ public class EventPageActivity extends AuthBaseActivity {
                 public void onClick(DialogInterface dialog, int which) {
                     // hide the comment tab if yes
                     discarded = true;
+                    focusChanged = false;
                     hideCommentTab();
                     dialog.dismiss();
                 }
@@ -570,6 +598,7 @@ public class EventPageActivity extends AuthBaseActivity {
                 @Override
                 public void onCancel(DialogInterface dialog) {
                     back_discarded = true;
+                    focusChanged = false;
                     hideCommentTab();
                     dialog.dismiss();
                 }

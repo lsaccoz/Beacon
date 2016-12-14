@@ -32,7 +32,8 @@
         <ScrollView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:fillViewport="true">
+            android:fillViewport="true"
+            android:id="@+id/scroll_view">
 
             <!-- Linear layout to order views vertically within card view -->
             <LinearLayout
@@ -336,7 +337,7 @@
                             android:id="@+id/comments_list"
                             android:layout_width="match_parent"
                             android:layout_height="match_parent"
-                            android:layout_marginTop="16dp">
+                            android:layout_marginTop="2dp">
 
                         </ListView>
 
