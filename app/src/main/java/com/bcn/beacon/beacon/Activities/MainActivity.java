@@ -716,7 +716,7 @@ public class MainActivity extends AuthBaseActivity
                 //get the searchRangeLimit for this user
                 SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 
-                int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 0);
+                int searchRangeLimit = prefs.getInt(getString(R.string.pref_range_key), 40);
 
                 for (DataSnapshot event_snapshot : dataSnapshot.getChildren()) {
                     ListEvent event = event_snapshot.getValue(ListEvent.class);
@@ -844,6 +844,12 @@ public class MainActivity extends AuthBaseActivity
 
     private void initMap() {
 
+        Location location = LocationUtil.getUserLocation(this);
+        if (location != null) {
+            userLat = location.getLatitude();
+            userLng = location.getLongitude();
+        }
+
         if (mMap != null) {
             mMap.clear();
 
@@ -855,7 +861,7 @@ public class MainActivity extends AuthBaseActivity
 
 
             SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-            int pref = prefs.getInt(getString(R.string.pref_range_key), 0);
+            int pref = prefs.getInt(getString(R.string.pref_range_key), 40);
 
             LatLngBounds Bound = new LatLngBounds(
                     new LatLng(userLat - (pref / 110.574), userLng - (pref / 111.320 * cos(pref / 110.574))),
