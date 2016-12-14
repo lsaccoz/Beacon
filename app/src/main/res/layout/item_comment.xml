@@ -45,7 +45,6 @@
         android:layout_below="@id/time"
         android:layout_toRightOf="@id/userPic"
         android:layout_toLeftOf="@+id/edit"
-        android:paddingTop="6dp"
         android:paddingLeft="6dp"
         android:paddingRight="6dp"
         android:text="awesome party yo!"

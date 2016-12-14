@@ -140,7 +140,6 @@ public class CommentsEspressoTest {
             onView(withId(R.id.event_description)).check(matches(isDisplayed()));
             onView(withId(R.id.cover)).check(matches(isDisplayed()));
             onView(withId(R.id.time_address)).check(matches(isDisplayed()));
-            onView(withId(R.id.tags)).check(matches(isDisplayed()));
             onView(withId(R.id.card_view_comments)).check(matches(isDisplayed()));
         }
     }
