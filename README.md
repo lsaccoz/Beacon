@@ -1,7 +1,7 @@
-#Beacon
+## Beacon
 *Shining a Light on the Action*
 
-##Motivation/Opportunity
+### Motivation/Opportunity
 
 People have a limited ability to stay connected to social events going on around them. 
 There is no seamless way to see what events are currently going on near your current location. 
@@ -10,7 +10,7 @@ BEACON solves this problem by allowing users to pin their event location and inf
 This app will separate itself from other platforms, such as the event planning system offered by Facebook, by not focusing as much on the planning aspect of social events. 
 Instead, BEACON will try and encourage on-the-fly decision making, by focusing on nearby events that are occurring at the moment. 
 
-##Features
+### Features
 
 1. Sign in using your google account
    
@@ -20,7 +20,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/splash.png" width="200">
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/sign_in_photo.jpg" width="200">
    </div>
-
+   
 
 2. Find events and hangouts occurring within a local vicinity
 
@@ -76,7 +76,7 @@ Instead, BEACON will try and encourage on-the-fly decision making, by focusing o
    <img src="https://github.com/lsaccoz/Beacon/blob/master/res_demo/settings_page.jpg" width="200">
    </div>
 
-##Installation Guide (For Users)
+### Installation Guide (For Users)
 If you wish to become a tester for the initial alpha release of Beacon on the Google Play Store, follow the link bellow to install Beacon on your android device:
 
 https://play.google.com/apps/testing/com.bcn.beacon.beacon
@@ -84,7 +84,7 @@ https://play.google.com/apps/testing/com.bcn.beacon.beacon
 ##Installation Guide (For Developers)
 In order to be able to fork off of this repository to make your own changes to Beacon, we highly suggest that you download and install  Android Studio as your IDE for developement. If you do, the process of getting the Beacon's source code onto your own local machine should be relatively seamless and straightforward. The following steps describe how to install Beacon.
 
-###Dependencies
+### Dependencies
 1. Beacon utilizes Google's Firebase for all the following services:
 
   * Remote Realtime Database
