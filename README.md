@@ -101,7 +101,7 @@ In order to be able to fork off of this repository to make your own changes to B
  
  If you are looking to learn more about the Google Maps API, resources and documentation can be found at: https://developers.google.com/maps/documentation/android-api/start
  
-###Getting Beacon on your Local Machine
+### Getting Beacon on your Local Machine
 Getting off the ground with your personal development of Beacon couldn't be simpler. All you'll need to do is download Android Studio (as mentioned before, this is the IDE we recommend), and start developing! You can clone this repository directly into AndroidStudioProjects directory for the simplest import into Android Studio. Then, after the cloning is complete, all you have to do is open Android Studio and navigate to "File->New->Import Project" and select the cloned repository. After that, you should be able to see the entire Beacon project.
 
 Since Beacon makes use of the Google services mentioned above, the app needed to have a Java Keystore that was synced with Firebase. We have conveniently provided the .jks file needed to compile and build the app. Settings for the .jks compilation can be found in the app level .gradle file.
